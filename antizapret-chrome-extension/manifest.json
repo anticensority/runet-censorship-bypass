@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+
+  "name": "Антизапрет",
+  "description": "РосКомНадзор заблокировал очередной сайт? Ты не нарушаешь закон! Ты не ребёнок!",
+  "version": "0.1",
+
+  "browser_action": {
+    "default_icon": "unlock.png",
+    "default_title": "Обсуждай на https://reddit.com/r/ru"
+  },
+  "permissions": [
+    "proxy"
+  ],
+  "icons": { "16": "unlock.ico",
+            "128": "unlock.png" },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+
+  "author": "ilyaigpetrov@gmail.com",
+  "homepage_url": "https://github.com/ilyaigpetrov/antizapret-chrome-extension",
+  "short_name": "Антизапрет"
+}
