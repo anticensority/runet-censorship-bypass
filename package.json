@@ -1,0 +1,20 @@
+{
+  "name": "subjective-good-is-evil",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate": "node generate-PACs.js",
+  	"prestart": "npm run generate",
+    "preserve": "npm run kill",
+    "serve": "START /B http-server generated-PACs",
+    "bench": "cd Benchmark && dnx run ../generated-PACs",
+  	"start": "npm run bench",
+	  "kill": "taskkill /F /IM node.exe"
+  },
+  "author": "ilyaigpetrov",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^0.8.5"
+  }
+}

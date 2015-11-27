@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Антизапрет",
-  "description": "РосКомНадзор заблокировал очередной сайт? Ты не нарушаешь закон! Ты не ребёнок!",
+  "description": "Безопасный Интернет от РосКомНадзор.",
   "version": "0.1",
 
   "browser_action": {
@@ -10,7 +10,13 @@
     "default_title": "Обсуждай на https://reddit.com/r/ru"
   },
   "permissions": [
-    "proxy"
+    "proxy",
+	  "storage",
+    "alarms",
+
+	  "http://*/",
+	  "https://*/",
+	  "ftp://*/"
   ],
   "icons": { "16": "unlock.ico",
             "128": "unlock.png" },
