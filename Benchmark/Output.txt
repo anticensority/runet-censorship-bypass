@@ -1,47 +1,47 @@
-blocked-hosts-reversed-binary.js: 	371 bytes, 3633268 ns, Missed: 331 bytes, 959025  ns
-blocked-hosts-switch.js: 			35  bytes, 861416  ns, Missed: 54  bytes, 1009980 ns
-blocked-hosts-binary.js: 			355 bytes, 3741660 ns, Missed: 315 bytes, 1101475 ns
-blocked-hosts-plain-switch.js:	    368 bytes, 4595046 ns, Missed: 327 bytes, 1181185 ns
+blocked-hosts-reversed-binary.js:     371 bytes, 3633268 ns, Missed: 331 bytes, 959025  ns
+blocked-hosts-switch.js:              35  bytes, 861416  ns, Missed: 54  bytes, 1009980 ns
+blocked-hosts-binary.js:              355 bytes, 3741660 ns, Missed: 315 bytes, 1101475 ns
+blocked-hosts-plain-switch.js:        368 bytes, 4595046 ns, Missed: 327 bytes, 1181185 ns
 
-blocked-ips-indexOf.js: 			30  bytes, 4744851 ns, Missed: 50  bytes, 949647  ns
-blocked-ips-switch.js: 				30  bytes, 1324520 ns, Missed: 50  bytes, 954300  ns
-blocked-ips-binary.js: 				30  bytes, 3528872 ns, Missed: 50  bytes, 955016  ns
+blocked-ips-indexOf.js:               30  bytes, 4744851 ns, Missed: 50  bytes, 949647  ns
+blocked-ips-switch.js:                30  bytes, 1324520 ns, Missed: 50  bytes, 954300  ns
+blocked-ips-binary.js:                30  bytes, 3528872 ns, Missed: 50  bytes, 955016  ns
 ======================
-blocked-hosts-reversed-binary.js:	60  bytes, 3810837 ns, Missed: 71  bytes, 971006  ns
-blocked-hosts-switch.js:			90  bytes, 881944  ns, Missed: 54  bytes, 987749  ns
-blocked-hosts-binary.js:			352 bytes, 3715816 ns, Missed: 311 bytes, 1015559 ns
-blocked-hosts-plain-switch.js:		367 bytes, 5108743 ns, Missed: 322 bytes, 1057506 ns
+blocked-hosts-reversed-binary.js:     60  bytes, 3810837 ns, Missed: 71  bytes, 971006  ns
+blocked-hosts-switch.js:              90  bytes, 881944  ns, Missed: 54  bytes, 987749  ns
+blocked-hosts-binary.js:              352 bytes, 3715816 ns, Missed: 311 bytes, 1015559 ns
+blocked-hosts-plain-switch.js:        367 bytes, 5108743 ns, Missed: 322 bytes, 1057506 ns
 
-blocked-ips-switch.js:				32  bytes, 1331517 ns, Missed: 48  bytes, 952596  ns
-blocked-ips-indexOf.js:				36  bytes, 4863773 ns, Missed: 50  bytes, 956231  ns
-blocked-ips-binary.js:				33  bytes, 3724425 ns, Missed: 52  bytes, 958463  ns
+blocked-ips-switch.js:                32  bytes, 1331517 ns, Missed: 48  bytes, 952596  ns
+blocked-ips-indexOf.js:               36  bytes, 4863773 ns, Missed: 50  bytes, 956231  ns
+blocked-ips-binary.js:                33  bytes, 3724425 ns, Missed: 52  bytes, 958463  ns
 ======================
-blocked-hosts-plain-switch.js:		367 bytes, 3895654 ns, Missed: 218 bytes, 590817 ns
-blocked-hosts-binary.js:			351 bytes, 4559283 ns, Missed: 207 bytes, 595531 ns
-blocked-hosts-reversed-binary.js:	367 bytes, 3757800 ns, Missed: 96  bytes, 607930 ns
-blocked-hosts-switch.js:			85  bytes, 909670  ns, Missed: 82  bytes, 665152 ns
+blocked-hosts-plain-switch.js:        367 bytes, 3895654 ns, Missed: 218 bytes, 590817 ns
+blocked-hosts-binary.js:              351 bytes, 4559283 ns, Missed: 207 bytes, 595531 ns
+blocked-hosts-reversed-binary.js:     367 bytes, 3757800 ns, Missed: 96  bytes, 607930 ns
+blocked-hosts-switch.js:              85  bytes, 909670  ns, Missed: 82  bytes, 665152 ns
 
-blocked-ips-switch.js:				34  bytes, 1326365 ns, Missed: 72  bytes, 583463 ns
-blocked-ips-binary.js:				36  bytes, 3567749 ns, Missed: 77  bytes, 583504 ns
-blocked-ips-indexOf.js:				37  bytes, 4794414 ns, Missed: 77  bytes, 584845 ns
+blocked-ips-switch.js:                34  bytes, 1326365 ns, Missed: 72  bytes, 583463 ns
+blocked-ips-binary.js:                36  bytes, 3567749 ns, Missed: 77  bytes, 583504 ns
+blocked-ips-indexOf.js:               37  bytes, 4794414 ns, Missed: 77  bytes, 584845 ns
 ======================
-blocked-hosts-binary.js:			355 bytes, 3669894 ns, Missed: 207 bytes, 593995 ns
-blocked-hosts-plain-switch.js:		363 bytes, 3977687 ns, Missed: 223 bytes, 594579 ns
-blocked-hosts-switch.js:			89  bytes, 874404  ns, Missed: 81  bytes, 608442 ns
-blocked-hosts-reversed-binary.js:	54  bytes, 3706841 ns, Missed: 96  bytes, 622309 ns
+blocked-hosts-binary.js:              355 bytes, 3669894 ns, Missed: 207 bytes, 593995 ns
+blocked-hosts-plain-switch.js:        363 bytes, 3977687 ns, Missed: 223 bytes, 594579 ns
+blocked-hosts-switch.js:              89  bytes, 874404  ns, Missed: 81  bytes, 608442 ns
+blocked-hosts-reversed-binary.js:     54  bytes, 3706841 ns, Missed: 96  bytes, 622309 ns
 
-blocked-ips-indexOf.js:				35  bytes, 4839284 ns, Missed: 78  bytes, 587725 ns
-blocked-ips-switch.js:				43  bytes, 1346437 ns, Missed: 77  bytes, 599972 ns
-blocked-ips-binary.js:				33  bytes, 3651593 ns, Missed: 80  bytes, 621814 ns
+blocked-ips-indexOf.js:               35  bytes, 4839284 ns, Missed: 78  bytes, 587725 ns
+blocked-ips-switch.js:                43  bytes, 1346437 ns, Missed: 77  bytes, 599972 ns
+blocked-ips-binary.js:                33  bytes, 3651593 ns, Missed: 80  bytes, 621814 ns
 ======================
-blocked-hosts-binary.js:			352 bytes, 3711255 ns, Missed: 207 bytes, 590903 ns
-blocked-hosts-switch.js:			91  bytes, 863216  ns, Missed: 77  bytes, 592086 ns
-blocked-hosts-reversed-binary.js:	371 bytes, 3690426 ns, Missed: 99  bytes, 595659 ns
-blocked-hosts-plain-switch.js:		367 bytes, 3933146 ns, Missed: 218 bytes, 618715 ns
+blocked-hosts-binary.js:              352 bytes, 3711255 ns, Missed: 207 bytes, 590903 ns
+blocked-hosts-switch.js:              91  bytes, 863216  ns, Missed: 77  bytes, 592086 ns
+blocked-hosts-reversed-binary.js:     371 bytes, 3690426 ns, Missed: 99  bytes, 595659 ns
+blocked-hosts-plain-switch.js:        367 bytes, 3933146 ns, Missed: 218 bytes, 618715 ns
 
-blocked-ips-indexOf.js:				34  bytes, 4861233 ns, Missed: 77  bytes, 592716 ns
-blocked-ips-switch.js:				30  bytes, 1339607 ns, Missed: 84  bytes, 595159 ns
-blocked-ips-binary.js:				31  bytes, 3552007 ns, Missed: 76  bytes, 603872 ns
+blocked-ips-indexOf.js:               34  bytes, 4861233 ns, Missed: 77  bytes, 592716 ns
+blocked-ips-switch.js:                30  bytes, 1339607 ns, Missed: 84  bytes, 595159 ns
+blocked-ips-binary.js:                31  bytes, 3552007 ns, Missed: 76  bytes, 603872 ns
 ======================
-blocked-hosts-binary-trie.js:   	364 bytes, 27134555ns, Missed: 218 bytes, 725467 ns
+blocked-hosts-binary-trie.js:         364 bytes, 27134555ns, Missed: 218 bytes, 725467 ns
 
