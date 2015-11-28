@@ -9849,7 +9849,7 @@ return true;
 
   var doms = host.split('.');
 
-  for( var endi = doms.length; endi >= 0; --endi )
+  for( var endi = doms.length-1; endi >= 0; --endi )
     if (ifBlocked( doms.slice( endi ).join('.') ))
       return true;
   return false;
