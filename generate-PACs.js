@@ -319,7 +319,7 @@ function ifProxyByPlainSwitch(host) {
 
   var doms = host.split('.');
 
-  for( var endi = doms.length; endi >= 0; --endi )
+  for( var endi = doms.length-1; endi >= 0; --endi )
     if (ifBlocked( doms.slice( endi ).join('.') ))
       return true;
   return false;
@@ -328,4 +328,87 @@ function ifProxyByPlainSwitch(host) {
 var cases = hosts.map( host => 'case "'+host+'":' ).join('\n') +'\nreturn true;';
 var tmp = ifProxyByPlainSwitch.toString().replace('//CASES', cases);
 
-produceOutput('blocked-hosts-plain-switch', tmp, 'host' );
+produceOutput( 'blocked-hosts-plain-switch', tmp, 'host' );
+
+
+// SIMPLY TRIE
+
+function populateSimpleTrie(trie, letters) {
+
+  if (!letters.length || !trie)
+    return trie;
+
+  var letter = letters.shift();
+
+  if (!letters.length) {
+    trie[letter] = ['', false];
+    return trie;
+  }
+
+  if (trie[letter] === ['', false]) // Subdomain of a blocked domain.
+    return trie;
+
+  if (!trie[letter]) {
+    trie[letter] = [letters.join(''), false]
+    return trie;
+  }
+
+  var arr = trie[letter];
+  var link = arr[0].split('');
+  var linkTrie = arr[1];
+
+  function commonPrefix(wa, wb) {
+    var len = Math.min(wa.length, wb.length);
+    var i = -1;
+    while(++i < len)
+      if (wa[i] !== wb[i])
+        break;
+    return wa.slice(0, i)
+  }
+
+  var prefix = commonPrefix(link, letters);
+
+  var suffixLetters = letters.slice(prefix.length);
+  var suffixLink    = link.slice(prefix.length);
+
+  var newTrie = {};
+  if (!suffixLink.length)
+    var newTrie = linkTrie;
+  if (!suffixLetters.length)
+    var newTrie = false;
+
+  if (newTrie) {
+    newTrie = populateSimpleTrie( newTrie, suffixLetters );
+    newTrie = populateSimpleTrie( newTrie, suffixLink );
+  }
+  trie[letter] = [prefix.join(''), newTrie];
+
+  return trie;
+}
+
+var simpleTrie = {};
+for(var host of hosts)
+  populateSimpleTrie(simpleTrie, host.split('').reverse());
+
+function ifProxyBySimpleTrie(host, simpleTrie) {
+  var letters = host.split('').reverse();
+  while(letters.length) {
+    var letter = letters.shift();
+    var arr = simpleTrie[letter];
+    var link     = arr[0];
+
+    if (link.length > letters.length)
+      return false;
+
+    for( var i=0; i < link.length; ++i )
+      if ( letters[i] !== link.charAt(i) )
+        return false;
+
+    letters = letters.slice(link.length);
+    simpleTrie = arr[1];
+    if (!simpleTrie)
+      return true;
+  }
+}
+
+produceOutput('blocked-hosts-simple-trie', ifProxyBySimpleTrie, 'host',  simpleTrie);

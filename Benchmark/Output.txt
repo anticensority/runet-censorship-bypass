@@ -44,4 +44,4 @@ blocked-ips-switch.js:                30  bytes, 1339607 ns, Missed: 84  bytes, 
 blocked-ips-binary.js:                31  bytes, 3552007 ns, Missed: 76  bytes, 603872 ns
 ======================
 blocked-hosts-binary-trie.js:         364 bytes, 27134555ns, Missed: 218 bytes, 725467 ns
-
+blocked-hosts-simple-trie.js:         364 bytes, 4085395 ns, Missed: 219 bytes, 649011 ns

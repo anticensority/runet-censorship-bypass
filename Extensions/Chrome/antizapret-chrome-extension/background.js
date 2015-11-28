@@ -61,11 +61,11 @@ var Antizapret = {
   },
   applyCsv: function(csv) {
     var pac = generatePac(csv);
-    console.log(pac);
     var config = {
-      mode: "pac_script",
+      mode: 'pac_script',
       pacScript: {
-        data: pac
+        data: pac,
+        mandatory: true
       }
     };
 

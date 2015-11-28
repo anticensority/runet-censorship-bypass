@@ -70,7 +70,7 @@ public class Program
         var hostsFile = "./Inputs/"+prefix + ".txt";
 		var missedFile = "./Inputs/missed.txt";
 		
-		var results = pacName+":\t"+RunTest(hostsFile, pacName) + ", Missed: "+RunTest(missedFile, pacName, true);
+		var results = pacName+":    "+RunTest(hostsFile, pacName) + ", Missed: "+RunTest(missedFile, pacName, true);
 		Console.WriteLine(results);
         resultsWriter.WriteLine(results);
       }
