@@ -1,4 +1,4 @@
-# Anti-Censorship Solution based on PAC-Script
+# Anti-censorship Solution for Russia based on PAC-Script
 
 ## Censorship in Russia
 
