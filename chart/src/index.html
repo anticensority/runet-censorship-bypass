@@ -3,7 +3,7 @@
 <style>
 
 body {
-  font: 10px sans-serif;
+  font: 12px Tahoma;
 }
 
 .y.axisRight text {
@@ -22,19 +22,19 @@ body {
 }
 
 .timeMiss {
-  fill: blue;
-}
-
-.memMiss {
   fill: red;
 }
 
+.memMiss {
+  fill: blue;
+}
+
 .timeHit {
-  fill: steelblue;
+  fill: orange;
 }
 
 .memHit {
-  fill: orange;
+  fill: steelblue;
 }
 
 .x.axis path {
@@ -95,8 +95,8 @@ d3.tsv("data.tsv", type, function(error, data) {
 	  .append("text")
 	  .attr("y", 6)
 	  .attr("dy", "-2em")
-	  .style("text-anchor", "end")
-	  .style("text-anchor", "end")
+	  .attr("dx", "-2em")
+	  .style("text-anchor", "right")
 	  .text("bytes per request");
 	
   svg.append("g")
@@ -106,8 +106,8 @@ d3.tsv("data.tsv", type, function(error, data) {
 	  .append("text")
 	  .attr("y", 6)
 	  .attr("dy", "-2em")
-	  .attr("dx", "2em")
-	  .style("text-anchor", "end")
+	  .attr("dx", "-1em")
+	  .style("text-anchor", "start")	  
 	  .text("ns per request");
 
   bars = svg.selectAll(".bar").data(data).enter();
@@ -141,11 +141,12 @@ d3.tsv("data.tsv", type, function(error, data) {
 	  .attr("height", (d,i,j) => height - y1(d.timeMiss) ); 
 
   // add legend   
-  var color_hash = {  0 : ["memMiss", "blue"],
-					  1 : ["timeMiss", "red"],
-					  2 : ["memHit", "steelblue"],
-					  3 : ["timeHit", "orange"]
-				   }
+  var color_hash = {  
+	0 : ["Time / Miss", "red"],
+	1 : ["Memory / Miss", "blue"],
+	2 : ["Time / Hit", "orange"],
+	3 : ["Memory / Hit", "steelblue"]
+  }
   var legend = svg.append("g")
     .attr("class", "legend")
     .attr("x", width - 65)
@@ -162,14 +163,14 @@ d3.tsv("data.tsv", type, function(error, data) {
 		return; // Approach.
 	  var g = d3.select(this);
 	  g.append("rect")
-	    .attr("x", width - 65)
+	    .attr("x", width - x.rangeBand()*3.5 - 15)
 	    .attr("y", i*25)
 	    .attr("width", 10)
 	    .attr("height", 10)
 	    .style("fill", color_hash[i][1]);
 		
 		g.append("text")
-	      .attr("x", width - 50)
+	      .attr("x", width - x.rangeBand()*3.5)
 	      .attr("y", i * 25 + 8)
 	      .attr("height",30)
 	      .attr("width",100)
