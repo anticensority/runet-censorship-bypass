@@ -1,9 +1,9 @@
 approach	memHit	timeHit	memMiss	timeMiss
-hosts-reversed-binary	109	3704594	96	602820
-hosts-binary	351	3718253	210	605188
-hosts-plain-switch	367	2874843	88	607200
-hosts-hash	347	5062512	207	609278
-hosts-switch	88	894410	77	614169
-ips-switch	37	1348111	72	597439
-ips-indexOf	35	4853437	72	599850
-ips-binary	31	3542401	77	602958
+Hosts reversed binary	109	3704594	96	602820
+Hosts binary	351	3718253	210	605188
+Hosts plain switch	367	2874843	88	607200
+Hosts hash	347	5062512	207	609278
+Hosts switch	88	894410	77	614169
+IPs switch	37	1348111	72	597439
+IPs indexOf	35	4853437	72	599850
+IPs binary	31	3542401	77	602958

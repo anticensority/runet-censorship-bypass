@@ -1,3 +1,3 @@
 # Антизапрет PAC-скрипт
 
-![Host Lookup Chart: Time-Memory, Hit-Miss](./chart/preview/host-lookup-chart.png)
+![Host Lookup Chart: Time-Memory, Hit-Miss](./chart/host-lookup-chart.png)
