@@ -1,0 +1,15 @@
+{
+  "name": "subjective-good-is-evil",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node generate-PACs.js",
+	"serve": "http-server generated-PACs"
+  },
+  "author": "ilyaigpetrov",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^0.8.5"
+  }
+}

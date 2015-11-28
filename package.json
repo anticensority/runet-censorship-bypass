@@ -4,13 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "generate": "node generate-PACs.js",
+    "generate": "cd pac-generator && npm start",
   	"prestart": "npm run generate",
-    "preserve": "npm run kill",
-    "serve": "START /B http-server generated-PACs",
-    "bench": "cd Benchmark && dnx run ../generated-PACs",
-  	"start": "npm run bench",
-	  "kill": "taskkill /F /IM node.exe"
+	"start": "npm run bench",
+    "bench": "cd Benchmark && dnx run ../pac-generator/generated-PACs",
+	"test":  "rm -r pac-generator/generated-PACs"
   },
   "author": "ilyaigpetrov",
   "license": "ISC",

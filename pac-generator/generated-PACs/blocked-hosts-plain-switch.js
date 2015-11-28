@@ -17,8 +17,8 @@ function FindProxyForURL(url, host) {
 
   return (function ifProxyByPlainSwitch(host) {
 
-  function ifBlocked(host) {
-    switch( host ) {
+    function ifBlocked(host) {
+      switch( host ) {
 case "03magnet.ru":
 case "0chan.cc":
 case "1-kino.com":
@@ -9843,15 +9843,15 @@ case "zubrrotzdg2m2uy7.onion.to":
 case "zuu9ieth.cserver.tv":
 case "zz.jofra.biz":
 return true;
+      }
+      return false;
     }
+
+    var doms = host.split('.');
+
+    for( var endi = doms.length-1; endi >= 0; --endi )
+      if (ifBlocked( doms.slice( endi ).join('.') ))
+        return true;
     return false;
-  }
-
-  var doms = host.split('.');
-
-  for( var endi = doms.length-1; endi >= 0; --endi )
-    if (ifBlocked( doms.slice( endi ).join('.') ))
-      return true;
-  return false;
-})(host) ? viaProxy : 'DIRECT';
+  })(host) ? viaProxy : 'DIRECT';
 }
