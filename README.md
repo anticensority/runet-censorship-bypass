@@ -29,7 +29,7 @@ The naive solution is to keep array of blocked ips and check if the host resolve
 You may do it with `indexOf`, binary search, etc.  
 The shortcoming of every ip solution is that some providers resolve blocked hosts to wrong ips, so we eventually need list of hosts.
 
-I have tested different solutions, and depicted [results](./Benchmark/Output.txt) in the following chart:
+I have tested different solutions, and depicted [results](./benchmark/Output.txt) in the following chart:
 
 ![Host Lookup Chart: Time-Memory, Hits-Misses](./chart/host-lookup-chart.png)
 
