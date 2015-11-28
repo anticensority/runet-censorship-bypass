@@ -15,23 +15,21 @@ Looking at how Russian government [distorts TV](https://therussianreader.wordpre
 
 I believe the freedom of information is a virtue and important __information mustn't be blocked based on political or other subjective views__.
 
-## Task Technical Formulation
+## Technical Titbits
 
-You have a list of blocked domains.  
-Per each outcoming request you have to check whether host is a subdomain of the blocked domains.  
-If host is blocked, you have serve it via proxy.
+```javascript
+if (Is_subdomain_of( host, blocked_hosts ))
+  return 'use proxy';
+```
 
-[PAC (proxy auto-config)](https://en.wikipedia.org/wiki/Proxy_auto-config) is executed on each request.  
-If it returns `PROXY address` to the browser then proxy is used, otherwise it returns `DIRECT`.
-
-## `Is_subdomain_of( host, blocked_hosts )`
-
-You have check `host belongs to subdomains of the blocked hosts` very fast.  
-This check is executed on each request. You should watch memeory consumption also.
+You have to make `Is_subdomain_of` very fast.  
+This check is executed on each request. You should watch memeory consumption too.
 
 The naive solution is to keep array of blocked ips and check if the host resolves to one of the ips.  
 You may do it with `indexOf`, binary search, etc.  
 The shortcoming of every ip solution is that some providers resolve blocked hosts to wrong ips, so we eventually need list of hosts.
+
+I have tested different solutions, and depicted [results](./Benchmark/Output.txt) in the following chart:
 
 ![Host Lookup Chart: Time-Memory, Hits-Misses](./chart/host-lookup-chart.png)
 
