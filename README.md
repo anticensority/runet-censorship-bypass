@@ -1,6 +1,6 @@
 # Anti-Censorship Solution based on PAC-Script
 
-## Censorship in Russia vs. Right of Being Crazy w/ Information
+## Censorship in Russia
 
 Censorship in Russia plagues the Freedoms of
 [Information](https://en.wikipedia.org/wiki/Freedom_of_information) and [Speech](https://en.wikipedia.org/wiki/Freedom_of_speech),
@@ -13,7 +13,7 @@ For good or bad, it blocks
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-Censorship extension for Chomium.
 
-I believe the freedom of information is a virtue and that everyone can go insane with all the sites on the Internets.
+I believe __the freedom of information is a virtue and everyone can go insane with all the sites of the Internets__.
 
 ## Task Technical Formulation
 
