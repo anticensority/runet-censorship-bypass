@@ -16,7 +16,7 @@ function FindProxyForURL(url, host) {
     : 'HTTPS proxy.antizapret.prostovpn.org:3143; PROXY proxy.antizapret.prostovpn.org:3128; DIRECT';
 
   return (function ifProxyBySwitch(host) {
-  switch( dnsResolve(host) ) {
+	  switch( dnsResolve(host) ) {
 case "101.1.29.82":
 case "103.21.58.156":
 case "103.240.151.25":
@@ -9541,8 +9541,7 @@ case "98.142.213.26":
 case "99.192.182.57":
 case "99.198.117.212":
 return true;
-default:
-  return false;
-  }
-})(host) ? viaProxy : 'DIRECT';
+	  }
+		return false;
+	})(host) ? viaProxy : 'DIRECT';
 }
