@@ -13,7 +13,7 @@ For good or bad, it blocks
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-Censorship extension for Chomium.
 
-I believe __the freedom of information is a virtue and important information mustn't be blocked based on political or other subjective views__.
+I believe the freedom of information is a virtue and important __information mustn't be blocked based on political or other subjective views__.
 
 ## Task Technical Formulation
 
