@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/switcher.css">
+
+    <link rel="stylesheet" type="text/css" href="css/uikit.almost-flat.css"/>
+    <link rel="stylesheet" type="text/css" href="css/notify.almost-flat.css"/>
+    <link rel="stylesheet" type="text/css" href="css/main.css"/>
+
+    <script type="text/javascript" charset="utf-8" src="js/lib/jquery-2.1.3.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lib/switcher.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/popup/vars.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lib/ls.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/popup/api.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/popup/lib.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/popup/lists.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/popup/uproxys.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lib/lib.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lib/lang.js"></script>
+    <script type="text/javascript" charset="utf-8" src="_locales/en/lang.js"></script>
+    <script type="text/javascript" charset="utf-8" src="_locales/ru/lang.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="js/popup/popup.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="js/uikit/uikit.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/uikit/components/notify.js"></script>
+    <!--script type="text/javascript" charset="utf-8" src="js/uikit/components/pagination.js"></script-->
+    <script type="text/javascript" charset="utf-8" src="js/lib/jquery.ddslick.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lib/jquery.scrollTo.js"></script>
+
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+            font-size: 16px;
+            padding: 5px 10px 5px 10px;
+        }
+    </style>
+</head>
+<body style="background-image: -webkit-linear-gradient(bottom,#f0f0f0,#ffffff);">
+<i class="uk-icon-spinner uk-icon-spin uk-icon-large"></i>
+
+<div id="main" style="display: none; ">
+
+    <table style="width: 100%;">
+        <tr>
+            <td style="width: 100px;"><input type="checkbox" name="switchName" value="switchValue"
+                                             style="visibility: hidden;"/></td>
+            <td id="hideip" class="uk-text-center uk-text-middle"></td>
+            <td id="mainproxyco" class="uk-text-middle uk-text-center"></td>
+            <td id="mainproxy" style="line-height: 18px;" class="uk-text-middle"></td>
+            <td class="uk-text-right uk-text-top"><i id="close" class="uk-icon-times-circle cp-pointer"></i></td>
+        </tr>
+        <tr class="uk-text-small" style="">
+            <td></td>
+            <td id="hideiptext" class="uk-text-center uk-text-middle cp-os-condensed">
+                <div style="margin-top: -10px;"></div>
+            </td>
+            <td id="mainproxycotext" class="uk-text-center uk-text-middle cp-os cp-uppercase">
+                <div style="margin-top: -10px;"></div>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+
+    <!--ul class="uk-tab uk-tab-flip " style="padding-right: 10px;" data-uk-tab="{connect:'#configproxy', animation: 'fade', active:1}"-->
+    <ul id="maintabs" class="uk-tab uk-tab-flip">
+        <li id="allsitestab"><a href=""></a></li>
+        <li id="sitetab"><a href=""></a></li>
+        <!--li id="urltab"><a href="">This Url</a></li-->
+        <li id="liststab"><a href=""></a></li>
+        <li id="userprotab"><a href=""></a></li>
+        <li><a href=""><i class="uk-icon-navicon"></i></a></li>
+    </ul>
+    <ul id="configproxy" class="uk-switcher">
+        <li id="allsitestabcontent">
+            <input type="checkbox" id="globalalwproxy" value="globalalwproxy" style="visibility: hidden;"/>
+            <label for="globalalwproxy" id="langProxyEn"></label>
+
+            <div class="uk-text-small uk-text-muted uk-text-danger" id="langProxyEnHelp"></div>
+
+            <div id="alldopsetting2">
+                <div class="cp-vspace">&nbsp;</div>
+                <input type="checkbox" id="anonymityall" value="anonymityall" style="visibility: hidden;"/>
+                <label for="anonymityall" id="langAnonEn"></label>
+
+                <div class="uk-text-small uk-text-muted" id="langAnonEnHelp"></div>
+
+                <div class="cp-vspace">&nbsp;</div>
+                <input type="checkbox" id="torall" style="visibility: hidden;"/>
+                <label for="torall" id="langTorAll"></label>
+
+                <div class="uk-text-small uk-text-muted" id="langTorAllHelp"></div>
+            </div>
+            <hr/>
+            <div class="cp-flags">
+                <div id="langLocAll" class="cp-os-bold" style="margin-bottom: 5px; margin-top: -5px;">Use proxy location
+                    for all sites:
+                </div>
+                <div class="uk-text-small uk-text-muted" id="langLocAllHelp"></div>
+                <div id="flags-all" class="cp-flags-content">
+
+
+                </div>
+            </div>
+        </li>
+        <li id="sitetabcontent">
+            <div id="sitename" class="cp-os-bold uk-text-right"></div>
+            <div id="sitesettingMsg" class="uk-margin uk-text-danger" style="display: none;">
+                Settings not available. Supported only 'http:', 'https:'
+            </div>
+            <div id="sitesetting" class="" style="">
+                <input type="checkbox" id="nonproxy" value="" style="visibility: hidden;"/>
+                <label for="nonproxy" id="langNotUseProxy"></label>
+
+                <div class="uk-text-small uk-text-muted" id="langNotUseProxyHelp"></div>
+                <div class="cp-vspace">&nbsp;</div>
+                <input type="checkbox" id="alwproxy" value="" style="visibility: hidden;"/>
+                <label for="alwproxy" id="langAlwUseProxy"></label>
+
+                <div class="uk-text-small uk-text-muted" id="langAlwUseProxyHelp"></div>
+                <div class="cp-vspace">&nbsp;</div>
+                <div id="sitedopsetting">
+                    <div id="sitedopsetting2">
+                        <input type="checkbox" id="anonymitysite" value="" style="visibility: hidden;"/>
+                        <label for="anonymitysite" id="langAnonForSite"></label>
+
+                        <div class="uk-text-small uk-text-muted" id="langAnonForSiteHelp"></div>
+                        <div class="cp-vspace">&nbsp;</div>
+                        <input type="checkbox" id="torsite" style="visibility: hidden;"/>
+                        <label for="torsite" id="langTorSite"></label>
+
+                        <div class="uk-text-small uk-text-muted" id="langTorSiteHelp"></div>
+                    </div>
+                    <hr/>
+                    <div class="cp-flags">
+                        <div id="langLocSite" class="cp-os-bold" style="margin-bottom: 5px; margin-top: -5px;"></div>
+                        <div class="uk-text-small uk-text-muted" id="langLocSiteHelp"></div>
+                        <div id="flags-site" class="cp-flags-content">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <!--li id="urltabcontent">
+            Url
+        </li-->
+        <li id="liststabcontent">
+            <!--div class="uk-container uk-container-center"-->
+            <a id="addhost"><i class="uk-icon-plus-circle"></i></a>
+
+            <div class="uk-scrollable-text" id="listWrap">
+                <table id="listtable" class="uk-table uk-table-hover uk-table-striped uk-table-condensed">
+                    <tr>
+                        <td><i class="uk-icon-spinner uk-icon-spin"></i></td>
+                    </tr>
+                </table>
+
+            </div>
+            <!--/div-->
+            <!--ul id="listtable2" class="uk-pagination">
+
+            </ul-->
+        </li>
+        <li id="userprotabcontent">
+            <a class="uk-text-middle" id="addproxy"><i class="uk-icon-plus-circle"></i></a>
+
+            <div class="uk-button-dropdown" id="proxydropdown">
+                <span class="uk-badge uk-badge-notification"><a id="addproxytemplate"><i
+                        class="uk-icon-plus-circle"></i> template</a></span>
+
+                <div class="uk-dropdown uk-dropdown-scrollable uk-text-small" style="">
+                    <ul id="proxytemplate" class="uk-nav uk-nav-dropdown"></ul>
+                </div>
+            </div>
+            <table id="proxytable" class="uk-table uk-table-hover uk-table-striped uk-table-condensed">
+
+            </table>
+            <!--/div-->
+            <ul id="proxytable2" class="uk-pagination">
+
+            </ul>
+        </li>
+        <li>
+            <input type="checkbox" id="httpsproxy" style="visibility: hidden;"/>
+            <label for="httpsproxy" id="setHttp"></label>
+
+            <div class="cp-vspace">&nbsp;</div>
+            <input type="checkbox" id="onhelp" style="visibility: hidden;"/>
+            <label for="onhelp" id="setHelp"></label>
+            <hr/>
+            <div id="interfaceLanguage" class="cp-os-bold" style="margin-bottom: 5px; margin-top: 5px;"></div>
+            <input type="radio" name="lang" id="langen" value="en" style="visibility: hidden;"/>
+            <label for="langen"><img src="im/co/uk.png"> En</label><br/>
+            <input type="radio" name="lang" id="langru" value="ru" style="visibility: hidden;"/>
+            <label for="langru"><img src="im/co/ru.png"> Ru</label>
+        </li>
+    </ul>
+
+
+    <br/><br/>
+
+
+    <div class="uk-grid" id="foot">
+        <div class="uk-width-1-2 uk-text-left uk-text-small">
+            <a href="https://proxy-chrome.com" target="_blank">support</a>
+            &nbsp; &nbsp; &nbsp;
+            <a href="https://proxy-chrome.com" target="_blank">home page</a>
+        </div>
+        <div id="state-wrap" style="visibility: hidden;" class="uk-width-1-2 uk-text-right cp-os-condensed">
+            <b>Status: </b> <span id="state" class="cp-os-condensed"></span>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+    "chrome_extension_name": {
+        "message": "Proxy for Chrome"
+    },
+    "chrome_extension_description": {
+        "message": "Бесплатные прокси сервера для вашего браузера"
+    },
+    "browser_action_title": {
+        "message": "babyList - вкл/выкл"
+    }
+}

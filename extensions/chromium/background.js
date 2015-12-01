@@ -1,32 +1,106 @@
 'use strict';
 
-var Antizapret = {
+var RKN = {
+
+  version: chrome.runtime.getManifest().version,
   csvMirrors: [
     'https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv',
     'http://sourceforge.net/p/z-i/code-0/HEAD/tree/dump.csv?format=raw',
     'https://www.assembla.com/spaces/z-i/git/source/master/dump.csv?_format=raw'
   ],
-  lastUpdate: new Date(0),
+  lastUpdate: (new Date(0)).toString(),
   updatePeriodInMinutes: 7*60,
+  ifEnabled: false,
+
+  updateIcon: function(cb) {
+    var cb = cb || () => {};
+    return chrome.browserAction.setIcon(
+      { path: this.ifEnabled ? './assets/icons/rkn.png' : './assets/icons/rkn-disabled.png' },
+      cb
+    );
+  },
+
+  disable: function(cb) {
+    var cb = cb || () => {};
+
+    if(!this.ifEnabled)
+      return cb();
+
+    this.checkForUpdates( (err, res) => {
+      if (err) return cb(err);
+      this.applyPac();
+      this.ifEnabled = false;
+      this.persistToStorage();
+      return this.updateIcon(cb);
+    });
+
+  },
+
+  enable: function(cb) {
+    var cb = cb || () => {};
+
+    return chrome.proxy.settings.clear({/*All*/}, () => {
+      this.ifEnabled = true;
+      this.persistToStorage();
+      return this.updateIcon(cb);
+    });
+
+  },
+
+  switch: function(cb) {
+    var cb = cb || () => {};
+    return this.ifEnabled ? this.disable(cb) : this.enable(cb);
+  },
+
+  persistToStorage: function(cb) {
+    var cb = cb || () => {};
+    var storage = {};
+    storage[this.version] = JSON.stringify(this);
+    chrome.storage.local.set(storage, cb);
+  },
+  syncWithStorage: function(cb) {
+    var cb = cb || () => {};
+    chrome.storage.local.get(
+      this.version,
+      object => {
+        if (!Object.keys(object).length)
+          return this.persistToStorage(cb);
+
+        var self = JSON.parse(object[this.version]);
+
+        for(var key of Object.keys(self))
+          this[key] = self[key];
+
+        return cb(this);
+      }
+    );
+  },
+
+  install: function() {
+    chrome.storage.local.clear();
+    this.disable();
+  },
+
   rescheduleUpdate: function(period) {
     var checkNewBlocked = 'Check for new blocked sites';
     var period = period || this.updatePeriodInMinutes;
-    chrome.alarms.clearAll( (ifWasCleared) => {
+    chrome.alarms.clearAll( ifWasCleared => {
 
       chrome.alarms.create(checkNewBlocked, {
         delayInMinutes: period
       });
 
       chrome.alarms.onAlarm.addListener( alarm => {
-        if (alarm.name === checkNewBlocked)
+        if (alarm.name === checkNewBlocked) {
           this.checkForUpdate();
+        }
       });
 
     });
   },
   checkForUpdates: function(url, cb) {
 
-    if (!url)
+    if (!url || !cb)
       return this._useTheMirrorsLuke(this.checkForUpdates, url, cb);
 
 	  var req = new XMLHttpRequest();
@@ -37,7 +111,7 @@ var Antizapret = {
         return cb(req.status);
 
       var date = Date.parse(req.getResponseHeader('Date'));
-      if (date > this.lastUpdate)
+      if (date > Date.parse(this.lastUpdate))
         return this.update(url, cb);
 
       return cb(null);
@@ -46,21 +120,28 @@ var Antizapret = {
   },
   update: function(url, cb) {
 
-    if (!url)
+    if (!url || !cb)
       return this._useTheMirrorsLuke(this.update, url, cb);
 
 	  var req = new XMLHttpRequest();
 	  req.open('GET', url, true);
 	  req.onload = event => {
-      this.lastUpdate = Date.now();
-      this.applyCsv( req.responseText );
+      this.lastUpdate = (new Date()).toString();
+      this.generatePacFromCsv(req.responseText);
+      this.persistToStorage();
       this.rescheduleUpdate();
       return cb(null, req.responseText);
     };
 	  req.send(null);
   },
-  applyCsv: function(csv) {
-    var pac = generatePac(csv);
+  generatePacFromCsv: function(csv) {
+    this.pac = chrome.extension.getBackgroundPage().generatePac(csv);
+    return this.pac;
+  },
+  applyPac: function(pac) {
+
+    var pac = pac || this.pac;
+
     var config = {
       mode: 'pac_script',
       pacScript: {
@@ -102,15 +183,18 @@ var Antizapret = {
   }
 };
 
+chrome.storage.local.clear();
+RKN.syncWithStorage( () => RKN.updateIcon() );
+
 chrome.runtime.onInstalled.addListener( details => {
   switch(details.reason) {
     case 'install':
     case 'update':
-      Antizapret.checkForUpdates()
+      RKN.install();
   }
 });
 
-chrome.browserAction.onClicked.addListener( tab => Antizapret.checkForUpdates() );
+chrome.browserAction.onClicked.addListener( tab => {alert('!!');} );
 
 //==============GENERATE-PACS.JS============================
 
