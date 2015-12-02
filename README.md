@@ -27,7 +27,7 @@ This check is executed on each request. You should watch memeory consumption too
 
 The naive solution is to keep array of blocked ips and check if the host resolves to one of the ips.  
 You may do it with `indexOf`, binary search, etc.  
-The shortcoming of every ip solution is that some providers resolve blocked hosts to wrong ips, so we eventually need list of hosts.
+The shortcoming of every ip solution is that __some providers resolve blocked hosts to wrong ips__, so we eventually need list of hosts.
 
 I have tested different solutions, and depicted [results](./benchmark/Output.txt) in the following chart:
 
