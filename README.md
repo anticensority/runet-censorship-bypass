@@ -41,9 +41,4 @@ I have tested different solutions, and depicted [results](./benchmark/Output.txt
 
 ## Antizapret
 
-I've decided to use [Antizapret](http://antizapret.prostovpn.org) proxy servers.  
-It has one restriction:
-* Only those IPs are proxied that are in [the register](https://github.com/zapret-info/z-i).
-
-So, you can proxy any domain only if it has blocked ip.
-
+I've decided to use [Antizapret](http://antizapret.prostovpn.org) proxy servers, which proxy ips from the [the register](https://github.com/zapret-info/z-i) only.
