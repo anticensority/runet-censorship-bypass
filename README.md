@@ -1,4 +1,4 @@
-# Anti-censorship Solution for Russia on a PAC-script
+# Anti-censorship Solution for Russia on PAC-script
 
 ## Censorship in Russia
 
@@ -7,13 +7,14 @@ Censorship in Russia plagues the Freedoms of
 slowly building analogue of [China Golden Shield](https://en.wikipedia.org/wiki/Golden_Shield_Project).  
 
 For good or bad, it blocks
-[Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf),
-[lolicon](https://en.wikipedia.org/wiki/Lolicon) (rearly distinguishing from hentai) and
+[Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf) and
 [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313).
 
-Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-Censorship extension for Chomium.
+Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-censorship extension for Chomium before they strike first.
 
 I believe the freedom of information is a virtue and important __information mustn't be blocked based on political or other subjective views__.
+
+Your freedom ends when it starts to confine mine.
 
 ## Technical Titbits
 
