@@ -39,6 +39,6 @@ I have tested different solutions, and depicted [results](./benchmark/Output.txt
 * __IPs switch__  – Simply `switch(Blocked_IP) { case1: ... caseN: return true }`. Works even better than binary search. Magic.
 * __Hosts switch__ – Radix trie built on `switch`. Comparable to __IPs switch__.
 
-## Antizapret
+## Antizapret Proxy
 
 I've decided to use [Antizapret](http://antizapret.prostovpn.org) proxy servers, which proxy ips from the [the register](https://github.com/zapret-info/z-i) only.
