@@ -12,7 +12,9 @@ public class Program
   public static string RunTest(string hostsFile, string pacName, bool ifMissing = false) {
     using(StreamReader hostsReader = new StreamReader(hostsFile))
 	{
+	  
 	  string pacUri = "http://localhost:8080/"+pacName+"?"+new Random().Next();
+	  Console.WriteLine(pacUri);
 	  GC.Collect();
 	  long memBefore = GC.GetTotalMemory(true);
 
