@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+
+  "name": "РосКомНадзор3",
+  "description": "Безопасный Интернет от РосКомНадзор с возможностью отказаться.",
+  "version": "0.1",
+
+  "permissions": [
+    "proxy",
+    "storage",
+    "alarms",
+    "declarativeWebRequest",
+    "*://*/*"
+  ],
+  "icons": {
+    "128": "./assets/icons/rkn.png"
+	},
+  "background": {
+    "scripts": ["install.js"]
+  },
+  "browser_action": {
+    "default_popup": "./pages/popup.html"
+  },
+  "options_page": "./pages/options.html",
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+
+  "author": "ilyaigpetrov@gmail.com",
+  "homepage_url": "https://github.com/ilyaigpetrov/consorship-free",
+  "short_name": "Антизапрет"
+}

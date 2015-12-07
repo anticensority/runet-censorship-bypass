@@ -1,0 +1,245 @@
+
+div#foot {
+    position: absolute;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+    padding-top: 5px;
+}
+
+.cp-os-light {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+}
+
+.cp-os {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
+}
+
+.cp-os-bold {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 700;
+}
+
+.cp-os-condensed {
+    font-family: 'Open Sans Condensed', sans-serif;
+    font-weight: 300;
+}
+
+.cp-os-condensed-bold {
+    font-family: 'Open Sans Condensed', sans-serif;
+    font-weight: 700;
+}
+
+.cp-pointer {
+    cursor: pointer;
+}
+
+.cp-pointer:hover {
+    color: #777777;
+}
+
+#mainproxy {
+    font-size: 14px;
+}
+
+td#mainproxyco {
+    width: 44px;
+}
+
+#mainproxyco img {
+    height: 28px;
+    width: 42px;
+    box-shadow: 0 0 1px 1px #dfdfdf;
+}
+
+#listtable img {
+    width: 20px;
+}
+
+#hideip img {
+    height: 30px;
+}
+
+.uk-text-success {
+    color: #5B7900;
+}
+
+.uk-tab li {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+#configproxy > li {
+    padding: 20px 20px 20px 15px;
+}
+
+#configproxy > li.uk-active {
+    background-color: #fff;
+}
+
+a, .uk-tab > li > a {
+    color: #006D9A;
+}
+
+#flags-all, #flags-site {
+    position: relative;
+}
+
+.cp-flags {
+    display: none;
+    position: relative;
+}
+
+.cp-uproxy {
+    padding-left: 7px;
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+}
+
+.cp-uproxy > div {
+
+}
+
+.cp-flag {
+    cursor: pointer;
+    display: inline-block;
+    *display: inline;
+    *zoom: 1;
+
+    background-color: #fff;
+    border: 1px solid #fff;
+    border-radius: 3px;
+
+    padding: 5px 5px 5px 5px;
+    -webkit-transition: background-color 0.3s;
+    transition: background-color 0.3s;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+
+.cp-flag img {
+    margin: 0;
+    padding: 0;
+    width: 32px;
+    box-shadow: 0 0 2px 1px #efefef;
+}
+
+label img {
+    margin: 0;
+    padding: 0;
+    width: 22px;
+    box-shadow: 0 0 2px 1px #d0d0d0;
+}
+
+.cp-flag:hover {
+    border: 1px solid #ccc;
+    box-shadow: 0 0 2px 1px #dfdfdf;
+}
+
+.cp-flag.is-active {
+
+    border: 1px solid #fff;
+    background: #B8BDC6;
+    /*
+    background: -webkit-radial-gradient(center, ellipse cover, #ffffff 0%, #646473 200%);
+    */
+}
+
+.cp-uproxy.is-active {
+
+}
+
+.cp-flag.is-active:after, .cp-uproxy.is-active:after {
+    font-family: FontAwesome;
+    content: "\f058";
+    position: absolute;
+    margin-left: -22px;
+    top: 26px;
+    color: #80A000;
+}
+
+tr, td, table {
+    border: 0px solid #da314b;
+}
+
+.cp-uppercase {
+    text-transform: uppercase;
+}
+
+::selection {
+    background: #006D9A;
+}
+
+.uk-form {
+    font-size: 11px;
+}
+
+.cp-newhost input {
+    margin-left: -3px;
+}
+
+.uk-form input[type="text"] {
+    height: 23px;
+}
+
+td.cp-act {
+    width: 54px;
+}
+
+.cp-pname, .cp-pproto {
+    font-size: 14px;
+}
+
+.cp-pip {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.cp-pproto select {
+    height: 23px;
+}
+
+#addproxy {
+    font-size: 24px;
+    margin-right: 18px;
+}
+
+.uk-badge {
+    background: #006D9A;
+}
+
+.uk-badge a {
+    color: #fff;
+}
+
+.uk-dropdown {
+    width: 200px;
+}
+
+.uk-dropdown-scrollable {
+    max-height: 140px;
+}
+
+.cp-vspace {
+    height: 7px;
+    padding: 0;
+    margin: 0;
+}
+
+.cp-unvis {
+    visibility: hidden;
+}
+
+.uk-scrollable-text {
+    max-height: 300px;
+    min-height: 100px;
+    height: auto;
+}

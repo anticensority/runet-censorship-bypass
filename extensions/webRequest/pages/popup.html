@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      *:focus {
+        outline: 0;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 12em;
+      }
+      .btn {
+        font-size: 1.5em;
+        background: transparent;
+        border: 0;
+        white-space: nowrap;
+        color: #004483;
+        width: 100%;
+        text-align: left;
+        display: inline-block;
+        cursor: pointer;
+        padding: 0.1em;
+        padding-right: 1em;
+      }
+      .btn:hover {
+        background: #f2f2f2;
+      }
+      @font-face {
+        font-family: 'fontawesome';
+        src: url('./assets/fontawesome-webfont.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      .icon {
+        font-family: fontawesome;
+        color: #008fd1;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="btn" id="switch-button"><span class="icon">&#xf011;</span> <span id="switch-button-text"></span></button>
+    <button class="btn" id="update-button"><span class="icon">&#xf021;</span> <span id="update-button-text">Обновить</span></button>
+    <button class="btn" id="settings-button"><span class="icon">&#xf085;</span> Настройки</button>
+    <script src="./popup.js"></script>
+  </body>
+</html>
