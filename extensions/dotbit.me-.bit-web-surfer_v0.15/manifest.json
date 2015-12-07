@@ -1,0 +1,18 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+	"background": {
+		"scripts": [ "proxy.js" ]
+	},
+	"icons": {
+		"128": "icon-128.png"
+	},
+	"manifest_version": 2,
+	"name": "dotbit.me .bit web surfer",
+	"short_name": ".bit web surfer",
+	"permissions": [ "proxy", "webRequest", "webRequestBlocking", "*://*/*" ],
+	"version": "0.15",
+	"description" : "An extension that enables surfing .bit sites, a peer-to-peer domain system based on Namecoin.",
+	"homepage_url": "https://dotbit.me/proxy/"
+
+}

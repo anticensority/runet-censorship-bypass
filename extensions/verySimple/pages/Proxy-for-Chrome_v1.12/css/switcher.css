@@ -1,0 +1,123 @@
+/* jquery.switcher - 1.2.4
+* https://github.com/djanix/jquery-switcher
+* Copyright (c) 2014-11-04  -  */
+
+
+.switcher {
+  cursor: pointer;
+   /*
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  */
+  font-size: 12px;
+  text-transform: uppercase;
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+}
+.switcher .content {
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.switcher .text {
+  display: none;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+}
+.switcher.is-disabled {
+  opacity: 0.4;
+}
+
+.switcher.default {
+  background-color: #efeff0;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  line-height: 26px;
+  min-width: 80px;
+  padding: 2px;
+  -webkit-transition: background-color 0.3s;
+  transition: background-color 0.3s;
+  margin: 4px 6px 0px 0px;
+}
+.switcher.default input {
+  display: none;
+}
+.switcher.default .slider {
+  background-color: white;
+  border-radius: 4px;
+  -webkit-box-shadow: 0 0 2px 1px #dfdfdf;
+  box-shadow: 0 0 2px 1px #dfdfdf;
+  height: 26px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  -webkit-transform: translateX(0%);
+  -ms-transform: translateX(0%);
+  transform: translateX(0%);
+  -webkit-transition: -webkit-transform 0.3s;
+  transition: transform 0.3s;
+  width: 50%;
+  z-index: 2;
+}
+.switcher.default .text {
+  width: 50%;
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+}
+.switcher.default .textYes {
+  color: white;
+  float: left;
+}
+.switcher.default .textNo {
+  color: #9f9f9f;
+  float: right;
+}
+.switcher.default.is-active {
+  background-color: #80A000;
+}
+.switcher.default.is-active .slider {
+  -webkit-transform: translateX(100%);
+  -ms-transform: translateX(100%);
+  transform: translateX(100%);
+}
+
+.switcher.short {
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+  margin-bottom: 3px;
+}
+.switcher.short input {
+  display: none;
+}
+.switcher.short .content {
+  border: 1px solid #aaaaaa;
+  border-radius: 50%;
+  height: 18px;
+  padding: 0;
+  width: 18px;
+}
+.switcher.short .slider {
+  background-color: #519b20;
+  border-radius: 50%;
+  height: 12px;
+  margin: 3px;
+  opacity: 0;
+  -webkit-transform: scale(0);
+  -ms-transform: scale(0);
+  transform: scale(0);
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+  width: 12px;
+}
+.switcher.short.is-active .slider {
+  opacity: 1;
+  -webkit-transform: scale(1);
+  -ms-transform: scale(1);
+  transform: scale(1);
+}
