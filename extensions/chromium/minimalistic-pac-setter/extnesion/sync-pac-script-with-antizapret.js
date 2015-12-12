@@ -1,5 +1,12 @@
 'use strict';
 
+/*
+  Task 1. Gets IP for host proxy.antizapret.prostovpn.org with dns-lg.com.
+	        This IP is used in block-informer to inform user when proxy is ON.
+	Task 2. Downloads PAC proxy script from Antizapret and sets it in Chromium settings.
+  Task 3. Schedules tasks 1 & 2 for every 2 hours.
+*/
+
 var antizapret = {
 	pacUrl: 'http://antizapret.prostovpn.org/proxy.pac',
 	proxyHost: 'proxy.antizapret.prostovpn.org',
@@ -20,16 +27,27 @@ function httpGet(url, cb) {
 	req.send();
 }
 
-function UpdatePac() {
-
-  httpGet(
-  	'http://www.dns-lg.com/google1/'+antizapret.proxyHost+'/A',
-  	(err, res) => {
-  		antizapret.proxyIp = JSON.parse(res).answer[0].rdata;
-  	}
+function getIpForHost(host, cb) {
+	httpGet(
+  	'http://www.dns-lg.com/google1/'+host+'/A',
+		cb
   );
+}
 
-  httpGet(
+function updateAntizapretProxyIp() {
+	getIpForHost(
+		antizapret.proxyHost,
+		(err, res) => {
+			if (err)
+				console.log(err)
+			else
+				antizapret.proxyIp = JSON.parse(res).answer[0].rdata;
+		}
+	);
+}
+
+function setPacScriptFromAntizapret() {
+	httpGet(
   	antizapret.pacUrl,
   	(err, res) => {
 
@@ -47,8 +65,12 @@ function UpdatePac() {
   		});
 
   	}
-  );
+	);
+}
 
+function syncWithAntizapret() {
+	updateAntizapretProxyIp();
+	setPacScriptFromAntizapret();
 }
 
 chrome.runtime.onInstalled.addListener( details => {
@@ -56,14 +78,15 @@ chrome.runtime.onInstalled.addListener( details => {
     case 'install':
     case 'update':
 
-      UpdatePac();
+      syncWithAntizapret();
 
       var reason = 'Периодичное обновление PAC-скрипта Антизапрет';
 
       chrome.alarms.onAlarm.addListener(
         alarm => {
-          if (alarm.name === reason)
-            UpdatePac();
+          if (alarm.name === reason) {
+						syncWithAntizapret();
+					}
         }
       );
 
