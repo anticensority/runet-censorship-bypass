@@ -1,4 +1,4 @@
-# Anti-censorship for Russia on PAC-scripts
+# Russian Anti-Censorship on PAC-Scripts
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313),
 I decided to write an anti-censorship extension for Chromium before they strike me first.
@@ -8,6 +8,7 @@ This repo contains:
 [WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch)
 | [Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter)
 * PAC-scripts performance analyses
+* PAC-script generator based on https://github.com/zapret-info/z-i
 
 ## Why I do This
 
