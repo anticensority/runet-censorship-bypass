@@ -2,8 +2,8 @@
 
 ## Chrome Extension
 
-See [WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch).
-See [sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter), 
+[WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch)  
+[Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter), 
 
 ## Why I do This
 
