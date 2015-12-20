@@ -5,7 +5,7 @@ I decided to write an anti-censorship extension for Chromium before they strike 
 
 This repo contains:
 * Chrome Extension:
-[WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch)
+[WebStore](https://chrome.google.com/webstore/detail/npgcnondjocldhldegnakemclmfkngch)
 | [Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter)
 * PAC-scripts performance analyses
 * PAC-script generator based on https://github.com/zapret-info/z-i
