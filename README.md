@@ -1,9 +1,11 @@
 # Anti-censorship Solution for Russia on PAC-scripts
 
+This repo contains my efforts to fight censorhip in Russia.
+
 ## Chrome Extension
 
 [WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch)  
-[Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter), 
+| [Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter)
 
 ## Why I do This
 
@@ -12,13 +14,13 @@ I believe __information mustn't be blocked based on political or other subjectiv
 
 My maxim is "Your freedom ends when it starts to confine the freedom of others".
 
-Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-censorship extension for Chomium before they strike first.
+Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an anti-censorship extension for Chromium before they strike me first.
 
 For good or bad, Russian government blocks
 [Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf) and
 [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313).
 
-## PAC-script performance analysis
+## PAC-script Performance Analysis
 
 ```javascript
 if (Is_subdomain_of( host, blocked_hosts ))
