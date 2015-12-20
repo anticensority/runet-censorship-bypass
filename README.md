@@ -4,23 +4,21 @@ This repo contains my efforts to fight censorhip in Russia.
 
 ## Chrome Extension
 
-[WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch)  
+[WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch)
 | [Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter)
 
 ## Why I do This
 
-I believe __information mustn't be blocked based on political or other subjective views__.
-[See arguments against censorship (ru)](https://gist.github.com/ilyaigpetrov/9452b93ef3d7dd3d8cc2)
+I believe __information mustn't be blocked based on political or other subjective views__.  
 
-My maxim is "Your freedom ends when it starts to confine the freedom of others".
+My maxim is _"Your freedom ends when it starts to confine the freedom of others"_.
 
-Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an anti-censorship extension for Chromium before they strike me first.
+[See my arguments against censorship (ru)](https://gist.github.com/ilyaigpetrov/9452b93ef3d7dd3d8cc2)
 
-For good or bad, Russian government blocks
-[Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf) and
-[critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313).
+Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313),
+I decided to write an anti-censorship extension for Chromium before they strike me first.
 
-## PAC-script Performance Analysis
+## PAC-Script Performance Analysis
 
 ```javascript
 if (Is_subdomain_of( host, blocked_hosts ))
