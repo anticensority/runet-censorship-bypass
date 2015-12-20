@@ -7,7 +7,7 @@
     "generate": "cd pac-generator && npm start",
   	"prestart": "npm run generate",
 	"start": "npm run bench",
-    "bench": "cd Benchmark && dnx run ../pac-generator/generated-PACs",
+    "bench": "cd ./pac-script-performance-analyses/benchmark && dnx run ../../pac-generator/generated-PACs",
 	"test":  "rm -r pac-generator/generated-PACs"
   },
   "author": "ilyaigpetrov",
