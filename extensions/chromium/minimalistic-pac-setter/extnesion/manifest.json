@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Антизапрет",
-  "description": "Безопасный Интернет с возможностью отказаться",
-  "version": "0.0.0.2",
+  "name": "Ненавязчивый РосКомНадзор",
+  "description": "Потому что хорошее ценрзурирование -- это слишком сложно.y",
+  "version": "0.0.0.3",
   "icons": {
     "128": "/icons/rkn-empty.png"
 	},
@@ -14,10 +14,17 @@
     "proxy",
     "webRequest",
     "alarms",
+    "storage",
     "<all_urls>"
   ],
   "background": {
-    "scripts": ["sync-pac-script-with-antizapret.js", "block-informer.js"]
+    "scripts": ["sync-pac-script-with-pac-provider.js", "block-informer.js"]
   },
-  "page_action": {}
+  "page_action": {
+    "default_popup": "/pages/choose-pac-provider/index.html"
+  },
+  "options_ui": {
+     "page": "/pages/choose-pac-provider/index.html",
+     "chrome_style": false
+   }
 }
