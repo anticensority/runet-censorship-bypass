@@ -1,27 +1,22 @@
 # Anti-censorship Solution for Russia on PAC-scripts
 
-I believe the freedom of information is a virtue and important __information mustn't be blocked based on political or other subjective views__.
+## Chrome Extension
 
+See [WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch).
+See [sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter), 
+
+## Why I do This
+
+I believe __information mustn't be blocked based on political or other subjective views__.
 [See arguments against censorship (ru)](https://gist.github.com/ilyaigpetrov/9452b93ef3d7dd3d8cc2)
 
-This repo contains:
-* [Chrome extension to circumvent censorhip in Russia](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter), published on [WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch).
-* PAC-scripts performance analysis
-
-## Censorship in Russia
-
-Censorship in Russia plagues the Freedoms of
-[Information](https://en.wikipedia.org/wiki/Freedom_of_information) and [Speech](https://en.wikipedia.org/wiki/Freedom_of_speech),
-slowly building analogue of [China Golden Shield](https://en.wikipedia.org/wiki/Golden_Shield_Project).  
-
-For good or bad, it blocks
-[Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf) and
-[critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313).
+My maxim is "Your freedom ends when it starts to confine the freedom of others".
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-censorship extension for Chomium before they strike first.
 
-
-Your freedom ends when it starts to confine the freedom of others.
+For good or bad, Russian government blocks
+[Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf) and
+[critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313).
 
 ## PAC-script performance analysis
 
@@ -46,6 +41,3 @@ I have tested different solutions, and depicted [results](./benchmark/Output.txt
 * __IPs switch__  – Simply `switch(Blocked_IP) { case1: ... caseN: return true }`. Works even better than binary search. Magic.
 * __Hosts switch__ – Radix trie built on `switch`. Comparable to __IPs switch__.
 
-## Antizapret Proxy
-
-I've decided to use [Antizapret](http://antizapret.prostovpn.org) proxy servers, which proxy ips from the [the register](https://github.com/zapret-info/z-i) only.
