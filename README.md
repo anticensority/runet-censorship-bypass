@@ -1,4 +1,12 @@
-# Anti-censorship Solution for Russia on PAC-script
+# Anti-censorship Solution for Russia on PAC-scripts
+
+I believe the freedom of information is a virtue and important __information mustn't be blocked based on political or other subjective views__.
+
+[See arguments against censorship (ru)](https://gist.github.com/ilyaigpetrov/9452b93ef3d7dd3d8cc2)
+
+This repo contains:
+* [Chrome extension to circumvent censorhip in Russia](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter), published on [WebStore](https://chrome.google.com/webstore/developer/edit/npgcnondjocldhldegnakemclmfkngch).
+* PAC-scripts performance analysis
 
 ## Censorship in Russia
 
@@ -12,11 +20,10 @@ For good or bad, it blocks
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks Internet, I decided to write an Anti-censorship extension for Chomium before they strike first.
 
-I believe the freedom of information is a virtue and important __information mustn't be blocked based on political or other subjective views__.
 
 Your freedom ends when it starts to confine the freedom of others.
 
-## Technical Titbits
+## PAC-script performance analysis
 
 ```javascript
 if (Is_subdomain_of( host, blocked_hosts ))
