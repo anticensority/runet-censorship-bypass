@@ -6,7 +6,7 @@ Censorship in Russia plagues the Freedoms of
 [Information](https://en.wikipedia.org/wiki/Freedom_of_information) and [Speech](https://en.wikipedia.org/wiki/Freedom_of_speech),
 slowly building analogue of [China Golden Shield](https://en.wikipedia.org/wiki/Golden_Shield_Project).  
 
-For good or bad, it blocksm
+For good or bad, it blocks
 [Main Kampf](https://en.wikipedia.org/wiki/Mein_Kampf) and
 [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313).
 
