@@ -1,5 +1,7 @@
 ## PAC-Script Performance Analysis
 
+__Warning:__ this experimentation wasn't implemented in the extension yet.
+
 Somewhere in PAC-script you may want:
 
 ```javascript
@@ -14,12 +16,13 @@ The naive solution is to keep array of blocked ips and check if the host resolve
 You may do it with `indexOf`, binary search, etc.  
 The shortcoming of every ip solution is that __some providers resolve blocked hosts to wrong ips__, so we eventually need list of hosts.
 
-I have tested different solutions, and depicted [results](./benchmark/Output.txt) in the following chart:
+I have tested different [solutions](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/pac-generator/src), and depicted [results](./benchmark/Output.txt) in the following chart:
 
 ![Host Lookup Chart: Time-Memory, Hits-Misses](./chart/host-lookup-chart.png)
 
-* __IPs indexOf__ – Blocked IP is searched by `indexOf`
-* __IPs binary__  – Blocked IP is searched by binary search. For some reason miss time slightly increased.
-* __IPs switch__  – Simply `switch(Blocked_IP) { case1: ... caseN: return true }`. Works even better than binary search. Magic.
-* __Hosts switch__ – Radix trie built on `switch`. Comparable to __IPs switch__.
+* __IPs indexOf__ â€“ Blocked IP is searched by `indexOf`
+* __IPs binary__  â€“ Blocked IP is searched by binary search. For some reason miss time slightly increased.
+* __IPs switch__  â€“ Simply `switch(Blocked_IP) { case1: ... caseN: return true }`. Works even better than binary search. Magic.
+* __Hosts switch__ â€“ Radix trie built on `switch`. Comparable to __IPs switch__.
+* __Hosts reversed binary__ â€“ binary search on hosts, but hosts are kept in reversed form: _"gro.evichra"_ instead of _"archive.org"_. It shouldn't really affect anything, but it does, maybe because I also use `dnsDomainIs` instead of `===`.
 
