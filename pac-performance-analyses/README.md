@@ -24,5 +24,5 @@ I have tested different solutions, and depicted [results](./benchmark/Output.txt
 * __IPs binary__  – Blocked IP is searched by binary search. For some reason miss time slightly increased.
 * __IPs switch__  – Simply `switch(Blocked_IP) { case1: ... caseN: return true }`. Works even better than binary search. Magic.
 * __Hosts switch__ – Radix trie built on `switch`. Comparable to __IPs switch__.
-* __Hosts reversed binary__ – binary search on hosts, but hosts are kept in reversed form: _"gro.evichra"_ instead of _"archive.org"_.
+* __Hosts reversed binary__ – binary search on hosts, but hosts are kept in reversed form: _"gro.evichra"_ instead of _"archive.org"_. It shouldn't really affect anything, but it does.
 
