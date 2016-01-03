@@ -1,6 +1,7 @@
 # Russian Anti-Censorship on PAC-Scripts
 
 This repo contains:
+
 1. Chrome Extension to bypass censorship in Russia:
 [WebStore](https://chrome.google.com/webstore/detail/npgcnondjocldhldegnakemclmfkngch)
 | [Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter)
