@@ -22,10 +22,10 @@ I decided to write an anti-censorship extension for Chromium before they strike 
 
 ## How it Works
 
-0. PAC script is a JavaScript file, triggered on every URL request, which says browser which proxy to use if any for this URL.
-1. The Chrome Extension sets PAC script in browser settings and keeps it synced with PAC script on the server (one on Google Drive, Antizapret or on Anticenz).
-2. On every request PAC script checks if host is blocked OR if it's IP is blocked using `switch(..) {..}` somewhat-trie-like structure (Google Drive PAC script).  
-Antizapret PAC script checks for IPs only.  
+0. PAC script is a JavaScript file, triggered on every URL request, which says browser which proxy to use if any for this particular URL.
+1. The Chrome Extension sets PAC script in browser settings and keeps it synced with PAC script on the server (offering one on Google Drive, Antizapret or on Anticenz).
+2. On every request PAC script checks if host is blocked OR if it's IP is blocked using `switch(..) {..}` trie-like structure (Google Drive PAC script).  
+Antizapret PAC script checks for IPs only with `indexOf`.  
 Anticenz PAC script checks for hosts and IPs with `indexOf`, but lacks some IPs.
 3. If address is blocked PAC script returns proxy server to the browser: Antizapret, or Anticenz if the first one fails.
 4. PAC scripts on servers are updated periodically from https://github.com/zapret-info/z-i 
