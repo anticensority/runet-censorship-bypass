@@ -1,7 +1,5 @@
 ## PAC-Script Performance Analysis
 
-__Warning:__ this experimentation wasn't implemented in the extension yet.
-
 Somewhere in PAC-script you may want:
 
 ```javascript
