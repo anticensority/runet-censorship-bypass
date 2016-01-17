@@ -23,16 +23,20 @@ window.antiCensorRu = {
   pacProviders: {
     Антизапрет: {
       pacUrl: 'http://antizapret.prostovpn.org/proxy.pac',
-      proxyHost: 'proxy.antizapret.prostovpn.org',
-      proxyIp: '195.154.110.37'
+      proxyHosts: ['proxy.antizapret.prostovpn.org'],
+      proxyIps: {'195.154.110.37': true}
     },
     Антиценз: {
       pacUrl: 'https://config.anticenz.org/proxy.pac',
-      proxyHost: 'gw2.anticenz.org'
+      proxyHosts: ['gw2.anticenz.org']
+    },
+    Оба_и_на_свитчах: {
+      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
+      proxyHosts: ['gw2.anticenz.org', 'proxy.antizapret.prostovpn.org']
     }
   },
 
-  _currentPacProviderKey: 'Антиценз',
+  _currentPacProviderKey: 'Оба_и_на_свитчах',
 
   get currentPacProviderKey() { return this._currentPacProviderKey },
   set currentPacProviderKey(newKey) {
@@ -71,7 +75,7 @@ window.antiCensorRu = {
     setPacScriptFromProvider(
       this.pacProvider,
       () => {
-        updatePacProxyIp(
+        updatePacProxyIps(
           this.pacProvider,
           () => {
 						this.ifNotInstalled = false;
@@ -82,6 +86,7 @@ window.antiCensorRu = {
   },
 
   installPac(key, cb) {
+
 		if(typeof(key) === 'function') {
 			cb = key;
 			key = undefined;
@@ -101,7 +106,7 @@ window.antiCensorRu = {
     );
 
     chrome.alarms.create(reason, {
-      periodInMinutes: 2*60
+      periodInMinutes: 4*60
     });
 
     this.syncWithPacProvider(cb);
@@ -120,22 +125,23 @@ window.antiCensorRu = {
 
 };
 
-window.antiCensorRu.pullFromStorage(
-	() =>
-		chrome.storage.onChanged.addListener( () => window.antiCensorRu.pullFromStorage() )
-)
+chrome.runtime.onStartup.addListener( () => {
+  console.log('Starting...');
+  window.antiCensorRu.pullFromStorage(
+  	() =>
+  		chrome.storage.onChanged.addListener( () => window.antiCensorRu.pullFromStorage() )
+  )
+});
 
 chrome.runtime.onInstalled.addListener( details => {
+  console.log('Installing...');
 	switch(details.reason) {
+    case 'update':
+      window.antiCensorRu.installPac();
+      break;
 		case 'install':
-		case 'update':
-			window.antiCensorRu.pullFromStorage(
-				() => {
-					window.antiCensorRu.ifNotInstalled = true;
-					window.antiCensorRu.installPac();
-					//chrome.runtime.openOptionsPage();
-				}
-			)
+			window.antiCensorRu.ifNotInstalled = true;
+			chrome.runtime.openOptionsPage();
 	}
 });
 
@@ -159,7 +165,7 @@ function httpGet(url, cb) {
   var ifAsync = true;
   req.open('GET', url, ifAsync);
   req.onload = event => {
-    if (req.status === 404)
+    if (req.status !== 200)
       return cb(event);
     console.log('GETed with success.');
     return cb(null, req.responseText)
@@ -168,20 +174,32 @@ function httpGet(url, cb) {
   req.send();
 }
 
-function updatePacProxyIp(provider, cb) {
-	var cb = asyncLogGroup('Getting IP for '+ provider.proxyHost +'...', cb);
-  httpGet(
-    'http://www.dns-lg.com/google1/'+ provider.proxyHost +'/A',
-    (err, res) => {
-      if (!err)
-				provider.proxyIp = JSON.parse(res).answer[0].rdata;
-      return cb(err, res);
-    }
-  );
+function updatePacProxyIps(provider, cb) {
+  if (!provider.proxyHosts) {
+    console.log(provider+' has no proxies defined.');
+    return cb(null, null);
+  }
+  var cb = asyncLogGroup('Getting IP for '+ provider.proxyHosts.join(', ') +'...', cb);
+  var i = 0;
+  for (var proxyHost of provider.proxyHosts) {
+    httpGet(
+      'http://www.dns-lg.com/google1/'+ proxyHost +'/A',
+      (err, res) => {
+        if (!err) {
+          provider.proxyIps = provider.proxyIps || {};
+  				provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = true;
+        }
+        ++i;
+        if ( i == provider.proxyHosts.length )
+          return cb(err, 'Complete.');
+      }
+    );
+  }
 }
 
 function setPacScriptFromProvider(provider, cb) {
   var cb = asyncLogGroup('Getting pac script from provider...', provider.pacUrl, cb);
+
   httpGet(
     provider.pacUrl,
     (err, res) => {

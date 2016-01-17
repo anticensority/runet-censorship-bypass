@@ -9,7 +9,7 @@ function getHostname(url) {
 }
 
 function blockInform(details) {
-  if (details.tabId !== -1 && window.antiCensorRu.pacProvider && window.antiCensorRu.pacProvider.proxyIp && details.ip === window.antiCensorRu.pacProvider.proxyIp) {
+  if (details.tabId !== -1 && window.antiCensorRu.pacProvider && window.antiCensorRu.pacProvider.proxyIps && window.antiCensorRu.pacProvider.proxyIps[ details.ip ]) {
 
     chrome.pageAction.setIcon({
       path: '/icons/rkn-empty.png',
