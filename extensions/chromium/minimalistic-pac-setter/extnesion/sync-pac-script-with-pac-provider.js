@@ -28,11 +28,13 @@ window.antiCensorRu = {
     },
     Антиценз: {
       pacUrl: 'https://config.anticenz.org/proxy.pac',
-      proxyHosts: ['gw2.anticenz.org']
+      proxyHosts: ['gw2.anticenz.org'],
+      proxyIps: {'185.120.5.7': true}
     },
     Оба_и_на_свитчах: {
       pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
-      proxyHosts: ['gw2.anticenz.org', 'proxy.antizapret.prostovpn.org']
+      proxyHosts: ['gw2.anticenz.org', 'proxy.antizapret.prostovpn.org'],
+      proxyIps: {'195.154.110.37': true, '185.120.5.7': true}
     }
   },
 
@@ -85,6 +87,8 @@ window.antiCensorRu = {
     )
   },
 
+  _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
+
   installPac(key, cb) {
 
 		if(typeof(key) === 'function') {
@@ -96,18 +100,12 @@ window.antiCensorRu = {
 			this.currentPacProviderKey = key;
 
     var cb = asyncLogGroup('Installing PAC...', cb);
-    var reason = 'Периодичное обновление PAC-скрипта Антизапрет';
 
-    chrome.alarms.onAlarm.addListener(
-      alarm => {
-        if (alarm.name === reason)
-          this.syncWithPacProvider();
-      }
+    chrome.alarms.clear(this._periodicUpdateAlarmReason,
+      () => chrome.alarms.create(this._periodicUpdateAlarmReason, {
+        periodInMinutes: 4*60
+      })
     );
-
-    chrome.alarms.create(reason, {
-      periodInMinutes: 4*60
-    });
 
     this.syncWithPacProvider(cb);
   },
@@ -125,24 +123,48 @@ window.antiCensorRu = {
 
 };
 
-chrome.runtime.onStartup.addListener( () => {
-  console.log('Starting...');
-  window.antiCensorRu.pullFromStorage(
-  	() =>
-  		chrome.storage.onChanged.addListener( () => window.antiCensorRu.pullFromStorage() )
-  )
-});
+window.ifPulled = false;
+window.onPulled = () => {};
 
 chrome.runtime.onInstalled.addListener( details => {
-  console.log('Installing...');
-	switch(details.reason) {
+  console.log('Installing, reason:', details.reason);
+  var myOnPulled;
+  switch(details.reason) {
     case 'update':
-      window.antiCensorRu.installPac();
+      myOnPulled = () => window.antiCensorRu.installPac();
       break;
-		case 'install':
-			window.antiCensorRu.ifNotInstalled = true;
-			chrome.runtime.openOptionsPage();
-	}
+    case 'install':
+      myOnPulled = () => {
+        window.antiCensorRu.ifNotInstalled = true;
+        chrome.runtime.openOptionsPage();
+      };
+      break;
+    default:
+      myOnPulled = () => {};
+  }
+  if (window.ifPulled)
+    myOnPulled();
+  else {
+    var _onPulled = window.onPulled;
+    window.onPulled = () => {_onPulled(); myOnPulled()};
+  }
+});
+
+window.antiCensorRu.pullFromStorage( () => {
+  console.log('Pulled from storage.');
+
+  chrome.alarms.onAlarm.addListener(
+    alarm => {
+      if (alarm.name === window.antiCensorRu._periodicUpdateAlarmReason) {
+        console.log('Periodic update triggered.');
+        window.antiCensorRu.syncWithPacProvider();
+      }
+    }
+  );
+  console.log('Installed alarm listener.');
+
+  window.onPulled();
+  window.ifPulled = true;
 });
 
 // PRIVATE
@@ -189,8 +211,7 @@ function updatePacProxyIps(provider, cb) {
           provider.proxyIps = provider.proxyIps || {};
   				provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = true;
         }
-        ++i;
-        if ( i == provider.proxyHosts.length )
+        if ( ++i == provider.proxyHosts.length )
           return cb(err, 'Complete.');
       }
     );
