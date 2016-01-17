@@ -19,28 +19,41 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
     ul.insertBefore( li, _firstChild );
   }
 
-  var checkChosenProvider = () => {
+  var targetRadio = () => {
     var id = antiCensorRu.currentPacProviderKey || 'none';
-    var checkedRadio = document.querySelector('#'+id);
-    checkedRadio.checked = true;
+    return document.querySelector('#'+id);
+  }
+  var checkChosenProvider = () => {
+    targetRadio().checked = true;
+  }
+  var triggerChosenProvider = () => {
     var event = document.createEvent('HTMLEvents');
     event.initEvent('change', false, true);
-    checkedRadio.dispatchEvent(event);
+    targetRadio().dispatchEvent(event);
   }
-
-  checkChosenProvider();
-  setStatusTo('');
 
   var radios = [].slice.apply( document.querySelectorAll('[name=pacProvider]') );
   for(var radio of radios) {
     radio.onchange = function(event) {
-      setStatusTo('');
       var pacKey = event.target.id;
       if (pacKey === 'none')
         return antiCensorRu.clearPac( () => window && window.close() );
+
+      function switchInputs() {
+        var inputs = document.querySelectorAll('[name="pacProvider"]');
+        for (var i = 0; i < inputs.length; i++)
+          inputs[i].disabled = !inputs[i].disabled;
+      }
+
+      switchInputs();
       setStatusTo('Установка...');
       antiCensorRu.installPac(pacKey, () => { setStatusTo('PAC-скрипт установлен.'); if(window) window.close(); });
     }
   }
+
+  setStatusTo('');
+  checkChosenProvider();
+  if (antiCensorRu.ifNotInstalled)
+    triggerChosenProvider();
 
 });
