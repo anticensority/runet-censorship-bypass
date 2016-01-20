@@ -12,7 +12,7 @@ function blockInform(details) {
   if (details.tabId !== -1 && window.antiCensorRu.pacProvider && window.antiCensorRu.pacProvider.proxyIps && window.antiCensorRu.pacProvider.proxyIps[ details.ip ]) {
 
     chrome.pageAction.setIcon({
-      path: '/icons/rkn-empty.png',
+      path: '/icons/ribbon32.png',
       tabId: details.tabId
     });
 

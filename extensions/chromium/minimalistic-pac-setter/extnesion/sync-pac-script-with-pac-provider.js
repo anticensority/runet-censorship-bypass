@@ -124,29 +124,28 @@ window.antiCensorRu = {
 };
 
 window.ifPulled = false;
-window.onPulled = () => {};
+window.onPulledFuns = [];
+function pullFinished() {
+  window.onPulledFuns.map( fun => fun() );
+  window.ifPulled = true;
+}
+function execAfterPulled(fun) {
+  if (window.ifPulled)
+    fun();
+  else
+    window.onPulledFuns.push( fun );
+}
 
 chrome.runtime.onInstalled.addListener( details => {
   console.log('Installing, reason:', details.reason);
-  var myOnPulled;
   switch(details.reason) {
     case 'update':
-      myOnPulled = () => window.antiCensorRu.installPac();
-      break;
+      return execAfterPulled( () => window.antiCensorRu.installPac() );
     case 'install':
-      myOnPulled = () => {
+      return execAfterPulled( () => {
         window.antiCensorRu.ifNotInstalled = true;
         chrome.runtime.openOptionsPage();
-      };
-      break;
-    default:
-      myOnPulled = () => {};
-  }
-  if (window.ifPulled)
-    myOnPulled();
-  else {
-    var _onPulled = window.onPulled;
-    window.onPulled = () => {_onPulled(); myOnPulled()};
+      } );
   }
 });
 
@@ -163,8 +162,7 @@ window.antiCensorRu.pullFromStorage( () => {
   );
   console.log('Installed alarm listener.');
 
-  window.onPulled();
-  window.ifPulled = true;
+  return pullFinished();
 });
 
 // PRIVATE
