@@ -3,9 +3,9 @@
 
   "name": "Ненавязчивый РосКомНадзор",
   "description": "Аргументы против цензуры: https://git.io/vEkI9",
-  "version": "0.0.0.5",
+  "version": "0.0.0.7",
   "icons": {
-    "128": "/icons/rkn-empty.png"
+    "128": "/icons/ribbon128.png"
 	},
   "author": "ilyaigpetrov@gmail.com",
   "homepage_url": "https://github.com/ilyaigpetrov/anti-censorship-russia",

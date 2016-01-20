@@ -13,23 +13,23 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
 
   var ul = document.querySelector('#list-of-providers');
   var _firstChild = ul.firstChild;
-  for(var providerKey of Object.keys(antiCensorRu.pacProviders)) {
+  for( var providerKey of Object.keys(antiCensorRu.pacProviders) ) {
     var li = document.createElement('li');
     li.innerHTML = '<input type="radio" name="pacProvider" id="'+providerKey+'"> <label for="'+providerKey+'">'+providerKey+'</label>';
     ul.insertBefore( li, _firstChild );
   }
 
-  var targetRadio = () => {
+  var currentRadio = () => {
     var id = antiCensorRu.currentPacProviderKey || 'none';
     return document.querySelector('#'+id);
   }
   var checkChosenProvider = () => {
-    targetRadio().checked = true;
+    currentRadio().checked = true;
   }
   var triggerChosenProvider = () => {
     var event = document.createEvent('HTMLEvents');
     event.initEvent('change', false, true);
-    targetRadio().dispatchEvent(event);
+    currentRadio().dispatchEvent(event);
   }
 
   var radios = [].slice.apply( document.querySelectorAll('[name=pacProvider]') );
@@ -39,15 +39,18 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
       if (pacKey === 'none')
         return antiCensorRu.clearPac( () => window && window.close() );
 
-      function switchInputs() {
+      function enableDisableInputs() {
         var inputs = document.querySelectorAll('[name="pacProvider"]');
         for (var i = 0; i < inputs.length; i++)
           inputs[i].disabled = !inputs[i].disabled;
       }
 
-      switchInputs();
+      enableDisableInputs();
       setStatusTo('Установка...');
-      antiCensorRu.installPac(pacKey, () => { setStatusTo('PAC-скрипт установлен.'); if(window) window.close(); });
+      antiCensorRu.installPac(pacKey, () => {
+        setStatusTo('PAC-скрипт установлен.');
+        if(window) window.close();
+      });
     }
   }
 
