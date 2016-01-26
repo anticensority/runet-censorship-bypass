@@ -60,7 +60,7 @@ window.antiCensorRu = {
 			if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function')
 				onlySettable[key] = this[key]
 
-    return chrome.storage.local.set(onlySettable, cb);
+    return chrome.storage.local.set(onlySettable, () => cb(chrome.runtime.lastError, onlySettable) );
   },
 
   pullFromStorage(cb) {
@@ -68,8 +68,9 @@ window.antiCensorRu = {
       for(var key of Object.keys(storage))
         this[key] = storage[key];
 
+      console.log('Pulled from storage, any callback?', !!cb);
       if (cb)
-        cb(storage);
+        cb(chrome.runtime.lastError, storage);
     });
   },
 
@@ -127,46 +128,42 @@ window.antiCensorRu = {
 
 };
 
-window.ifPulled = false;
-window.onPulledFuns = [];
-function pullFinished() {
-  window.onPulledFuns.map( fun => fun() );
-  window.ifPulled = true;
-}
-function execAfterPulled(fun) {
-  if (window.ifPulled)
-    fun();
-  else
-    window.onPulledFuns.push( fun );
-}
+// ON EACH LAUNCH OF EXTENSION
+
+window.storageSyncedPromise = new Promise(
+  (resolve, reject) => window.antiCensorRu.pullFromStorage(
+    (err, res) => err ? reject(err) : resolve(res)
+  )
+);
+
+window.storageSyncedPromise.then(
+  storage => {
+    chrome.alarms.onAlarm.addListener(
+      alarm => {
+        if (alarm.name === window.antiCensorRu._periodicUpdateAlarmReason) {
+          console.log('Periodic update triggered:', new Date());
+          window.antiCensorRu.syncWithPacProvider();
+        }
+      }
+    );
+    console.log('Installed alarm listener.');
+  }
+);
 
 chrome.runtime.onInstalled.addListener( details => {
   console.log('Installing, reason:', details.reason);
-  switch(details.reason) {
-    case 'update':
-      return execAfterPulled( () => window.antiCensorRu.installPac() );
-    case 'install':
-      return execAfterPulled( () => {
-        window.antiCensorRu.ifNotInstalled = true;
-        chrome.runtime.openOptionsPage();
-      } );
-  }
-});
-
-window.antiCensorRu.pullFromStorage( () => {
-  console.log('Pulled from storage.');
-
-  chrome.alarms.onAlarm.addListener(
-    alarm => {
-      if (alarm.name === window.antiCensorRu._periodicUpdateAlarmReason) {
-        console.log('Periodic update triggered:', new Date());
-        window.antiCensorRu.syncWithPacProvider();
+  window.storageSyncedPromise.then(
+    storage => {
+      switch(details.reason) {
+        case 'update':
+          window.antiCensorRu.installPac();
+          break;
+        case 'install':
+          window.antiCensorRu.ifNotInstalled = true;
+          chrome.runtime.openOptionsPage();
       }
     }
-  );
-  console.log('Installed alarm listener.');
-
-  return pullFinished();
+  )
 });
 
 // PRIVATE
