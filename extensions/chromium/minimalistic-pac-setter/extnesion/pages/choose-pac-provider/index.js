@@ -5,8 +5,12 @@ renderPage();
 function renderPage() {
   console.log('Rendering started.');
 
+  function getStatus() {
+    return document.querySelector('#status');
+  }
+
   function setStatusTo(msg) {
-    var status = document.querySelector('#status');
+    var status = getStatus();
     if (msg) {
       status.classList.remove('off');
       status.innerHTML = msg;
@@ -21,7 +25,7 @@ function renderPage() {
     // SET DATE
 
     function setDate() {
-      var dateForUser = '...';
+      var dateForUser = 'никогда';
       if( antiCensorRu.lastPacUpdateStamp ) {
         var diff = Date.now() - antiCensorRu.lastPacUpdateStamp;
         var units = ' мс';
@@ -76,7 +80,7 @@ function renderPage() {
     var _firstChild = ul.firstChild;
     for( var providerKey of Object.keys(antiCensorRu.pacProviders) ) {
       var li = document.createElement('li');
-      li.innerHTML = '<input type="radio" name="pacProvider" id="'+providerKey+'"> <label for="'+providerKey+'">'+providerKey+'</label> <a href class="link-button">[обновить]</a>';
+      li.innerHTML = '<input type="radio" name="pacProvider" id="'+providerKey+'"> <label for="'+providerKey+'">'+providerKey+'</label> <a href class="link-button checked-radio-panel">[обновить]</a>';
       li.querySelector('.link-button').onclick = () => {triggerChosenProvider(); return false;};
       ul.insertBefore( li, _firstChild );
     }
@@ -97,8 +101,39 @@ function renderPage() {
 
         enableDisableInputs();
         setStatusTo('Установка...');
-        antiCensorRu.installPac(pacKey, () => {
-          setStatusTo('PAC-скрипт установлен.');
+        antiCensorRu.installPac(pacKey, err => {
+          if (err) {
+            var ifNotCritical = err.clarification && err.clarification.ifNotCritical;
+
+            var message = '';
+            var clarification = err.clarification;
+            do {
+              message = message +' '+ (clarification && clarification.message || err.message || '');
+              clarification = clarification.prev;
+            } while( clarification && clarification.prev );
+            message = message.trim();
+
+            message = '<span style="font-size: 0.9em; color: darkred">'+ message +'</span>';
+            var label = ifNotCritical ? 'Некритичная ошибка.' : 'Ошибка!';
+            label = '<span style="color:red">'+ label +'</span>';
+            setStatusTo(
+              label +'<br/>'+ message +' <a href class="link-button">[Ещё подробнее]</a>'
+            );
+            var btn = getStatus().querySelector('.link-button');
+            btn.onclick = function() {
+              var div = document.createElement('div');
+              div.innerHTML = '\
+Более подробную информацию можно узнать из логов фоновой страницы:<br/>\
+<a href class="ext">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)';
+              getStatus().replaceChild(div, this);
+              div.querySelector('.ext').onclick = () => {
+                chrome.tabs.create({ url: "chrome://extensions" });
+                return false;
+              }
+              return false;
+            };
+          } else
+            setStatusTo('PAC-скрипт установлен.');
           enableDisableInputs();
         });
       }

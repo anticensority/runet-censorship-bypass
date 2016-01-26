@@ -80,19 +80,34 @@ window.antiCensorRu = {
   lastPacUpdateStamp: 0,
 
   syncWithPacProvider(cb) {
-    setPacScriptFromProvider(
-      this.pacProvider,
-      err => {
-        if (!err)
+    var cb = cb || (() => {});
+
+    var pacSetPromise = new Promise(
+      (resolve, reject) => setPacScriptFromProvider(
+        this.pacProvider,
+        (err, res) => {
+          if (err)
+            return reject(err);
           this.lastPacUpdateStamp = Date.now();
-        updatePacProxyIps(
-          this.pacProvider,
-          () => {
-						this.ifFirstInstall = false;
-						this.pushToStorage(cb)
-					}
-      )}
-    )
+          this.ifFirstInstall = false;
+          return resolve(res);
+        }
+      )
+    );
+
+    return updatePacProxyIps(
+      this.pacProvider,
+      ipsError => {
+        if (ipsError && ipsError.clarification)
+          ipsError.clarification.ifNotCritical = true;
+        pacSetPromise.then(
+          res => this.pushToStorage(
+            pushError => pushError ? cb(pushError) : cb(ipsError, res)
+          ),
+          err => cb(err)
+        )
+      }
+    );
   },
 
   _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
@@ -191,18 +206,24 @@ function asyncLogGroup() {
   }
 }
 
+function ifSuccessfulCode(status) {
+  return status >= 200 && status < 300 || status === 304;
+}
+
 function httpGet(url, cb) {
   var cb = cb || (() => {});
   var req = new XMLHttpRequest();
   var ifAsync = true;
   req.open('GET', url, ifAsync);
   req.onload = event => {
-    if (req.status !== 200)
-      return cb(event);
+    if (!ifSuccessfulCode(req.status)) {
+      req.clarification = {message: 'Получен ответ с неудачным HTTP-кодом '+req.status+ '.'};
+      return cb(req);
+    }
     console.log('GETed with success.');
     return cb(null, req.responseText)
   };
-  req.onerror = cb;
+  req.onerror = event => { event.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'}; return cb(event); };
   req.send();
 }
 
@@ -212,6 +233,10 @@ function updatePacProxyIps(provider, cb) {
     return cb(null, null);
   }
   var cb = asyncLogGroup('Getting IP for '+ provider.proxyHosts.join(', ') +'...', cb);
+  var failure = {
+    clarification: {message:'Не удалось получить один или несколько IP адресов для прокси-серверов. Иконка для уведомления об обходе блокировок может не отображаться.'},
+    errors: {}
+  };
   var i = 0;
   for (var proxyHost of provider.proxyHosts) {
     httpGet(
@@ -220,9 +245,13 @@ function updatePacProxyIps(provider, cb) {
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
   				provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = true;
+        } else
+          failure.errors[proxyHost] = err;
+
+        if ( ++i == provider.proxyHosts.length ) {
+          failure = Object.keys(failure.errors).length ? failure : null;
+          return cb(failure, provider.proxyIps);
         }
-        if ( ++i == provider.proxyHosts.length )
-          return cb(err, 'Complete.');
       }
     );
   }
@@ -234,8 +263,13 @@ function setPacScriptFromProvider(provider, cb) {
   httpGet(
     provider.pacUrl,
     (err, res) => {
-      if (err)
+      if (err) {
+        err.clarification = {
+          message: 'Не удалось скачать PAC-скрипт с адреса: ' +provider.pacUrl+ '.',
+          prev: err.clarification
+        };
         return cb(err);
+      }
       console.log('Clearing chrome proxy settings...');
       return chrome.proxy.settings.clear({}, () => {
            var config = {
