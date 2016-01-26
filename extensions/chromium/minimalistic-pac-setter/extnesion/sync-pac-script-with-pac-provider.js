@@ -49,7 +49,10 @@ window.antiCensorRu = {
 
   get pacProvider() { return this.pacProviders[this.currentPacProviderKey] },
 
-  ifNotInstalled: true,
+  /*
+    Offer PAC choice if this is the first time extension was installed.
+  */
+  ifFirstInstall: true,
 
   // PROTECTED
 
@@ -60,7 +63,7 @@ window.antiCensorRu = {
 			if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function')
 				onlySettable[key] = this[key]
 
-    return chrome.storage.local.set(onlySettable, () => cb(chrome.runtime.lastError, onlySettable) );
+    return chrome.storage.local.set(onlySettable, () => cb && cb(chrome.runtime.lastError, onlySettable) );
   },
 
   pullFromStorage(cb) {
@@ -85,7 +88,7 @@ window.antiCensorRu = {
         updatePacProxyIps(
           this.pacProvider,
           () => {
-						this.ifNotInstalled = false;
+						this.ifFirstInstall = false;
 						this.pushToStorage(cb)
 					}
       )}
@@ -167,7 +170,7 @@ chrome.runtime.onInstalled.addListener( details => {
           //window.antiCensorRu.installPac();
           break;
         case 'install':
-          window.antiCensorRu.ifNotInstalled = true;
+          window.antiCensorRu.ifFirstInstall = true;
           chrome.runtime.openOptionsPage();
       }
     }
