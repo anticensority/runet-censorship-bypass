@@ -25,12 +25,14 @@
       .link-button, .link-button:visited {
         color: #0000EE;
         text-decoration: none;
-        display: none;
       }
       .link-button:hover {
         text-decoration: underline;
       }
-      input:checked ~ .link-button {
+      .checked-radio-panel {
+        display: none;
+      }
+      input:checked ~ .checked-radio-panel {
         display: inline;
       }
       .button-panel {
