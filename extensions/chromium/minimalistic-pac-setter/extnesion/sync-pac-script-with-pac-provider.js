@@ -73,10 +73,14 @@ window.antiCensorRu = {
     });
   },
 
+  lastPacUpdateStamp: 0,
+
   syncWithPacProvider(cb) {
     setPacScriptFromProvider(
       this.pacProvider,
-      () => {
+      err => {
+        if (!err)
+          this.lastPacUpdateStamp = Date.now();
         updatePacProxyIps(
           this.pacProvider,
           () => {
@@ -155,7 +159,7 @@ window.antiCensorRu.pullFromStorage( () => {
   chrome.alarms.onAlarm.addListener(
     alarm => {
       if (alarm.name === window.antiCensorRu._periodicUpdateAlarmReason) {
-        console.log('Periodic update triggered.');
+        console.log('Periodic update triggered:', new Date());
         window.antiCensorRu.syncWithPacProvider();
       }
     }
