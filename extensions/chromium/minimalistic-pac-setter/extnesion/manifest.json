@@ -25,6 +25,6 @@
   },
   "options_ui": {
      "page": "/pages/choose-pac-provider/index.html",
-     "chrome_style": false
+     "chrome_style": true
    }
 }

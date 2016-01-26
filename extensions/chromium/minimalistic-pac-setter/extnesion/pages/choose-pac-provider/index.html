@@ -7,13 +7,34 @@
         list-style-type: none;
         padding: 0;
         margin: 0;
+        margin-bottom: 1em;
       }
       li {
         display: block;
         white-space: nowrap;
       }
+      li > * {
+        vertical-align: middle;
+      }
+      input[type="radio"], label {
+        cursor: pointer;
+      }
       .off {
         display: none;
+      }
+      .link-button, .link-button:visited {
+        color: #0000EE;
+        text-decoration: none;
+        display: none;
+      }
+      .link-button:hover {
+        text-decoration: underline;
+      }
+      input:checked ~ .link-button {
+        display: inline;
+      }
+      .button-panel {
+        margin-top: 1em;
       }
     </style>
   </head>
@@ -21,7 +42,13 @@
     <ul id="list-of-providers">
       <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
     </ul>
-    <div id='status'>Загрузка...</div>
+    <div style="white-space: nowrap">
+      Обновлялись: <span class="update-date">...</span>
+    </div>
+    <div id="status">Загрузка...</div>
+    <div class="button-panel">
+      <input type="button" value="Готово" class="close-button">
+    </div>
     <script src="./index.js"></script>
   </body>
 </html>
