@@ -68,7 +68,7 @@ window.antiCensorRu = {
       for(var key of Object.keys(storage))
         this[key] = storage[key];
 
-      console.log('Pulled from storage, any callback?', !!cb);
+      console.log('Synced with storage, any callback?', !!cb);
       if (cb)
         cb(chrome.runtime.lastError, storage);
     });
@@ -146,17 +146,25 @@ window.storageSyncedPromise.then(
         }
       }
     );
-    console.log('Installed alarm listener.');
+    console.log('Alarm listener installed. We won\'t miss any PAC update.');
+
+    chrome.alarms.get(
+      window.antiCensorRu._periodicUpdateAlarmReason,
+      alarm => alarm && console.log(
+        'Next update is scheduled on', new Date(alarm.scheduledTime).toLocaleString('ru-RU')
+      )
+    );
   }
 );
 
 chrome.runtime.onInstalled.addListener( details => {
-  console.log('Installing, reason:', details.reason);
+  console.log('Extension just installed, reason:', details.reason);
   window.storageSyncedPromise.then(
     storage => {
       switch(details.reason) {
         case 'update':
-          window.antiCensorRu.installPac();
+          console.log('Ah, it\'s just an update or reload. Do nothing.');
+          //window.antiCensorRu.installPac();
           break;
         case 'install':
           window.antiCensorRu.ifNotInstalled = true;
