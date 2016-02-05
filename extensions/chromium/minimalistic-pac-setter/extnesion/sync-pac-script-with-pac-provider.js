@@ -216,7 +216,7 @@ function httpGet(url, cb) {
   var ifAsync = true;
   req.open('GET', url, ifAsync);
   req.onload = event => {
-    if (!ifSuccessfulCode(req.status)) {
+    if ( !ifSuccessfulCode(req.status) ) {
       req.clarification = {message: 'Получен ответ с неудачным HTTP-кодом '+req.status+ '.'};
       return cb(req);
     }
