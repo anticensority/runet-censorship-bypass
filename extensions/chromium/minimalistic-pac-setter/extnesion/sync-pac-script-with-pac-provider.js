@@ -57,21 +57,30 @@ window.antiCensorRu = {
   // PROTECTED
 
   pushToStorage(cb) {
-		// Copy only settable properties.
-		var onlySettable = {};
-		for(var key of Object.keys(this))
-			if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function')
-				onlySettable[key] = this[key]
 
-    return chrome.storage.local.set(onlySettable, () => cb && cb(chrome.runtime.lastError, onlySettable) );
+    // Copy only settable properties.
+    var onlySettable = {};
+      for(var key of Object.keys(this))
+        if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function')
+          onlySettable[key] = this[key]
+
+    return chrome.storage.local.clear(
+	  () => chrome.storage.local.set(
+	    onlySettable,
+		() => cb && cb(chrome.runtime.lastError, onlySettable)
+	  )
+	);
+	
   },
 
   pullFromStorage(cb) {
     chrome.storage.local.get(null, storage => {
+	  console.log('In storage:', storage);
       for(var key of Object.keys(storage))
         this[key] = storage[key];
 
       console.log('Synced with storage, any callback?', !!cb);
+	  console.log('ifFirstInstall?', this.ifFirstInstall);
       if (cb)
         cb(chrome.runtime.lastError, storage);
     });
@@ -179,6 +188,11 @@ chrome.runtime.onInstalled.addListener( details => {
   console.log('Extension just installed, reason:', details.reason);
   window.storageSyncedPromise.then(
     storage => {
+
+      // Change property name from version 0.0.0.7
+      window.antiCensorRu.ifFirstInstall = window.antiCensorRu.ifNotInstalled;
+      delete window.antiCensorRu.ifNotInstalled;
+
       switch(details.reason) {
         case 'update':
           console.log('Ah, it\'s just an update or reload. Do nothing.');
