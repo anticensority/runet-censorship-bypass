@@ -19,22 +19,31 @@
 window.antiCensorRu = {
 
   // PUBLIC
+  
+  version: chrome.runtime.getManifest().version,
 
   pacProviders: {
     Антизапрет: {
       pacUrl: 'http://antizapret.prostovpn.org/proxy.pac',
       proxyHosts: ['proxy.antizapret.prostovpn.org'],
-      proxyIps: {'195.154.110.37': true}
+      proxyIps: {
+        '195.154.110.37': 'proxy.antizapret.prostovpn.org'
+      }
     },
     Антиценз: {
       pacUrl: 'https://config.anticenz.org/proxy.pac',
       proxyHosts: ['gw2.anticenz.org'],
-      proxyIps: {'185.120.5.7': true}
+      proxyIps: {
+        '5.196.220.114': 'gw2.anticenz.org'
+      }
     },
     Оба_и_на_свитчах: {
       pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
       proxyHosts: ['gw2.anticenz.org', 'proxy.antizapret.prostovpn.org'],
-      proxyIps: {'195.154.110.37': true, '185.120.5.7': true}
+      proxyIps: {
+        '5.196.220.114': 'gw2.anticenz.org',
+        '195.154.110.37': 'proxy.antizapret.prostovpn.org'
+      }
     }
   },
 
@@ -50,11 +59,14 @@ window.antiCensorRu = {
   get pacProvider() { return this.pacProviders[this.currentPacProviderKey] },
 
   /*
-    Offer PAC choice if this is the first time extension was installed.
+    Is it the first time extension installed? Do something, e.g. initiate PAC sync.
   */
-  ifFirstInstall: true,
+  ifFirstInstall: false,
+  lastPacUpdateStamp: 0,
 
   // PROTECTED
+  
+  _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
 
   pushToStorage(cb) {
 
@@ -65,28 +77,64 @@ window.antiCensorRu = {
           onlySettable[key] = this[key]
 
     return chrome.storage.local.clear(
-	  () => chrome.storage.local.set(
-	    onlySettable,
-		() => cb && cb(chrome.runtime.lastError, onlySettable)
-	  )
-	);
-	
+      () => chrome.storage.local.set(
+        onlySettable,
+        () => cb && cb(chrome.runtime.lastError, onlySettable)
+      )
+    );
+    
   },
 
   pullFromStorage(cb) {
     chrome.storage.local.get(null, storage => {
-	  console.log('In storage:', storage);
+      console.log('In storage:', storage);
       for(var key of Object.keys(storage))
         this[key] = storage[key];
 
       console.log('Synced with storage, any callback?', !!cb);
-	  console.log('ifFirstInstall?', this.ifFirstInstall);
       if (cb)
         cb(chrome.runtime.lastError, storage);
     });
   },
+  
+  migrateStorage(cb) {
+    chrome.storage.local.get(null, oldStorage => {
+      
+      var getPubCounter = version => parseInt( version.match(/\d+$/)[0] );
+      var version = oldStorage.version || '0.0.0.0';
+      var oldPubCounter = getPubCounter( version );
+            
+      if (oldPubCounter > 9) {
+        console.log('No migration required, storage pub', oldPubCounter, 'is up to date.');
+        return cb && cb(chrome.runtime.lastError, oldStorage);
+      }
 
-  lastPacUpdateStamp: 0,
+      console.log('Starting storage migration from publication', oldPubCounter, 'to', getPubCounter( this.version ));
+
+      this._currentPacProviderKey = oldStorage._currentPacProviderKey;
+      this.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp;
+      // There is no need to persist other properties in the storage.
+      
+      return this.pushToStorage(cb);
+
+      /*
+
+        History of Changes to Storage
+        -----------------------------
+
+        Version 0.0.0.10
+
+          * Added this.version
+          * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}
+
+        Version 0.0.0.8-9        
+
+          * Changed storage.ifNotInstalled to storage.ifFirstInstall
+          * Added storage.lastPacUpdateStamp
+
+      **/
+    });
+  },
 
   syncWithPacProvider(cb) {
     var cb = cb || (() => {});
@@ -119,52 +167,66 @@ window.antiCensorRu = {
     );
   },
 
-  _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
-
   installPac(key, cb) {
 
-		if(typeof(key) === 'function') {
-			cb = key;
-			key = undefined;
-		}
+    if(typeof(key) === 'function') {
+      cb = key;
+      key = undefined;
+    }
 
-		if(key)
-			this.currentPacProviderKey = key;
+    if(key)
+      this.currentPacProviderKey = key;
 
     var cb = asyncLogGroup('Installing PAC...', cb);
 
-    chrome.alarms.clear(this._periodicUpdateAlarmReason,
-      () => chrome.alarms.create(this._periodicUpdateAlarmReason, {
-        periodInMinutes: 4*60
-      })
+    chrome.alarms.clear(
+      this._periodicUpdateAlarmReason,
+      () => chrome.alarms.create(
+        this._periodicUpdateAlarmReason,
+        { periodInMinutes: 4*60 }
+      )
     );
 
     this.syncWithPacProvider(cb);
   },
 
   clearPac(cb) {
-    var cb = asyncLogGroup('Cearing PAC...', cb);
-    chrome.alarms.clearAll( () => chrome.proxy.settings.clear(
-			{},
-			() => {
-				this.currentPacProviderKey = undefined;
-				return this.pushToStorage(cb);
-			})
-		);
+    var cb = asyncLogGroup('Cearing alarms and PAC...', cb);
+    chrome.alarms.clearAll(
+      () => chrome.proxy.settings.clear(
+        {},
+        () => {
+          this.currentPacProviderKey = undefined;
+          return this.pushToStorage(cb);
+        }
+      )
+    );
   }
 
 };
 
 // ON EACH LAUNCH OF EXTENSION
+// Not only on Chrome's startUp, but aslo on Enable/Disable
 
 window.storageSyncedPromise = new Promise(
-  (resolve, reject) => window.antiCensorRu.pullFromStorage(
-    (err, res) => err ? reject(err) : resolve(res)
-  )
+  (resolve, reject) => {
+    /* We have to migrate on each launch, because:
+        1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
+        2. There is no way to schedule onInstalled before pullFromStorage without timeouts.
+        3. So inside onInstalled storage may only be already pulled.
+    */
+    window.antiCensorRu.migrateStorage(
+      (err, migratedStorage) => 
+        err ? reject(err) : window.antiCensorRu.pullFromStorage(
+          (err, res) => err ? reject(err) : resolve(res)
+        )
+    );
+  }
 );
 
 window.storageSyncedPromise.then(
   storage => {
+
     chrome.alarms.onAlarm.addListener(
       alarm => {
         if (alarm.name === window.antiCensorRu._periodicUpdateAlarmReason) {
@@ -181,27 +243,24 @@ window.storageSyncedPromise.then(
         'Next update is scheduled on', new Date(alarm.scheduledTime).toLocaleString('ru-RU')
       )
     );
+
   }
 );
 
-chrome.runtime.onInstalled.addListener( details => {
-  console.log('Extension just installed, reason:', details.reason);
+chrome.runtime.onInstalled.addListener( installDetails => {
+  console.log('Extension just installed, reason:', installDetails.reason);
   window.storageSyncedPromise.then(
     storage => {
 
-      // Change property name from version 0.0.0.7
-      window.antiCensorRu.ifFirstInstall = window.antiCensorRu.ifNotInstalled;
-      delete window.antiCensorRu.ifNotInstalled;
-
-      switch(details.reason) {
+      switch(installDetails.reason) {
         case 'update':
-          console.log('Ah, it\'s just an update or reload. Do nothing.');
-          //window.antiCensorRu.installPac();
+          console.log('Update or reload. Do nothing.');
           break;
         case 'install':
           window.antiCensorRu.ifFirstInstall = true;
           chrome.runtime.openOptionsPage();
       }
+
     }
   )
 });
@@ -213,7 +272,7 @@ function asyncLogGroup() {
   var cb = args.pop();
   console.group.apply(console, args);
   return function() {
-		console.log('Finished');
+        console.log('Finished');
     console.groupEnd();
     var _cb = cb || (() => {});
     return _cb.apply(this, arguments);
@@ -258,7 +317,7 @@ function updatePacProxyIps(provider, cb) {
       (err, res) => {
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
-  				provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = true;
+                  provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = proxyHost;
         } else
           failure.errors[proxyHost] = err;
 
@@ -286,16 +345,16 @@ function setPacScriptFromProvider(provider, cb) {
       }
       console.log('Clearing chrome proxy settings...');
       return chrome.proxy.settings.clear({}, () => {
-           var config = {
-             mode: 'pac_script',
-             pacScript: {
-               mandatory: false,
-               data: res
-             }
-           };
-           console.log('Setting chrome proxy settings...');
-           chrome.proxy.settings.set( {value: config}, cb );
-        });
+        var config = {
+          mode: 'pac_script',
+          pacScript: {
+            mandatory: false,
+            data: res
+          }
+        };
+        console.log('Setting chrome proxy settings...');
+        chrome.proxy.settings.set( {value: config}, cb );
+      });
 
     }
   );

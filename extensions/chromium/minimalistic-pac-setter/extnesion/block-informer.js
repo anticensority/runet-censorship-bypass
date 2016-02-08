@@ -18,20 +18,37 @@ function blockInform(details) {
 
     chrome.pageAction.getTitle(
       { tabId: details.tabId },
-      result => {
+      title => {
+        
+        var ifTitleSetAlready = !/\n/.test(title);
+        var proxyHost = window.antiCensorRu.pacProvider.proxyIps[ details.ip ];
+        var hostname = getHostname(details.url);
+        var ifShouldUpdateTitle = false;
+        var indent = '  ';
 
-        if (!/\n/.test(result))
-          result = 'Разблокированы:';
+        // Initially title equals extension name.
+        if (ifTitleSetAlready) {
+          title = 'Разблокированы:\n'+ indent + hostname +'\nПрокси:\n'+ indent + proxyHost;
+          ifShouldUpdateTitle = true;
+        } else {
+          title = title.replace(/Прокси:([\s\S]+)/, '{0}\n$&');
+          var proxies = RegExp.$1;
+          if (proxies.indexOf(proxyHost) == -1) {
+            title = title.replace(/Прокси:[\s\S]+/, '$&\n'+ indent + proxyHost);
+            ifShouldUpdateTitle = true;
+          }
 
-        var hostname = getHostname(details.url).trim();
+          var ifHostListedAlready = title.indexOf(hostname) != -1;
+          if (!ifHostListedAlready) {
+            title = title.replace('{0}', indent + hostname);
+            ifShouldUpdateTitle = true;
+          } else if (ifShouldUpdateTitle)
+            title = title.replace('{0}\n', '');
+        }
 
-        var ifListed = result.split(/\r?\n/g).some(
-          line => line.trim() === hostname
-        );
-
-        if (!ifListed)
+        if (ifShouldUpdateTitle)
           chrome.pageAction.setTitle({
-            title: result +'\n'+ hostname,
+            title: title,
             tabId: details.tabId
           });
       }
