@@ -272,7 +272,7 @@ function asyncLogGroup() {
   var cb = args.pop();
   console.group.apply(console, args);
   return function() {
-        console.log('Finished');
+    console.log('Finished');
     console.groupEnd();
     var _cb = cb || (() => {});
     return _cb.apply(this, arguments);
