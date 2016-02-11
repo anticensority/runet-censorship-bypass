@@ -10,7 +10,6 @@
 
 /*
   In background scripts use window.antiCensorRu public variables.
-  Thay are synced with chrome.storage so they persist restarts.
   In pages window.antiCensorRu are not accessible,
     use chrome.runtime.getBackgroundPage(..),
     avoid old extension.getBackgroundPage.
@@ -96,45 +95,6 @@ window.antiCensorRu = {
         cb(chrome.runtime.lastError, storage);
     });
   },
-  
-  migrateStorage(cb) {
-    chrome.storage.local.get(null, oldStorage => {
-      
-      var getPubCounter = version => parseInt( version.match(/\d+$/)[0] );
-      var version = oldStorage.version || '0.0.0.0';
-      var oldPubCounter = getPubCounter( version );
-            
-      if (oldPubCounter > 9) {
-        console.log('No migration required, storage pub', oldPubCounter, 'is up to date.');
-        return cb && cb(chrome.runtime.lastError, oldStorage);
-      }
-
-      console.log('Starting storage migration from publication', oldPubCounter, 'to', getPubCounter( this.version ));
-
-      this._currentPacProviderKey = oldStorage._currentPacProviderKey;
-      this.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp;
-      // There is no need to persist other properties in the storage.
-      
-      return this.pushToStorage(cb);
-
-      /*
-
-        History of Changes to Storage
-        -----------------------------
-
-        Version 0.0.0.10
-
-          * Added this.version
-          * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}
-
-        Version 0.0.0.8-9        
-
-          * Changed storage.ifNotInstalled to storage.ifFirstInstall
-          * Added storage.lastPacUpdateStamp
-
-      **/
-    });
-  },
 
   syncWithPacProvider(cb) {
     var cb = cb || (() => {});
@@ -179,15 +139,13 @@ window.antiCensorRu = {
 
     var cb = asyncLogGroup('Installing PAC...', cb);
 
-    chrome.alarms.clear(
+    chrome.alarms.create(
       this._periodicUpdateAlarmReason,
-      () => chrome.alarms.create(
-        this._periodicUpdateAlarmReason,
-        { periodInMinutes: 4*60 }
-      )
+      { periodInMinutes: 4*60 }
     );
 
-    this.syncWithPacProvider(cb);
+    return this.syncWithPacProvider(cb);
+
   },
 
   clearPac(cb) {
@@ -205,64 +163,86 @@ window.antiCensorRu = {
 
 };
 
-// ON EACH LAUNCH OF EXTENSION
-// Not only on Chrome's startUp, but aslo on Enable/Disable
+// ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE    
+chrome.storage.local.get(null, oldStorage => {
 
-window.storageSyncedPromise = new Promise(
-  (resolve, reject) => {
-    /* We have to migrate on each launch, because:
-        1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
-        2. There is no way to schedule onInstalled before pullFromStorage without timeouts.
-        3. So inside onInstalled storage may only be already pulled.
-    */
-    window.antiCensorRu.migrateStorage(
-      (err, migratedStorage) => 
-        err ? reject(err) : window.antiCensorRu.pullFromStorage(
-          (err, res) => err ? reject(err) : resolve(res)
-        )
-    );
-  }
-);
+  console.log('Init on storage:', oldStorage);
 
-window.storageSyncedPromise.then(
-  storage => {
-
+  // Finish each init with this callback setting alarm listeners.
+  function cb(err) {
     chrome.alarms.onAlarm.addListener(
       alarm => {
-        if (alarm.name === window.antiCensorRu._periodicUpdateAlarmReason) {
+        if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
           console.log('Periodic update triggered:', new Date());
-          window.antiCensorRu.syncWithPacProvider();
+          antiCensorRu.syncWithPacProvider();
         }
       }
     );
     console.log('Alarm listener installed. We won\'t miss any PAC update.');
 
     chrome.alarms.get(
-      window.antiCensorRu._periodicUpdateAlarmReason,
-      alarm => alarm && console.log(
-        'Next update is scheduled on', new Date(alarm.scheduledTime).toLocaleString('ru-RU')
-      )
-    );
-
-  }
-);
-
-chrome.runtime.onInstalled.addListener( installDetails => {
-  console.log('Extension just installed, reason:', installDetails.reason);
-  window.storageSyncedPromise.then(
-    storage => {
-
-      switch(installDetails.reason) {
-        case 'update':
-          console.log('Update or reload. Do nothing.');
-          break;
-        case 'install':
-          window.antiCensorRu.ifFirstInstall = true;
-          chrome.runtime.openOptionsPage();
+      antiCensorRu._periodicUpdateAlarmReason,
+      alarm => {
+        if (!alarm)
+          return console.error('ALARM NOT SET');
+        console.log(
+          'Next update is scheduled on', new Date(alarm.scheduledTime).toLocaleString('ru-RU')
+        );
       }
+    );
+  }
 
+  // INSTALL  
+  antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
+  if (antiCensorRu.ifFirstInstall) {
+    console.log('Installing...');
+    return chrome.runtime.openOptionsPage(cb);
+  }
+
+  /* 
+    1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
+       Otherwise we could put storage migration code only there.
+    2. We have to check storage for migration before using it.
+       Better on each launch then on each pull.
+  */
+
+  // LAUNCH, RELOAD, UPDATE
+  
+  antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey || antiCensorRu._currentPacProviderKey;
+  antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
+
+  if (antiCensorRu.version === oldStorage.version) {
+    // LAUNCH, RELOAD
+    console.log('Launch or reload. Do nothing.');
+    return cb();
+  }
+  
+  // UPDATE & MIGRATION
+  console.log('Updating...');
+  return updatePacProxyIps(
+    antiCensorRu.pacProvider,
+    ipsError => {
+      if (ipsError) ipsError.ifNotCritical = true;
+      antiCensorRu.pushToStorage( pushError => cb( pushError || ipsError ) );
     }
-  )
+  );
+
+  /*
+
+    History of Changes to Storage (Migration Guide)
+    -----------------------------------------------
+
+    Version 0.0.0.10
+
+      * Added this.version
+      * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}
+
+    Version 0.0.0.8-9
+
+      * Changed storage.ifNotInstalled to storage.ifFirstInstall
+      * Added storage.lastPacUpdateStamp
+
+  **/
 });
 
 // PRIVATE
@@ -317,7 +297,7 @@ function updatePacProxyIps(provider, cb) {
       (err, res) => {
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
-                  provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = proxyHost;
+          provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = proxyHost;
         } else
           failure.errors[proxyHost] = err;
 
@@ -355,7 +335,6 @@ function setPacScriptFromProvider(provider, cb) {
         console.log('Setting chrome proxy settings...');
         chrome.proxy.settings.set( {value: config}, cb );
       });
-
     }
   );
 }
