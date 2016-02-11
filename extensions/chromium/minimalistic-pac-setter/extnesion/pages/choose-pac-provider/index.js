@@ -18,8 +18,10 @@ function renderPage() {
       status.classList.add('off');
   }
 
+  console.log('ABC');
   chrome.runtime.getBackgroundPage( backgroundPage => {
 
+    backgroundPage.console.log('Options page opened.');
     var antiCensorRu = backgroundPage.antiCensorRu;
 
     // SET DATE

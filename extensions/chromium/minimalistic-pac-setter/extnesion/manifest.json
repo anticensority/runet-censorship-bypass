@@ -15,12 +15,13 @@
     "webRequest",
     "alarms",
     "storage",
-    "<all_urls>"
+    "<all_urls>",
+    "tabs"
   ],
   "background": {
     "scripts": ["sync-pac-script-with-pac-provider.js", "block-informer.js"]
   },
-  "page_action": {
+  "browser_action": {
     "default_popup": "/pages/choose-pac-provider/index.html"
   },
   "options_ui": {
