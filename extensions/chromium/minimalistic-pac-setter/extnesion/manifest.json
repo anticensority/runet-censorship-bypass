@@ -3,7 +3,7 @@
 
   "name": "Обход блокировок Рунета",
   "description": "Аргументы против цензуры: https://git.io/vEkI9",
-  "version": "0.0.0.10",
+  "version": "0.0.0.11",
   "icons": {
     "128": "/icons/ribbon128.png"
 	},
