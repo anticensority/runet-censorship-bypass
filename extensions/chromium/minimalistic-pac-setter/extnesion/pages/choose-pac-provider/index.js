@@ -18,10 +18,8 @@ function renderPage() {
       status.classList.add('off');
   }
 
-  console.log('ABC');
   chrome.runtime.getBackgroundPage( backgroundPage => {
 
-    backgroundPage.console.log('Options page opened.');
     var antiCensorRu = backgroundPage.antiCensorRu;
 
     // SET DATE
@@ -129,7 +127,7 @@ function renderPage() {
 <a href class="ext">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)';
               getStatus().replaceChild(div, this);
               div.querySelector('.ext').onclick = () => {
-                chrome.tabs.create({ url: "chrome://extensions" });
+                chrome.tabs.create({ url: 'chrome://extensions?id='+ chrome.runtime.id });
                 return false;
               }
               return false;

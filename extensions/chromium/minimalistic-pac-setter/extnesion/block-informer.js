@@ -9,7 +9,7 @@
   It pertains not only to page refesh but to newly opened pages too.
   Also on loosing title see:
     https://github.com/ilyaigpetrov/repository-for-chrome-bugs/blob/master/browserAction-title-lost-after-setting/background.js
-  Crazy concurrent Chrome.
+  Crazy parallel Chrome.
 **/
 window.onTabUpdated = {};
 
