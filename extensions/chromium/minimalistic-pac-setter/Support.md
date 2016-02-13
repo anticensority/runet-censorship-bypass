@@ -12,7 +12,7 @@
 ## Сайты не разблокируются
 
 1. Условие: расширение _только что_ установлено, появилась синяя лента.
-2. Условие: сайт, на котром вы тестируете, имеется в [реестре](http://reestr.rublacklist.net).
+2. Условие: сайт, на котором вы тестируете, имеется в [реестре](http://reestr.rublacklist.net).
    Например, протестируйте на https://archive.org и http://lurkmore.to
 3. Если https://archive.org грузится, то расширение работает. На ленте должен появиться красный бейджик с числом. Продолжайте, если не работает.
 4. Нажмите на иконку, выберите пункт _"оба и на свитчах"_.
@@ -33,5 +33,10 @@
 ## Как сообщить о проблеме
 
 1. Подготовьте описание проблемы, сообщение об ошибке.
-2. Спросите в [гуглогруппе](https://plus.google.com/communities/113037048541138220990) или отправьте описание мне на почту ilyaigpetrov+anticensure+chrome@gmail.com
-3. Если не пугает GitHub: https://github.com/ilyaigpetrov/anti-censorship-russia/issues
+2. Спросите в [сообществе Гугл](https://plus.google.com/communities/113037048541138220990/stream/0840196a-f974-4cc6-9c6d-060a7747b6bf).
+3. Или отправьте описание проблемы мне на почту ilyaigpetrov+anticensure+chrome@gmail.com
+3. Или, если не пугает GitHub: https://github.com/ilyaigpetrov/anti-censorship-russia/issues
+
+________
+
+[Короткая ссылка](https://git.io/vgDQr)
