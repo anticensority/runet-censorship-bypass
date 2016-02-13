@@ -36,3 +36,7 @@
 2. Спросите в [сообществе Гугл](https://plus.google.com/communities/113037048541138220990/stream/0840196a-f974-4cc6-9c6d-060a7747b6bf).
 3. Или отправьте описание проблемы мне на почту ilyaigpetrov+anticensure+chrome@gmail.com
 3. Или, если не пугает GitHub: https://github.com/ilyaigpetrov/anti-censorship-russia/issues
+
+________
+
+[Короткая ссылка](https://git.io/vgDQr)
