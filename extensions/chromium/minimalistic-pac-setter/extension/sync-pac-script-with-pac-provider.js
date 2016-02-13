@@ -25,7 +25,8 @@ window.antiCensorRu = {
       pacUrl: 'http://antizapret.prostovpn.org/proxy.pac',
       proxyHosts: ['proxy.antizapret.prostovpn.org'],
       proxyIps: {
-        '195.154.110.37': 'proxy.antizapret.prostovpn.org'
+        '195.154.110.37': 'proxy.antizapret.prostovpn.org',
+        '195.123.209.38': 'proxy.antizapret.prostovpn.org'
       }
     },
     Антиценз: {
@@ -37,10 +38,11 @@ window.antiCensorRu = {
     },
     Оба_и_на_свитчах: {
       pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
-      proxyHosts: ['gw2.anticenz.org', 'proxy.antizapret.prostovpn.org'],
+      proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
       proxyIps: {
-        '5.196.220.114': 'gw2.anticenz.org',
-        '195.154.110.37': 'proxy.antizapret.prostovpn.org'
+        '195.154.110.37': 'proxy.antizapret.prostovpn.org',
+        '195.123.209.38': 'proxy.antizapret.prostovpn.org',
+        '5.196.220.114': 'gw2.anticenz.org'
       }
     }
   },
@@ -79,7 +81,7 @@ window.antiCensorRu = {
         () => cb && cb(chrome.runtime.lastError, onlySettable)
       )
     );
-    
+
   },
 
   pullFromStorage(cb) {
@@ -95,7 +97,7 @@ window.antiCensorRu = {
   },
 
   syncWithPacProvider(cb) {
-    var cb = cb || (() => {});
+    var cb = asyncLogGroup('Syncing with PAC provider...', cb);
     if (!this.pacProvider)
       return cb({clarification: 'Сперва выберите PAC-провайдера.'});
 
@@ -105,8 +107,11 @@ window.antiCensorRu = {
         (err, res) => {
           if (err)
             return reject(err);
+ 
           this.lastPacUpdateStamp = Date.now();
           this.ifFirstInstall = false;
+          this.setAlarms();
+
           return resolve(res);
         }
       )
@@ -127,15 +132,29 @@ window.antiCensorRu = {
     );
   },
   
+  _pacUpdatePeriodInMinutes: 4*60,
+
   setAlarms() {
+
+    var nextUpdateMoment = this.lastPacUpdateStamp + this._pacUpdatePeriodInMinutes*60*1000;
+    var now = Date.now();
+    if (nextUpdateMoment < now)
+      nextUpdateMoment = now;
+    
+    console.log( 'Next PAC update is scheduled on', new Date(nextUpdateMoment).toLocaleString('ru-RU') );
+
     chrome.alarms.create(
       this._periodicUpdateAlarmReason,
-      { periodInMinutes: 4*60 }
+      {
+        when: nextUpdateMoment,
+        periodInMinutes: this._pacUpdatePeriodInMinutes
+      }
     );
+
+    return nextUpdateMoment === now; // ifAlarmTriggered. Return value may be changed.
   },
 
   installPac(key, cb) {
-
     if(typeof(key) === 'function') {
       cb = key;
       key = undefined;
@@ -144,12 +163,7 @@ window.antiCensorRu = {
     if(key)
       this.currentPacProviderKey = key;
 
-    var cb = asyncLogGroup('Installing PAC...', cb);
-    
-    this.setAlarms();
-
     return this.syncWithPacProvider(cb);
-
   },
 
   clearPac(cb) {
@@ -171,41 +185,32 @@ window.antiCensorRu = {
 chrome.storage.local.get(null, oldStorage => {
 
   console.log('Init on storage:', oldStorage);
-  
   antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
 
-  // Finish each init with this callback setting alarm listeners.
-  function cb(err) {
-    chrome.alarms.onAlarm.addListener(
-      alarm => {
-        if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
-          console.log('Periodic update triggered:', new Date());
-          antiCensorRu.syncWithPacProvider();
-        }
-      }
-    );
-    console.log('Alarm listener installed. We won\'t miss any PAC update.');
-
-    chrome.alarms.get(
-      antiCensorRu._periodicUpdateAlarmReason,
-      alarm => {
-        if (alarm)
-          console.log(
-            'Next update is scheduled on', new Date(alarm.scheduledTime).toLocaleString('ru-RU')
-          );
-        else if (!antiCensorRu.ifFirstInstall && antiCensorRu.pacProvider) {
-          antiCensorRu.setAlarms();
-          console.error('KNOWN BUG: Alarms were lost. See issues on GitHub. Don\'t worry, next update was rescheduled.');
-        }
-      }
-    );
+  if (!antiCensorRu.ifFirstInstall) {
+    // LAUNCH, RELOAD, UPDATE
+    antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey;
+    antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
   }
 
-  // INSTALL  
+  chrome.alarms.onAlarm.addListener(
+    alarm => {
+      if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
+        console.log('Periodic PAC update triggered:', new Date().toLocaleString('ru-RU'));
+        antiCensorRu.syncWithPacProvider();
+      }
+    }
+  );
+  console.log('Alarm listener installed. We won\'t miss any PAC update.');
+  
   if (antiCensorRu.ifFirstInstall) {
+    // INSTALL
     console.log('Installing...');
-    return chrome.runtime.openOptionsPage(cb);
+    return chrome.runtime.openOptionsPage();
   }
+
+  if (!antiCensorRu.pacProvider)
+    return console.log('No PAC provider set. Do nothing.');
 
   /* 
     1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
@@ -214,26 +219,20 @@ chrome.storage.local.get(null, oldStorage => {
        Better on each launch then on each pull.
   */
 
-  // LAUNCH, RELOAD, UPDATE
+  var ifAlarmTriggered = antiCensorRu.setAlarms();
   
-  antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey;
-  antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
-
   if (antiCensorRu.version === oldStorage.version) {
     // LAUNCH, RELOAD
-    console.log('Launch or reload. Do nothing.');
-    return cb();
+    antiCensorRu.pacProviders = oldStorage.pacProviders;
+    return console.log('Extension launched, reloaded or enabled.');
   }
 
   // UPDATE & MIGRATION
-  console.log('Updating...');
-  return antiCensorRu.pacProvider &&
+  console.log('Extension updated.');
+  if (!ifAlarmTriggered)
     updatePacProxyIps(
       antiCensorRu.pacProvider,
-      ipsError => {
-        if (ipsError) ipsError.ifNotCritical = true;
-        antiCensorRu.pushToStorage( pushError => cb( pushError || ipsError ) );
-      }
+      ipsError => ipsError ? console.log('Error updating IPs:', ipsError) : antiCensorRu.pushToStorage()
     );
 
   /*
@@ -261,8 +260,8 @@ function asyncLogGroup() {
   var cb = args.pop();
   console.group.apply(console, args);
   return function() {
-    console.log('Finished');
     console.groupEnd();
+    console.log('Group finished.');
     var _cb = cb || (() => {});
     return _cb.apply(this, arguments);
   }
@@ -294,15 +293,17 @@ function updatePacProxyIps(provider, cb) {
   var failure = {
     clarification: {message:'Не удалось получить один или несколько IP адресов для прокси-серверов. Иконка для уведомления об обходе блокировок может не отображаться.'},
     errors: {}
-  };
+  };  
   var i = 0;
-  for (var proxyHost of provider.proxyHosts) {
-    httpGet(
+  provider.proxyHosts.map(
+    proxyHost => httpGet(
       'http://www.dns-lg.com/google1/'+ proxyHost +'/A',
       (err, res) => {
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
-          provider.proxyIps[ JSON.parse(res).answer[0].rdata ] = proxyHost;
+          JSON.parse(res).answer.map(
+            ans => provider.proxyIps[ ans.rdata ] = proxyHost
+          )
         } else
           failure.errors[proxyHost] = err;
 
@@ -311,8 +312,8 @@ function updatePacProxyIps(provider, cb) {
           return cb(failure, provider.proxyIps);
         }
       }
-    );
-  }
+    )
+  );
 }
 
 function setPacScriptFromProvider(provider, cb) {
