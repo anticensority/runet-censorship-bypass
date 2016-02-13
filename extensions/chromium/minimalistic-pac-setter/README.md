@@ -15,6 +15,6 @@
 
 Синяя лента – кампания фонда EFF в защиту свобод слова, прессы и союзов.
 
-Если расширение не работает: https://git.io/vgDDj
+Если расширение не работает: https://git.io/vgDQr
 
 История изменений: https://github.com/ilyaigpetrov/anti-censorship-russia/releases
