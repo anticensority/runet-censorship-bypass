@@ -32,8 +32,12 @@ var previousUpdateTitleFinished = Promise.resolve();
 
 function blockInform(requestDetails) {
 
+  console.log(requestDetails.ip, requestDetails);
+
   if (requestDetails.tabId === -1 || !window.antiCensorRu.pacProvider || !window.antiCensorRu.pacProvider.proxyIps || !window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ])
     return;
+  
+  console.log('UNBLOCK');
 
   previousUpdateTitleFinished = previousUpdateTitleFinished.then(
     () => new Promise(

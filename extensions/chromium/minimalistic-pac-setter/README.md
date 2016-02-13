@@ -18,3 +18,7 @@
 Если расширение не работает: https://git.io/vgDDj
 
 История изменений: https://github.com/ilyaigpetrov/anti-censorship-russia/releases
+
+# Дополнительно
+
+Иконка синей ленты: http://www.iconsdb.com/icon-sets/cardboard-blue-icons/ribbon-12-icon.html
