@@ -52,7 +52,5 @@
 ## Как сообщить о проблеме
 
 1. Подготовьте описание проблемы, сообщение об ошибке.
-2. Спросите в (гуглогруппе)[1] или отправьте описание мне на почту ilyaigpetrov+anticensure+chrome@gmail.com
+2. Спросите в [гуглогруппе](https://plus.google.com/communities/113037048541138220990) или отправьте описание мне на почту ilyaigpetrov+anticensure+chrome@gmail.com
 3. Если не пугает GitHub: https://github.com/ilyaigpetrov/anti-censorship-russia/issues
-
-[1]: https://plus.google.com/communities/113037048541138220990
