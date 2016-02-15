@@ -11,33 +11,32 @@
     https://github.com/ilyaigpetrov/repository-for-chrome-bugs/blob/master/browserAction-title-lost-after-setting/background.js
   Crazy parallel Chrome.
 **/
-window.onTabUpdated = {};
-
-chrome.tabs.onRemoved.addListener( tabId => delete window.onTabUpdated[tabId] );
+window._tabCallbacks = {};
 
 function afterTabUpdated(tabId, cb) {
-  if (window.onTabUpdated[tabId])
-    window.onTabUpdated[tabId].push(cb);
-  else window.onTabUpdated[tabId] = [cb];
+  if (window._tabCallbacks[tabId])
+    window._tabCallbacks[tabId].push(cb);
+  else window._tabCallbacks[tabId] = [cb];
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (window.onTabUpdated[tabId]) {
-    window.onTabUpdated[tabId].map( f => f() );
-    delete window.onTabUpdated[tabId];
+function onTabUpdate(tabId) {
+  if (window._tabCallbacks[tabId]) {
+    window._tabCallbacks[tabId].map( f => f() );
+    delete window._tabCallbacks[tabId];
   }
-});
+}
+
+chrome.tabs.onUpdated.addListener( onTabUpdate );
+chrome.tabs.onRemoved.addListener( onTabUpdate );
 
 var previousUpdateTitleFinished = Promise.resolve();
 
 function blockInform(requestDetails) {
 
-  console.log(requestDetails.ip, requestDetails);
-
-  if (requestDetails.tabId === -1 || !window.antiCensorRu.pacProvider || !window.antiCensorRu.pacProvider.proxyIps || !window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ])
-    return;
-  
-  console.log('UNBLOCK');
+  if (
+    requestDetails.tabId === -1 || // Not inside tab.
+    !window.antiCensorRu.pacProvider || !window.antiCensorRu.pacProvider.proxyIps || !window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ]
+  ) return;
 
   previousUpdateTitleFinished = previousUpdateTitleFinished.then(
     () => new Promise(
