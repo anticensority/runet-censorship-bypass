@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Обход блокировок Рунета",
+  "name": "Обход блокировок Рунета NEW",
   "description": "Аргументы против цензуры: https://git.io/vEkI9",
-  "version": "0.0.0.12",
+  "version": "0.0.0.14",
   "icons": {
     "128": "/icons/ribbon128.png"
 	},
@@ -16,12 +16,14 @@
     "alarms",
     "storage",
     "<all_urls>",
-    "tabs"
+    "tabs",
+    "contextMenus"
   ],
   "background": {
-    "scripts": ["sync-pac-script-with-pac-provider.js", "block-informer.js"]
+    "scripts": ["1-sync-pac-script-with-pac-provider.js", "2-block-informer.js", "3-context-menus.js"]
   },
   "browser_action": {
+    "default_title": "Этот сайт благословлён РКН",
     "default_popup": "/pages/choose-pac-provider/index.html"
   },
   "options_ui": {
