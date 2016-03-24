@@ -68,6 +68,7 @@ window.antiCensorRu = {
   _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
 
   pushToStorage(cb) {
+    console.log('Pushing...');
 
     // Copy only settable properties.
     var onlySettable = {};
@@ -99,7 +100,7 @@ window.antiCensorRu = {
   syncWithPacProvider(cb) {
     var cb = asyncLogGroup('Syncing with PAC provider...', cb);
     if (!this.pacProvider)
-      return cb({clarification: 'Сперва выберите PAC-провайдера.'});
+      return cb({clarification:{message:'Сперва выберите PAC-провайдера.'}});
 
     var pacSetPromise = new Promise(
       (resolve, reject) => setPacScriptFromProvider(
@@ -140,7 +141,7 @@ window.antiCensorRu = {
     var now = Date.now();
     if (nextUpdateMoment < now)
       nextUpdateMoment = now;
-    
+
     console.log( 'Next PAC update is scheduled on', new Date(nextUpdateMoment).toLocaleString('ru-RU') );
 
     chrome.alarms.create(
@@ -151,7 +152,7 @@ window.antiCensorRu = {
       }
     );
 
-    return nextUpdateMoment === now; // ifAlarmTriggered. Return value may be changed.
+    return nextUpdateMoment === now; // ifAlarmTriggered. May be changed.
   },
 
   installPac(key, cb) {
@@ -191,6 +192,7 @@ chrome.storage.local.get(null, oldStorage => {
     // LAUNCH, RELOAD, UPDATE
     antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey;
     antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
+    console.log( 'Last PAC update was on', new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU') );
   }
 
   chrome.alarms.onAlarm.addListener(
@@ -222,7 +224,7 @@ chrome.storage.local.get(null, oldStorage => {
   var ifAlarmTriggered = antiCensorRu.setAlarms();
   
   if (antiCensorRu.version === oldStorage.version) {
-    // LAUNCH, RELOAD
+    // LAUNCH, RELOAD, ENABLE
     antiCensorRu.pacProviders = oldStorage.pacProviders;
     return console.log('Extension launched, reloaded or enabled.');
   }
@@ -232,7 +234,7 @@ chrome.storage.local.get(null, oldStorage => {
   if (!ifAlarmTriggered)
     updatePacProxyIps(
       antiCensorRu.pacProvider,
-      ipsError => ipsError ? console.log('Error updating IPs:', ipsError) : antiCensorRu.pushToStorage()
+      ipsError => ipsError ? console.error('Error updating IPs:', ipsError) : antiCensorRu.pushToStorage()
     );
 
   /*
@@ -253,8 +255,6 @@ chrome.storage.local.get(null, oldStorage => {
   **/
 });
 
-// PRIVATE
-
 function asyncLogGroup() {
   var args = [].slice.apply(arguments);
   var cb = args.pop();
@@ -267,25 +267,44 @@ function asyncLogGroup() {
   }
 }
 
-function ifSuccessfulCode(status) {
-  return status >= 200 && status < 300 || status === 304;
+function httpGet(url, cb) {
+  return fetch(url).then(
+    res => {
+      var textCb = err => cb && res.text().then( text => cb(err, text), cb );
+      var status = res.status;
+      if ( !( status >= 200 && status < 300 || status === 304 ) ) {
+        res.clarification = {message: 'Получен ответ с неудачным HTTP-кодом '+status+'.'};
+        return textCb(res);
+      }
+      console.log('GETed with success.');
+      return textCb();
+    },
+    err => {
+      err.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'};
+      return cb && cb(err);
+    }
+  );
 }
 
-function httpGet(url, cb) {
-  var cb = cb || (() => {});
-  var req = new XMLHttpRequest();
-  var ifAsync = true;
-  req.open('GET', url, ifAsync);
-  req.onload = event => {
-    if ( !ifSuccessfulCode(req.status) ) {
-      req.clarification = {message: 'Получен ответ с неудачным HTTP-кодом '+req.status+ '.'};
-      return cb(req);
+function getIpsAndCnames(host, cb) {
+  httpGet(
+    'http://www.dns-lg.com/google1/'+ host +'/a',
+    (err, res) => {
+      if (res)
+        try {
+          res = JSON.parse(res);
+          if (err)
+            err.clarification.message += ' Сервер: '+ res.message;
+          else
+            res = res.answer;
+        } catch(e) {
+          err = err || {clarification:{message:''}};
+          err.clarification.message += ' Сервер: '+ res;
+          err.clarification.message.trim();
+        }
+      return cb( err, res );
     }
-    console.log('GETed with success.');
-    return cb(null, req.responseText)
-  };
-  req.onerror = event => { event.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'}; return cb(event); };
-  req.send();
+  );
 }
 
 function updatePacProxyIps(provider, cb) {
@@ -296,14 +315,12 @@ function updatePacProxyIps(provider, cb) {
   };  
   var i = 0;
   provider.proxyHosts.map(
-    proxyHost => httpGet(
-      'http://www.dns-lg.com/google1/'+ proxyHost +'/A',
-      (err, res) => {
+    proxyHost => getIpsAndCnames(
+      proxyHost,
+      (err, ans) => {
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
-          JSON.parse(res).answer.map(
-            ans => provider.proxyIps[ ans.rdata ] = proxyHost
-          )
+          ans.filter( ans => ans.type === 'A' ).map( ans => provider.proxyIps[ ans.rdata ] = proxyHost );
         } else
           failure.errors[proxyHost] = err;
 
@@ -324,7 +341,7 @@ function setPacScriptFromProvider(provider, cb) {
     (err, res) => {
       if (err) {
         err.clarification = {
-          message: 'Не удалось скачать PAC-скрипт с адреса: ' +provider.pacUrl+ '.',
+          message: 'Не удалось скачать PAC-скрипт с адреса: '+ provider.pacUrl +'.',
           prev: err.clarification
         };
         return cb(err);
