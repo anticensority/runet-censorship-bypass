@@ -17,12 +17,12 @@
 window.antiCensorRu = {
 
   // PUBLIC
-  
+
   version: chrome.runtime.getManifest().version,
 
   pacProviders: {
     Антизапрет: {
-      pacUrl: 'http://antizapret.prostovpn.org/proxy.pac',
+      pacUrl: 'https://antizapret.prostovpn.org/proxy.pac',
       proxyHosts: ['proxy.antizapret.prostovpn.org'],
       proxyIps: {
         '195.154.110.37': 'proxy.antizapret.prostovpn.org',
@@ -37,8 +37,8 @@ window.antiCensorRu = {
       }
     },
     Оба_и_на_свитчах: {
-      //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
-      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0WGczNmJzY3gzMWc',
+      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
+      //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0WGczNmJzY3gzMWc', // Beta
       proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
       proxyIps: {
         '195.154.110.37': 'proxy.antizapret.prostovpn.org',
@@ -109,7 +109,7 @@ window.antiCensorRu = {
         (err, res) => {
           if (err)
             return reject(err);
- 
+
           this.lastPacUpdateStamp = Date.now();
           this.ifFirstInstall = false;
           this.setAlarms();

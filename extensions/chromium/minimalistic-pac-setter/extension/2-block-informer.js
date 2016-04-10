@@ -14,10 +14,10 @@
 
 window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
-function getHostname(url) {
-  var a = document.createElement('a');
+function createLink(url) {
+  const a = document.createElement('a');
   a.href = url;
-  return a.hostname;
+  return a;
 }
 
 +function() {
@@ -38,7 +38,7 @@ function getHostname(url) {
   }
 
   chrome.tabs.onUpdated.addListener( onTabUpdate );
-  
+
   function isInsideTabWithIp(requestDetails) {
     return requestDetails.tabId !== -1 && requestDetails.ip
   }
@@ -72,7 +72,7 @@ function getHostname(url) {
         }
       )
     );
-    
+
     return true;
 
     function updateTitle(requestDetails, cb) {
@@ -82,8 +82,8 @@ function getHostname(url) {
         title => {
           var ifTitleSetAlready = /\n/.test(title);
           var proxyHost = window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ];
-          
-          var hostname = getHostname( requestDetails.url );
+
+          var hostname = createLink( requestDetails.url ).hostname;
 
           var ifShouldUpdateTitle = false;
           var indent = '  ';
@@ -99,7 +99,7 @@ function getHostname(url) {
             });
 
           } else {
-            var hostsProxiesPair = title.split(proxyTitle);
+            const hostsProxiesPair = title.split(proxyTitle);
 
             if (hostsProxiesPair[1].indexOf(proxyHost) === -1) {
               title = title.replace(hostsProxiesPair[1], hostsProxiesPair[1] +'\n'+ indent + proxyHost);
@@ -109,7 +109,7 @@ function getHostname(url) {
             if (hostsProxiesPair[0].indexOf(hostname) === -1) {
               title = title.replace(proxyTitle, indent + hostname +'\n'+ proxyTitle);
               ifShouldUpdateTitle = true;
-              
+
               var _cb = cb;
               cb = () => chrome.browserAction.getBadgeText(
                 {tabId: requestDetails.tabId},
