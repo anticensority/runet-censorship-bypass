@@ -12,13 +12,13 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
           ${err.clarification && err.clarification.message || err.message}`
         )
       : records.length === 1 && records[0].type === 'A'
-        ? window.location.replace( backgroundPage.reestrUrl + records[0].rdata )
+        ? window.location.replace( backgroundPage.reestrUrl + records[0].data )
         : document.write(
               '<title>Выбор IP</title>'
             + '<h4>У домена несколько IP / синонимов:</h4>'
             + records
-              .sort( (a,b) => a.rdata.localeCompare(b.rdata) )
-              .map( ans => ans.rdata.link( ans.type === 'A' ? backgroundPage.reestrUrl + ans.rdata : window.location.pathname +'?'+ ans.rdata ) )
+              .sort( (a,b) => a.data.localeCompare(b.data) )
+              .map( ans => ans.data.link( ans.type === 'A' ? backgroundPage.reestrUrl + ans.data : window.location.pathname +'?'+ ans.data ) )
               .join('<br/>')
           )
   )

@@ -1,7 +1,7 @@
 'use strict';
 
 /*
-  Task 1. Gets IPs for proxies of antizapret/anticenz with dns-lg.com.
+  Task 1. Gets IPs for proxies of antizapret/anticenz via dns over https.
           These IPs are used in block-informer to inform user when proxy is ON.
   Task 2. Downloads PAC proxy script from antizapret/anticenz/my Google Drive and sets it in Chromium settings.
   Task 3. Schedules tasks 1 & 2 for every 4 hours.
@@ -11,7 +11,7 @@
   In background scripts use window.antiCensorRu public variables.
   In pages window.antiCensorRu are not accessible,
     use chrome.runtime.getBackgroundPage(..),
-    avoid old extension.getBackgroundPage.
+    extension.getBackgroundPage is deprecated
 */
 
 window.antiCensorRu = {
@@ -53,7 +53,7 @@ window.antiCensorRu = {
   get currentPacProviderKey() { return this._currentPacProviderKey },
   set currentPacProviderKey(newKey) {
     if (newKey && !this.pacProviders[newKey])
-      throw new IllegalArgumentException('No provider for key:'+newKey);
+      throw new IllegalArgumentException('No provider for key:' + newKey);
     this._currentPacProviderKey = newKey;
   },
 
@@ -133,7 +133,7 @@ window.antiCensorRu = {
       }
     );
   },
-  
+
   _pacUpdatePeriodInMinutes: 4*60,
 
   setAlarms() {
@@ -153,7 +153,7 @@ window.antiCensorRu = {
       }
     );
 
-    return nextUpdateMoment === now; // ifAlarmTriggered. May be changed.
+    return nextUpdateMoment === now; // ifAlarmTriggered. May be changed in the future.
   },
 
   installPac(key, cb) {
@@ -183,7 +183,7 @@ window.antiCensorRu = {
 
 };
 
-// ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE    
+// ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
 chrome.storage.local.get(null, oldStorage => {
 
   console.log('Init on storage:', oldStorage);
@@ -205,7 +205,7 @@ chrome.storage.local.get(null, oldStorage => {
     }
   );
   console.log('Alarm listener installed. We won\'t miss any PAC update.');
-  
+
   if (antiCensorRu.ifFirstInstall) {
     // INSTALL
     console.log('Installing...');
@@ -215,7 +215,7 @@ chrome.storage.local.get(null, oldStorage => {
   if (!antiCensorRu.pacProvider)
     return console.log('No PAC provider set. Do nothing.');
 
-  /* 
+  /*
     1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
        Otherwise we could put storage migration code only there.
     2. We have to check storage for migration before using it.
@@ -223,7 +223,7 @@ chrome.storage.local.get(null, oldStorage => {
   */
 
   var ifAlarmTriggered = antiCensorRu.setAlarms();
-  
+
   if (antiCensorRu.version === oldStorage.version) {
     // LAUNCH, RELOAD, ENABLE
     antiCensorRu.pacProviders = oldStorage.pacProviders;
@@ -287,7 +287,22 @@ function httpGet(url, cb) {
   );
 }
 
-function getIpsAndCnames(host, cb) {
+function _getIpsAndCnames(host, cb) {
+  /*
+    Answer format:
+      "answer":
+      [
+        {
+          "name": "proxy.antizapret.prostovpn.org.",
+          "type": "A",
+          "class": "IN",
+          "ttl": 409,
+          "rdlength": 4,
+          "rdata": "195.123.209.38"
+        }
+      ...
+    CNAME example: ghs.google.com
+  **/
   httpGet(
     'http://www.dns-lg.com/google1/'+ host +'/a',
     (err, res) => {
@@ -296,8 +311,13 @@ function getIpsAndCnames(host, cb) {
           res = JSON.parse(res);
           if (err)
             err.clarification.message += ' Сервер: '+ res.message;
-          else
+          else {
             res = res.answer;
+            for (const r of res) {
+              r.data = r.rdata;
+              delete r.rdata;
+            }
+          }
         } catch(e) {
           err = err || {clarification:{message:''}};
           err.clarification.message += ' Сервер: '+ res;
@@ -308,12 +328,68 @@ function getIpsAndCnames(host, cb) {
   );
 }
 
+function getIpsAndCnames(host, cb) {
+
+  /*
+    Answer format:
+      "Answer":
+      [
+        {
+          "name": "apple.com.",   // Always matches name in the Question section
+          "type": 1,              // A - Standard DNS RR type
+          "TTL": 3599,            // Record's time-to-live in seconds
+          "data": "17.178.96.59"  // Data for A - IP address as text
+        },
+      ...
+  **/
+
+  const type2str = {
+    // https://en.wikipedia.org/wiki/List_of_DNS_record_types
+    1:  'A',
+    2:  'NS',
+    28: 'AAAA',
+    5:  'CNAME'
+  };
+
+  httpGet(
+    'https://dns.google.com/resolve?type=A&name=' + host
+    (err, res) => {
+      if (res) {
+        try {
+          res = JSON.parse(res);
+          if (err || res.Status) {
+            const msg = ['Answer', 'Comment', 'Status']
+              .filter( (prop) => res[ prop ] )
+              .map( (prop) => prop + ': ' + JSON.stringify( res[ prop ] )  )
+              .join(', \n');
+            err.clarification.message += ' Сервер: '+ msg;
+            err.data = err.data || res;
+          }
+          else {
+            res = res.Answer;
+            for (const r of res) {
+              r.type = type2str[ r.type ];
+            }
+          }
+        }
+        catch(e) {
+          err = err || {clarification:{message:''}};
+          err.clarification.message += ' Сервер: '+ res;
+          err.clarification.message.trim();
+          err.data = err.data || res;
+        }
+      }
+      return cb( err, res );
+    }
+  );
+}
+
 function updatePacProxyIps(provider, cb) {
   var cb = asyncLogGroup('Getting IP for '+ provider.proxyHosts.join(', ') +'...', cb);
   var failure = {
     clarification: {message:'Не удалось получить один или несколько IP адресов для прокси-серверов. Иконка для уведомления об обходе блокировок может не отображаться.'},
     errors: {}
-  };  
+  };
   var i = 0;
   provider.proxyHosts.map(
     proxyHost => getIpsAndCnames(
@@ -321,7 +397,7 @@ function updatePacProxyIps(provider, cb) {
       (err, ans) => {
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
-          ans.filter( ans => ans.type === 'A' ).map( ans => provider.proxyIps[ ans.rdata ] = proxyHost );
+          ans.filter( ans => ans.type === 'A' ).map( ans => provider.proxyIps[ ans.data ] = proxyHost );
         } else
           failure.errors[proxyHost] = err;
 
