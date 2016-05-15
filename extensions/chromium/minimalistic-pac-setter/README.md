@@ -17,8 +17,8 @@
 
 Если расширение не работает: https://git.io/vgDDj
 
-Антицензура на Реддите: https://www.reddit.com/r/anticensorship_russia
-Группа в G+: https://goo.gl/Lh0Cjh
+Антицензура на Реддите: https://www.reddit.com/r/anticensorship_russia  
+Группа в G+: https://goo.gl/Lh0Cjh  
 История изменений: https://github.com/ilyaigpetrov/anti-censorship-russia/releases
 
 # Дополнительно
