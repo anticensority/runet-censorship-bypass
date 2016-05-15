@@ -9,14 +9,12 @@
 
 /*
   In background scripts use window.antiCensorRu public variables.
-  In pages window.antiCensorRu are not accessible,
+  In pages window.antiCensorRu is not accessible,
     use chrome.runtime.getBackgroundPage(..),
     extension.getBackgroundPage is deprecated
 */
 
 window.antiCensorRu = {
-
-  // PUBLIC
 
   version: chrome.runtime.getManifest().version,
 
@@ -25,8 +23,8 @@ window.antiCensorRu = {
       pacUrl: 'https://antizapret.prostovpn.org/proxy.pac',
       proxyHosts: ['proxy.antizapret.prostovpn.org'],
       proxyIps: {
-        '195.154.110.37': 'proxy.antizapret.prostovpn.org',
-        '195.123.209.38': 'proxy.antizapret.prostovpn.org'
+        '195.123.209.38': 'proxy.antizapret.prostovpn.org',
+        '2a02:27ac::10':  'proxy.antizapret.prostovpn.org'
       }
     },
     Антиценз: {
@@ -41,9 +39,9 @@ window.antiCensorRu = {
       //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0WGczNmJzY3gzMWc', // Beta
       proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
       proxyIps: {
-        '195.154.110.37': 'proxy.antizapret.prostovpn.org',
         '195.123.209.38': 'proxy.antizapret.prostovpn.org',
-        '5.196.220.114': 'gw2.anticenz.org'
+        '2a02:27ac::10':  'proxy.antizapret.prostovpn.org',
+        '5.196.220.114':  'gw2.anticenz.org'
       }
     }
   },
@@ -52,6 +50,7 @@ window.antiCensorRu = {
 
   get currentPacProviderKey() { return this._currentPacProviderKey },
   set currentPacProviderKey(newKey) {
+
     if (newKey && !this.pacProviders[newKey])
       throw new IllegalArgumentException('No provider for key:' + newKey);
     this._currentPacProviderKey = newKey;
@@ -65,17 +64,19 @@ window.antiCensorRu = {
   ifFirstInstall: false,
   lastPacUpdateStamp: 0,
 
-  // PROTECTED
   _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
 
   pushToStorage(cb) {
-    console.log('Pushing...');
 
-    // Copy only settable properties.
-    var onlySettable = {};
-      for(var key of Object.keys(this))
-        if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function')
-          onlySettable[key] = this[key]
+    console.log('Pushing to storage...');
+
+    // Copy only settable properties (except functions).
+    const onlySettable = {};
+    for(const key of Object.keys(this)) {
+      if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function') {
+        onlySettable[key] = this[key];
+      }
+    }
 
     return chrome.storage.local.clear(
       () => chrome.storage.local.set(
@@ -87,28 +88,35 @@ window.antiCensorRu = {
   },
 
   pullFromStorage(cb) {
-    chrome.storage.local.get(null, storage => {
-      console.log('In storage:', storage);
-      for(var key of Object.keys(storage))
+
+    chrome.storage.local.get(null, (storage) => {
+      console.log('Pulled from storage:', storage);
+      for(const key of Object.keys(storage)) {
         this[key] = storage[key];
+      }
 
       console.log('Synced with storage, any callback?', !!cb);
-      if (cb)
+      if (cb) {
         cb(chrome.runtime.lastError, storage);
+      }
     });
   },
 
   syncWithPacProvider(cb) {
-    var cb = asyncLogGroup('Syncing with PAC provider...', cb);
-    if (!this.pacProvider)
+
+    cb = asyncLogGroup('Syncing with PAC provider...', cb);
+    if (!this.pacProvider) {
       return cb({clarification:{message:'Сперва выберите PAC-провайдера.'}});
+    }
 
     var pacSetPromise = new Promise(
       (resolve, reject) => setPacScriptFromProvider(
         this.pacProvider,
         (err, res) => {
-          if (err)
+
+          if (err) {
             return reject(err);
+          }
 
           this.lastPacUpdateStamp = Date.now();
           this.ifFirstInstall = false;
@@ -121,14 +129,16 @@ window.antiCensorRu = {
 
     return updatePacProxyIps(
       this.pacProvider,
-      ipsError => {
-        if (ipsError && ipsError.clarification)
+      (ipsError) => {
+
+        if (ipsError && ipsError.clarification) {
           ipsError.clarification.ifNotCritical = true;
+        }
         pacSetPromise.then(
-          res => this.pushToStorage(
-            pushError => pushError ? cb(pushError) : cb(ipsError, res)
+          (res) => this.pushToStorage(
+            (pushError) => pushError ? cb(pushError) : cb(ipsError, res)
           ),
-          err => cb(err)
+          cb
         )
       }
     );
@@ -138,8 +148,8 @@ window.antiCensorRu = {
 
   setAlarms() {
 
-    var nextUpdateMoment = this.lastPacUpdateStamp + this._pacUpdatePeriodInMinutes*60*1000;
-    var now = Date.now();
+    let nextUpdateMoment = this.lastPacUpdateStamp + this._pacUpdatePeriodInMinutes*60*1000;
+    const now = Date.now();
     if (nextUpdateMoment < now)
       nextUpdateMoment = now;
 
@@ -157,23 +167,27 @@ window.antiCensorRu = {
   },
 
   installPac(key, cb) {
+
     if(typeof(key) === 'function') {
       cb = key;
       key = undefined;
     }
 
-    if(key)
+    if(key) {
       this.currentPacProviderKey = key;
+    }
 
     return this.syncWithPacProvider(cb);
   },
 
   clearPac(cb) {
-    var cb = asyncLogGroup('Cearing alarms and PAC...', cb);
+
+    cb = asyncLogGroup('Cearing alarms and PAC...', cb);
     chrome.alarms.clearAll(
       () => chrome.proxy.settings.clear(
         {},
         () => {
+
           this.currentPacProviderKey = undefined;
           return this.pushToStorage(cb);
         }
@@ -184,7 +198,7 @@ window.antiCensorRu = {
 };
 
 // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
-chrome.storage.local.get(null, oldStorage => {
+chrome.storage.local.get(null, (oldStorage) => {
 
   console.log('Init on storage:', oldStorage);
   antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
@@ -197,10 +211,11 @@ chrome.storage.local.get(null, oldStorage => {
   }
 
   chrome.alarms.onAlarm.addListener(
-    alarm => {
+    (alarm) => {
+
       if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
         console.log('Periodic PAC update triggered:', new Date().toLocaleString('ru-RU'));
-        antiCensorRu.syncWithPacProvider();
+        antiCensorRu.syncWithPacProvider(/* Swallows errors. */);
       }
     }
   );
@@ -212,8 +227,9 @@ chrome.storage.local.get(null, oldStorage => {
     return chrome.runtime.openOptionsPage();
   }
 
-  if (!antiCensorRu.pacProvider)
+  if (!antiCensorRu.pacProvider) {
     return console.log('No PAC provider set. Do nothing.');
+  }
 
   /*
     1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
@@ -222,7 +238,7 @@ chrome.storage.local.get(null, oldStorage => {
        Better on each launch then on each pull.
   */
 
-  var ifAlarmTriggered = antiCensorRu.setAlarms();
+  const ifAlarmTriggered = antiCensorRu.setAlarms();
 
   if (antiCensorRu.version === oldStorage.version) {
     // LAUNCH, RELOAD, ENABLE
@@ -232,11 +248,12 @@ chrome.storage.local.get(null, oldStorage => {
 
   // UPDATE & MIGRATION
   console.log('Extension updated.');
-  if (!ifAlarmTriggered)
+  if (!ifAlarmTriggered) {
     updatePacProxyIps(
       antiCensorRu.pacProvider,
-      ipsError => ipsError ? console.error('Error updating IPs:', ipsError) : antiCensorRu.pushToStorage()
+      (ipsError) => ipsError ? console.error('Error updating IPs:', ipsError) : antiCensorRu.pushToStorage(/* Swallows errors. */)
     );
+  }
 
   /*
 
@@ -257,81 +274,110 @@ chrome.storage.local.get(null, oldStorage => {
 });
 
 function asyncLogGroup() {
-  var args = [].slice.apply(arguments);
-  var cb = args.pop();
+
+  const args = [].slice.apply(arguments);
+  const cb = args.pop() || (() => {});
   console.group.apply(console, args);
   return function() {
+
     console.groupEnd();
     console.log('Group finished.');
-    var _cb = cb || (() => {});
-    return _cb.apply(this, arguments);
+    return cb.apply(this, arguments);
   }
 }
 
 function httpGet(url, cb) {
+
+  const start = Date.now();
   return fetch(url).then(
-    res => {
-      var textCb = err => cb && res.text().then( text => cb(err, text), cb );
-      var status = res.status;
+    (res) => {
+
+      const textCb = (err) => cb && res.text().then( text => cb(err, text), cb );
+      const status = res.status;
       if ( !( status >= 200 && status < 300 || status === 304 ) ) {
-        res.clarification = {message: 'Получен ответ с неудачным HTTP-кодом '+status+'.'};
+        res.clarification = {message: 'Получен ответ с неудачным HTTP-кодом ' + status + '.'};
         return textCb(res);
       }
-      console.log('GETed with success.');
+      console.log('GETed with success:', url, Date.now() - start);
       return textCb();
     },
-    err => {
+    (err) => {
+
       err.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'};
       return cb && cb(err);
     }
   );
 }
 
-function _getIpsAndCnames(host, cb) {
-  /*
-    Answer format:
-      "answer":
-      [
-        {
-          "name": "proxy.antizapret.prostovpn.org.",
-          "type": "A",
-          "class": "IN",
-          "ttl": 409,
-          "rdlength": 4,
-          "rdata": "195.123.209.38"
-        }
-      ...
-    CNAME example: ghs.google.com
-  **/
+function getOneDnsRecord(args, cb) {
+
+  // args: { host:..., type: 'AAAA', filter: ['AAAA'] }
+  if (!(args.host && args.type && cb)) {
+    throw new Error('Wrong args:' + host + ',' + type);
+  }
+
+  const type2str = {
+    // https://en.wikipedia.org/wiki/List_of_DNS_record_types
+    // A, AAAA may be localized (github, e.g.), but you may use ANY
+    1:  'A',      // IPv4
+    28: 'AAAA',   // IPv6
+    2:  'NS',
+    5:  'CNAME',  // Synonyms, returned by server together with A/AAAA.
+    255: 'ANY'    // Deprecated on some servers, not recommended
+  };
+
   httpGet(
-    'http://www.dns-lg.com/google1/'+ host +'/a',
+    'https://dns.google.com/resolve?type=' + args.type + '&name=' + args.host,
     (err, res) => {
-      if (res)
+      if (res) {
         try {
           res = JSON.parse(res);
-          if (err)
-            err.clarification.message += ' Сервер: '+ res.message;
+          console.log('Json parsed.');
+          if (err || res.Status) {
+            const msg = ['Answer', 'Comment', 'Status']
+              .filter( (prop) => res[ prop ] )
+              .map( (prop) => prop + ': ' + JSON.stringify( res[ prop ] ) )
+              .join(', \n');
+            err.clarification.message += ' Сервер (json): ' + msg;
+            err.data = err.data || res;
+          }
           else {
-            res = res.answer;
-            for (const r of res) {
-              r.data = r.rdata;
-              delete r.rdata;
+            res = res.Answer || [];
+            for (const record of res) {
+              record.type = type2str[ record.type ];
+            }
+            if ( args.filter ) {
+              res = res.filter( (record) => args.filter.indexOf( record.type ) > -1 );
             }
           }
-        } catch(e) {
-          err = err || {clarification:{message:''}};
-          err.clarification.message += ' Сервер: '+ res;
-          err.clarification.message.trim();
         }
+        catch(e) {
+          err = e || err || {clarification:{message:''}};
+          err.clarification = err.clarification || { message: '' };
+          err.clarification.message += ' Сервер (текст): '+ res;
+          err.clarification.message.trim();
+          err.data = err.data || res;
+        }
+      }
       return cb( err, res );
     }
   );
-}
+};
 
-function getIpsAndCnames(host, cb) {
+function getDnsRecords(args, cb) {
 
   /*
-    Answer format:
+    Example of input:
+      {
+        // Required
+          host: 'proxy.navalny.cia.gov',
+        // Optional
+          types: {
+            string: ['A', 'AAAA'], // <- Default. Makes one request per each type.
+            filter: ['A', 'AAAA'], // <- Default. E.g., you want to get rid of CNAME type from response.
+          }
+      }
+    Exmple of answer from google:
       "Answer":
       [
         {
@@ -341,67 +387,50 @@ function getIpsAndCnames(host, cb) {
           "data": "17.178.96.59"  // Data for A - IP address as text
         },
       ...
+    Exmple of output:
+      The same as google, but types _may be_ canonical strings ('AAAA', 'A')
   **/
 
-  const type2str = {
-    // https://en.wikipedia.org/wiki/List_of_DNS_record_types
-    1:  'A',
-    2:  'NS',
-    28: 'AAAA',
-    5:  'CNAME'
-  };
+  if ( !args.host.length ) {
+    throw new Error('args.host is required: ' + args.host);
+  }
+  args.types = Object.assign({
+    string: ['A', 'AAAA'],
+    filter: ['A', 'AAAA']
+  }, args.types);
 
-  httpGet(
-    'https://dns.google.com/resolve?type=A&name=' + host
-    (err, res) => {
-      if (res) {
-        try {
-          res = JSON.parse(res);
-          if (err || res.Status) {
-            const msg = ['Answer', 'Comment', 'Status']
-              .filter( (prop) => res[ prop ] )
-              .map( (prop) => prop + ': ' + JSON.stringify( res[ prop ] )  )
-              .join(', \n');
-            err.clarification.message += ' Сервер: '+ msg;
-            err.data = err.data || res;
-          }
-          else {
-            res = res.Answer;
-            for (const r of res) {
-              r.type = type2str[ r.type ];
-            }
-          }
-        }
-        catch(e) {
-          err = err || {clarification:{message:''}};
-          err.clarification.message += ' Сервер: '+ res;
-          err.clarification.message.trim();
-          err.data = err.data || res;
-        }
-      }
-      return cb( err, res );
-    }
+  const promises = args.types.string.map(
+    (type) => new Promise( (resolve, reject) =>
+      getOneDnsRecord({ host: args.host, type: type, filter: args.types.filter }, (err, res) => err ? reject(err) : resolve(res) )
+    )
   );
+  Promise.all(promises).then( (answers) => cb( null, [].concat.apply([], answers) ), cb );
 }
 
+const getIpDnsRecords = (host, cb) => getDnsRecords({ host: host }, cb);
+
 function updatePacProxyIps(provider, cb) {
-  var cb = asyncLogGroup('Getting IP for '+ provider.proxyHosts.join(', ') +'...', cb);
-  var failure = {
+
+  cb = asyncLogGroup('Getting IP for '+ provider.proxyHosts.join(', ') +'...', cb);
+  let failure = {
     clarification: {message:'Не удалось получить один или несколько IP адресов для прокси-серверов. Иконка для уведомления об обходе блокировок может не отображаться.'},
     errors: {}
   };
-  var i = 0;
+  let i = 0;
   provider.proxyHosts.map(
-    proxyHost => getIpsAndCnames(
+    (proxyHost) => getIpDnsRecords(
       proxyHost,
-      (err, ans) => {
+      (err, records) => {
+
         if (!err) {
           provider.proxyIps = provider.proxyIps || {};
-          ans.filter( ans => ans.type === 'A' ).map( ans => provider.proxyIps[ ans.data ] = proxyHost );
-        } else
+          records.forEach( (ans) => provider.proxyIps[ ans.data ] = proxyHost );
+        }
+        else {
           failure.errors[proxyHost] = err;
+        }
 
-        if ( ++i == provider.proxyHosts.length ) {
+        if ( ++i === provider.proxyHosts.length ) {
           failure = Object.keys(failure.errors).length ? failure : null;
           return cb(failure, provider.proxyIps);
         }
@@ -411,11 +440,13 @@ function updatePacProxyIps(provider, cb) {
 }
 
 function setPacScriptFromProvider(provider, cb) {
-  var cb = asyncLogGroup('Getting pac script from provider...', provider.pacUrl, cb);
+
+  cb = asyncLogGroup('Getting pac script from provider...', provider.pacUrl, cb);
 
   httpGet(
     provider.pacUrl,
     (err, res) => {
+
       if (err) {
         err.clarification = {
           message: 'Не удалось скачать PAC-скрипт с адреса: '+ provider.pacUrl +'.',
@@ -425,7 +456,8 @@ function setPacScriptFromProvider(provider, cb) {
       }
       console.log('Clearing chrome proxy settings...');
       return chrome.proxy.settings.clear({}, () => {
-        var config = {
+
+        const config = {
           mode: 'pac_script',
           pacScript: {
             mandatory: false,

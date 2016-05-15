@@ -13,7 +13,7 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
       status.innerHTML = msg;
     } else
       status.classList.add('off');
-  }    
+  }
 
   var antiCensorRu = backgroundPage.antiCensorRu;
 
@@ -95,7 +95,7 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
 
       enableDisableInputs();
       setStatusTo('Установка...');
-      antiCensorRu.installPac(pacKey, err => {
+      antiCensorRu.installPac(pacKey, (err) => {
         if (err) {
           var ifNotCritical = err.clarification && err.clarification.ifNotCritical;
 
@@ -114,9 +114,12 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
           );
           getStatus().querySelector('.link-button').onclick = function() {
             var div = document.createElement('div');
-            div.innerHTML = '\
-Более подробную информацию можно узнать из логов фоновой страницы:<br/>\
-<a href class="ext">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)';
+            div.innerHTML = `
+Более подробную информацию можно узнать из логов фоновой страницы:<br/>
+<a href class="ext">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)
+<br>
+Ещё: ${JSON.stringify({err: err, stack: err.stack})}
+`;
             getStatus().replaceChild(div, this);
             div.querySelector('.ext').onclick = () => {
               chrome.tabs.create({ url: 'chrome://extensions?id='+ chrome.runtime.id });

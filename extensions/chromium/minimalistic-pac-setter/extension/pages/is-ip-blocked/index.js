@@ -1,9 +1,9 @@
 'use strict';
-chrome.runtime.getBackgroundPage( backgroundPage => {
-  
-  var hostname = window.location.search.substring(1);
+chrome.runtime.getBackgroundPage( (backgroundPage) => {
 
-  backgroundPage.getIpsAndCnames( hostname, (err, records) =>
+  const hostname = window.location.search.substring(1);
+
+  backgroundPage.getOneDnsRecord( { host: hostname, type: 'A' }, (err, records) =>
     err
       ? document.write(
           `<title>IP уже нет</title>
@@ -15,7 +15,7 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
         ? window.location.replace( backgroundPage.reestrUrl + records[0].data )
         : document.write(
               '<title>Выбор IP</title>'
-            + '<h4>У домена несколько IP / синонимов:</h4>'
+            + '<h4>У домена несколько IP / синонимов. Для вашего местоположения:</h4>'
             + records
               .sort( (a,b) => a.data.localeCompare(b.data) )
               .map( ans => ans.data.link( ans.type === 'A' ? backgroundPage.reestrUrl + ans.data : window.location.pathname +'?'+ ans.data ) )
