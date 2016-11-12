@@ -12,13 +12,11 @@
   Crazy parallel Chrome.
 **/
 
-window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
+window.chrome.browserAction.setBadgeBackgroundColor({
+  color: '#D00000'
+});
 
-function createLink(url) {
-  const a = document.createElement('a');
-  a.href = url;
-  return a;
-}
+window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
 +function() {
 
@@ -83,7 +81,7 @@ function createLink(url) {
           var ifTitleSetAlready = /\n/.test(title);
           var proxyHost = window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ];
 
-          var hostname = createLink( requestDetails.url ).hostname;
+          var hostname = new URL( requestDetails.url ).hostname;
 
           var ifShouldUpdateTitle = false;
           var indent = '  ';

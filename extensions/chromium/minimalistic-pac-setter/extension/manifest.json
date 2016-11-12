@@ -3,12 +3,12 @@
 
   "name": "Обход блокировок Рунета",
   "description": "Аргументы против цензуры: https://git.io/vEkI9",
-  "version": "0.0.0.14",
+  "version": "0.0.0.15",
   "icons": {
     "128": "/icons/ribbon128.png"
 	},
   "author": "ilyaigpetrov@gmail.com",
-  "homepage_url": "https://github.com/ilyaigpetrov/anti-censorship-russia",
+  "homepage_url": "https://github.com/anticensorship-russia/chromium-extension",
 
   "permissions": [
     "proxy",
@@ -23,7 +23,7 @@
     "scripts": ["1-sync-pac-script-with-pac-provider.js", "2-block-informer.js", "3-context-menus.js"]
   },
   "browser_action": {
-    "default_title": "Этот сайт благословлён РКН",
+    "default_title": "Этот сайт благословлён",
     "default_popup": "/pages/choose-pac-provider/index.html"
   },
   "options_ui": {
