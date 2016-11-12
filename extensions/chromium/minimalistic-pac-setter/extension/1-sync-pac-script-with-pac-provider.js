@@ -35,8 +35,8 @@ window.antiCensorRu = {
       }
     },
     Оба_и_на_свитчах: {
-      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
-      //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0WGczNmJzY3gzMWc', // Beta
+      //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
+      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0WGczNmJzY3gzMWc', // Beta
       proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
       proxyIps: {
         '195.123.209.38': 'proxy.antizapret.prostovpn.org',
@@ -256,20 +256,14 @@ chrome.storage.local.get(null, (oldStorage) => {
   }
 
   /*
-
     History of Changes to Storage (Migration Guide)
     -----------------------------------------------
-
     Version 0.0.0.10
-
       * Added this.version
       * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}
-
     Version 0.0.0.8-9
-
       * Changed storage.ifNotInstalled to storage.ifFirstInstall
       * Added storage.lastPacUpdateStamp
-
   **/
 });
 
@@ -283,6 +277,7 @@ function asyncLogGroup() {
     console.groupEnd();
     console.log('Group finished.');
     return cb.apply(this, arguments);
+
   }
 }
 
@@ -445,15 +440,16 @@ function setPacScriptFromProvider(provider, cb) {
 
   httpGet(
     provider.pacUrl,
-    (err, res) => {
+    (err, pacData) => {
 
       if (err) {
         err.clarification = {
-          message: 'Не удалось скачать PAC-скрипт с адреса: '+ provider.pacUrl +'.',
+          message: 'Не удалось скачать PAC-скрипт с адреса: ' + provider.pacUrl + '.',
           prev: err.clarification
         };
         return cb(err);
       }
+
       console.log('Clearing chrome proxy settings...');
       return chrome.proxy.settings.clear({}, () => {
 
@@ -461,7 +457,7 @@ function setPacScriptFromProvider(provider, cb) {
           mode: 'pac_script',
           pacScript: {
             mandatory: false,
-            data: res
+            data: pacData
           }
         };
         console.log('Setting chrome proxy settings...');
