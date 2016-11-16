@@ -221,6 +221,13 @@ chrome.storage.local.get(null, (oldStorage) => {
   );
   console.log('Alarm listener installed. We won\'t miss any PAC update.');
 
+  window.addEventListener('online',  () => {
+
+    console.log('We are online, checking periodic updates...');
+    antiCensorRu.setAlarms();
+
+  });
+
   if (antiCensorRu.ifFirstInstall) {
     // INSTALL
     console.log('Installing...');
