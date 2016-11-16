@@ -27,7 +27,7 @@ document.body.innerHTML = `
     <a href="http://site2pic.com/">site2pic [COPY]</a><br/>
     <a href="https://browshot.com">brow shot [COPY]</a>
   <h3>Инструменты</h3>
-    <a href="http://isup.me/{url}">Сайт доступен из-за границы? isup.me</a><br/>
+    <a href="http://isup.me/${url}">Сайт доступен из-за границы? isup.me</a><br/>
     <a href='
 			data:text/html;charset=utf8,<title>Запрашиваю...</title>
 	    <form method="POST" action="https://www.host-tracker.com/ru/InstantCheck/Create">

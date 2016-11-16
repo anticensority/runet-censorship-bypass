@@ -10,18 +10,19 @@
 
   const removeProtocol = (url) => {
 
-    const link = createLink(url);
+    const link = new URL(url);
     return link.href.replace( link.protocol + '//', '' );
+
   };
 
-  createMenuLinkEntry( 'Сайт доступен из-за границы? Is up?', (tab) => 'http://isup.me/'+ createLink(tab.url).hostname );
+  createMenuLinkEntry( 'Сайт доступен из-за границы? Is up?', (tab) => 'http://isup.me/'+ new URL(tab.url).hostname );
 
   window.reestrUrl = 'http://reestr.rublacklist.net/search/?q=';
 
   createMenuLinkEntry( 'Сайт в реестре блокировок?', (tab) => {
 
     const ifHost = confirm('Да  — искать по домену\nНет — искать по IP (зависит от местоположения)');
-    const hostname = createLink( tab.url ).hostname;
+    const hostname = new URL( tab.url ).hostname;
     if (ifHost) {
       return reestrUrl + hostname;
     }
