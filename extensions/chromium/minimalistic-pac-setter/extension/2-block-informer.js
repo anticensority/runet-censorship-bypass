@@ -58,7 +58,9 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
     if (
       !( window.antiCensorRu.pacProvider && window.antiCensorRu.pacProvider.proxyIps && window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ] )
-    ) return false;
+    ) {
+      return false;
+    }
 
     var ifMainFrame = requestDetails.type === 'main_frame';
 
