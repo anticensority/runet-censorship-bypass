@@ -35,8 +35,8 @@ window.antiCensorRu = {
       }
     },
     Оба_и_на_свитчах: {
-      //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc',
-      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0WGczNmJzY3gzMWc', // Beta
+      //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc', // 0.14
+      pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0bzNUR2F4RF8wOU0',   // 0.15
       proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
       proxyIps: {
         '195.123.209.38': 'proxy.antizapret.prostovpn.org',
