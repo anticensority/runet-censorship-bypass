@@ -13,7 +13,7 @@
 **/
 
 window.chrome.browserAction.setBadgeBackgroundColor({
-  color: '#D00000'
+  color: '#db4b2f'
 });
 
 window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
