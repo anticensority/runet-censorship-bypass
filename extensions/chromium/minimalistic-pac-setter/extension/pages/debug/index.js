@@ -1,7 +1,10 @@
 'use strict';
 
 const editor = ace.edit("editor");
-editor.getSession().setMode("ace/mode/javascript");
+editor.getSession().setOptions({
+  mode: "ace/mode/javascript",
+  useSoftTabs: true
+});
 
 document.querySelector('#read-button').onclick = () => {
 
