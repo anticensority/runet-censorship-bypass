@@ -139,4 +139,8 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
   if (antiCensorRu.ifFirstInstall)
     triggerChosenProvider();
 
+  // Debug
+
+  document.querySelector('#debug-link').onclick = () => chrome.tabs.create({ url: chrome.extension.getURL('./pages/debug/index.html') });
+
 });

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PAC Sandbox</title>
+    <style type="text/css" media="screen">
+      html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      #editor {
+        width: 100%;
+        height: 100%;
+      }
+      nav {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <button id="read-button">READ</button>
+      <button id="save-button">SAVE</button>
+    </nav>
+    <div id="editor">Press READ button.</div>
+    <script src="./ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>

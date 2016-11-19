@@ -35,8 +35,8 @@
       input:checked ~ .checked-radio-panel {
         display: inline;
       }
-      .button-panel {
-        margin-top: 1em;
+      footer {
+        margin: 2em 1em 1em;
       }
     </style>
   </head>
@@ -48,9 +48,10 @@
       Обновлялись: <span class="update-date">...</span>
     </div>
     <div id="status">Загрузка...</div>
-    <div class="button-panel">
+    <footer>
       <input type="button" value="Готово" class="close-button">
-    </div>
+      <a id="debug-link" href style="float: right; text-decoration: none">Отладка</a>
+    </footer>
     <script src="./index.js"></script>
   </body>
 </html>
