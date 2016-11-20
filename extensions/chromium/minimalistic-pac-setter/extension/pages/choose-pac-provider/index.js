@@ -3,28 +3,33 @@
 chrome.runtime.getBackgroundPage( backgroundPage => {
 
   function getStatus() {
+
     return document.querySelector('#status');
+
   }
 
   function setStatusTo(msg) {
-    var status = getStatus();
+
+    const status = getStatus();
     if (msg) {
       status.classList.remove('off');
       status.innerHTML = msg;
     } else
       status.classList.add('off');
+
   }
 
-  var antiCensorRu = backgroundPage.antiCensorRu;
+  const antiCensorRu = backgroundPage.antiCensorRu;
 
   // SET DATE
 
   function setDate() {
-    var dateForUser = 'никогда';
+
+    let dateForUser = 'никогда';
     if( antiCensorRu.lastPacUpdateStamp ) {
-      var diff = Date.now() - antiCensorRu.lastPacUpdateStamp;
-      var units = ' мс';
-      var gauges = [
+      let diff = Date.now() - antiCensorRu.lastPacUpdateStamp;
+      let units = ' мс';
+      const gauges = [
         [1000, ' с'],
         [60, ' мин'],
         [60, ' ч'],
@@ -33,23 +38,24 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
         [4, ' месяцев'],
         [12, ' г']
       ];
-      for(var g of gauges) {
-        var diffy = Math.floor(diff / g[0]);
+      for(const g of gauges) {
+        const diffy = Math.floor(diff / g[0]);
         if (!diffy)
           break;
         diff = diffy;
-        var units = g[1];
+        units = g[1];
       }
       dateForUser = diff + units + ' назад';
     }
 
-    var dateElement = document.querySelector('.update-date');
+    const dateElement = document.querySelector('.update-date');
     dateElement.innerText = dateForUser;
     dateElement.title = new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU');
+
   }
 
   setDate();
-  chrome.storage.onChanged.addListener( changes => changes.lastPacUpdateStamp.newValue && setDate() );
+  chrome.storage.onChanged.addListener( (changes) => changes.lastPacUpdateStamp.newValue && setDate() );
 
   // CLOSE BUTTON
 
@@ -57,39 +63,45 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
 
   // RADIOS
 
-  var currentRadio = () => {
-    var id = antiCensorRu.currentPacProviderKey || 'none';
+  const currentRadio = () => {
+
+    const id = antiCensorRu.currentPacProviderKey || 'none';
     return document.querySelector('#'+id);
+
   }
-  var checkChosenProvider = () => {
-    var radio = currentRadio();
-    radio.checked = true;
+  const checkChosenProvider = () => {
+
+    currentRadio().checked = true;
+
   }
-  var triggerChosenProvider = () => {
-    var event = document.createEvent('HTMLEvents');
+  const triggerChosenProvider = () => {
+
+    const event = document.createEvent('HTMLEvents');
     event.initEvent('change', false, true);
     currentRadio().dispatchEvent(event);
+
   }
 
-  var ul = document.querySelector('#list-of-providers');
-  var _firstChild = ul.firstChild;
-  for( var providerKey of Object.keys(antiCensorRu.pacProviders) ) {
-    var li = document.createElement('li');
-    li.innerHTML = '<input type="radio" name="pacProvider" id="'+providerKey+'"> <label for="'+providerKey+'">'+providerKey+'</label> <a href class="link-button checked-radio-panel">[обновить]</a>';
-    li.querySelector('.link-button').onclick = () => {triggerChosenProvider(); return false;};
-    ul.insertBefore( li, _firstChild );
+  const ul = document.querySelector('#list-of-providers');
+  //const _firstChild = ul.firstChild;
+  for( const providerKey of Object.keys(antiCensorRu.pacProviders) ) {
+    const li = document.createElement('li');
+    li.innerHTML = '<input type="radio" name="pacProvider" id="' + providerKey + '"> <label for="' + providerKey + '">'+providerKey + '</label> <a href class="link-button checked-radio-panel">[обновить]</a>';
+    li.querySelector('.link-button').onclick = () => { triggerChosenProvider(); return false; };
+    ul.insertBefore( li, ul.firstChild );
   }
 
-  var radios = [].slice.apply( document.querySelectorAll('[name=pacProvider]') );
-  for(var radio of radios) {
+  const radios = [].slice.apply( document.querySelectorAll('[name=pacProvider]') );
+  for(const radio of radios) {
     radio.onchange = function(event) {
-      var pacKey = event.target.id;
+
+      const pacKey = event.target.id;
       if (pacKey === 'none')
         return antiCensorRu.clearPac();
 
       function enableDisableInputs() {
-        var inputs = document.querySelectorAll('input');
-        for (var i = 0; i < inputs.length; i++)
+        const inputs = document.querySelectorAll('input');
+        for (const i = 0; i < inputs.length; i++)
           inputs[i].disabled = !inputs[i].disabled;
       }
 
@@ -102,10 +114,10 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
           setStatusTo('PAC-скрипт установлен.');
         }
         else {
-          var ifNotCritical = err.clarification && err.clarification.ifNotCritical;
+          const ifNotCritical = err.clarification && err.clarification.ifNotCritical;
 
-          var message = '';
-          var clarification = err.clarification;
+          let message = '';
+          let clarification = err.clarification;
           do {
             message = message +' '+ (clarification && clarification.message || err.message || '');
             clarification = clarification.prev;
@@ -118,7 +130,8 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
 <a href class="link-button">[Ещё&nbsp;подробнее]</a>`
           );
           getStatus().querySelector('.link-button').onclick = function() {
-            var div = document.createElement('div');
+
+            const div = document.createElement('div');
             div.innerHTML = `
 Более подробную информацию можно узнать из логов фоновой страницы:<br/>
 <a href class="ext">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)
@@ -127,10 +140,13 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
 `;
             getStatus().replaceChild(div, this);
             div.querySelector('.ext').onclick = () => {
+
               chrome.tabs.create({ url: 'chrome://extensions?id='+ chrome.runtime.id });
               return false;
+
             }
             return false;
+
           };
         }
         enableDisableInputs();
