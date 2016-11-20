@@ -5,7 +5,7 @@
   const createMenuLinkEntry = (title, tab2url) => chrome.contextMenus.create({
     title: title,
     contexts: ['browser_action'],
-    onclick: (menuInfo, tab) => Promise.resolve( tab2url( tab ) ).then( url => chrome.tabs.create({url: url}) )
+    onclick: (menuInfo, tab) => Promise.resolve( tab2url( tab ) ).then( (url) => chrome.tabs.create({url: url}) )
   });
 
   createMenuLinkEntry( 'Сайт доступен из-за границы? Is up?', (tab) => 'http://isup.me/'+ new URL(tab.url).hostname );

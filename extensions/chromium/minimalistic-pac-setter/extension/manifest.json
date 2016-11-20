@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "Обход блокировок Рунета",
+  "name": "Обход блокировок Рунета 0.15",
   "description": "Аргументы против цензуры: https://git.io/vEkI9",
   "version": "0.0.0.15",
   "icons": {
