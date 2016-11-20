@@ -96,7 +96,12 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
       enableDisableInputs();
       setStatusTo('Установка...');
       antiCensorRu.installPac(pacKey, (err) => {
-        if (err) {
+
+        backgroundPage.console.log('Popup callback...');
+        if (!err) {
+          setStatusTo('PAC-скрипт установлен.');
+        }
+        else {
           var ifNotCritical = err.clarification && err.clarification.ifNotCritical;
 
           var message = '';
@@ -127,8 +132,7 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
             }
             return false;
           };
-        } else
-          setStatusTo('PAC-скрипт установлен.');
+        }
         enableDisableInputs();
       });
     }

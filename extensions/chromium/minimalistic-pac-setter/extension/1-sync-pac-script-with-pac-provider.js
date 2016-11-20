@@ -81,7 +81,7 @@ window.antiCensorRu = {
     return chrome.storage.local.clear(
       () => chrome.storage.local.set(
         onlySettable,
-        () => cb && cb(chrome.runtime.lastError, onlySettable)
+        chromified(cb, onlySettable)
       )
     );
 
@@ -90,15 +90,18 @@ window.antiCensorRu = {
   pullFromStorage(cb) {
 
     chrome.storage.local.get(null, (storage) => {
-      console.log('Pulled from storage:', storage);
-      for(const key of Object.keys(storage)) {
-        this[key] = storage[key];
+
+      const err = checkChromeError();
+      if (!err) {
+        console.log('Pulled from storage:', storage);
+        for(const key of Object.keys(storage)) {
+          this[key] = storage[key];
+        }
       }
 
       console.log('Synced with storage, any callback?', !!cb);
-      if (cb) {
-        cb(chrome.runtime.lastError, storage);
-      }
+      return cb && cb(err, storage);
+
     });
   },
 
@@ -109,39 +112,51 @@ window.antiCensorRu = {
       return cb({clarification:{message:'Сперва выберите PAC-провайдера.'}});
     }
 
-    var pacSetPromise = new Promise(
+    const pacSetPromise = new Promise(
       (resolve, reject) => setPacScriptFromProvider(
         this.pacProvider,
         (err, res) => {
 
-          if (err) {
-            return reject(err);
+          if (!err) {
+            this.lastPacUpdateStamp = Date.now();
+            this.ifFirstInstall = false;
+            this.setAlarms();
           }
 
-          this.lastPacUpdateStamp = Date.now();
-          this.ifFirstInstall = false;
-          this.setAlarms();
+          return resolve([err, res]);
 
-          return resolve(res);
         }
       )
     );
 
-    return updatePacProxyIps(
-      this.pacProvider,
-      (ipsError) => {
+    const ipsPromise = new Promise(
+      (resolve, reject) => updatePacProxyIps(
+        this.pacProvider,
+        (ipsError) => {
 
-        if (ipsError && ipsError.clarification) {
-          ipsError.clarification.ifNotCritical = true;
+          if (ipsError && ipsError.clarification) {
+            ipsError.clarification.ifNotCritical = true;
+          }
+          return resolve([ipsError]);
+
         }
-        pacSetPromise.then(
-          (res) => this.pushToStorage(
-            (pushError) => pushError ? cb(pushError) : cb(ipsError, res)
-          ),
-          cb
-        )
+      )
+    );
+
+    Promise.all([pacSetPromise, ipsPromise]).then(
+      ([[pacErr, pacRes], [ipsErr]]) => {
+
+        if (pacErr && ipsErr) {
+          return cb(pacErr, pacRes);
+        }
+        return cb(pacErr || ipsErr);
+        this.pushToStorage(
+          (pushErr) => cb(pacErr || ipsErr || pushErr, pacRes)
+        );
+
       }
     );
+
   },
 
   _pacUpdatePeriodInMinutes: 4*60,
@@ -168,6 +183,7 @@ window.antiCensorRu = {
 
   installPac(key, cb) {
 
+    console.log('Installing PAC');
     if(typeof(key) === 'function') {
       cb = key;
       key = undefined;
@@ -178,6 +194,7 @@ window.antiCensorRu = {
     }
 
     return this.syncWithPacProvider(cb);
+
   },
 
   clearPac(cb) {
@@ -188,8 +205,13 @@ window.antiCensorRu = {
         {},
         () => {
 
+          const err = checkChromeError();
+          if (err) {
+            return cb(err);
+          }
           this.currentPacProviderKey = undefined;
           return this.pushToStorage(cb);
+
         }
       )
     );
@@ -274,18 +296,48 @@ chrome.storage.local.get(null, (oldStorage) => {
   **/
 });
 
-function asyncLogGroup() {
+function asyncLogGroup(...args) {
 
-  const args = [].slice.apply(arguments);
   const cb = args.pop() || (() => {});
   console.group.apply(console, args);
-  return function() {
+  return function(...cbArgs) {
 
     console.groupEnd();
     console.log('Group finished.');
-    return cb.apply(this, arguments);
+    return cb.apply(this, cbArgs);
 
   }
+}
+
+function checkChromeError(betterStack) {
+
+  // Chrome API calls your cb in a context different from the point of API method invokation.
+  const err = chrome.runtime.lastError || chrome.extension.lastError || null;
+  if (err) {
+    const args = ['API returned error:', err];
+    if (betterStack) {
+      args.push('\n' + betterStack);
+    }
+    console.warn.apply(console, args);
+  }
+  return err;
+
+}
+
+function chromified(cb, ...replaceArgs) {
+
+  const stack = (new Error()).stack;
+  // Take error first callback and covert it to chrome api callback.
+  return function(...args) {
+
+    if (replaceArgs.length) {
+      args = replaceArgs;
+    }
+    const err = checkChromeError(stack);
+    return cb && cb.call(this, err, ...args);
+
+  };
+
 }
 
 function httpGet(url, cb) {
@@ -294,7 +346,9 @@ function httpGet(url, cb) {
   return fetch(url).then(
     (res) => {
 
-      const textCb = (err) => cb && res.text().then( text => cb(err, text), cb );
+      const textCb =
+        (err) => cb && res.text()
+          .then( (text) => cb(err, text), cb );
       const status = res.status;
       if ( !( status >= 200 && status < 300 || status === 304 ) ) {
         res.clarification = {message: 'Получен ответ с неудачным HTTP-кодом ' + status + '.'};
@@ -302,11 +356,13 @@ function httpGet(url, cb) {
       }
       console.log('GETed with success:', url, Date.now() - start);
       return textCb();
+
     },
     (err) => {
 
       err.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'};
       return cb && cb(err);
+
     }
   );
 }
@@ -457,19 +513,30 @@ function setPacScriptFromProvider(provider, cb) {
         return cb(err);
       }
 
-      console.log('Clearing chrome proxy settings...');
-      return chrome.proxy.settings.clear({}, () => {
+      const config = {
+        mode: 'pac_script',
+        pacScript: {
+          mandatory: false,
+          data: pacData
+        }
+      };
+      console.log('Setting chrome proxy settings...');
+      chrome.proxy.settings.set( {value: config}, chromified(cb) );
 
-        const config = {
-          mode: 'pac_script',
-          pacScript: {
-            mandatory: false,
-            data: pacData
-          }
-        };
-        console.log('Setting chrome proxy settings...');
-        chrome.proxy.settings.set( {value: config}, cb );
-      });
     }
   );
 }
+
+window.addEventListener('error', (err) => {
+
+  console.error('Global error');
+
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+
+  console.warn('Unhandled rejection. Throwing error.');
+  event.preventDefault();
+  throw event.reason;
+
+});
