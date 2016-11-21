@@ -79,7 +79,7 @@
         }
       }
 
-      return chrome.storage.local.clear(
+      chrome.storage.local.clear(
         () => chrome.storage.local.set(
           onlySettable,
           chromified(cb, onlySettable)
@@ -101,7 +101,7 @@
         }
 
         console.log('Synced with storage, any callback?', !!cb);
-        return cb && cb(err, storage);
+        cb && cb(err, storage);
 
       });
     },
@@ -124,7 +124,7 @@
               this.setAlarms();
             }
 
-            return resolve([err, res]);
+            resolve([err, res]);
 
           }
         )
@@ -138,7 +138,7 @@
             if (ipsError && ipsError.clarification) {
               ipsError.clarification.ifNotCritical = true;
             }
-            return resolve([ipsError]);
+            resolve([ipsError]);
 
           }
         )
@@ -150,7 +150,6 @@
           if (pacErr && ipsErr) {
             return cb(pacErr, pacRes);
           }
-          return cb(pacErr || ipsErr);
           this.pushToStorage(
             (pushErr) => cb(pacErr || ipsErr || pushErr, pacRes)
           );
@@ -193,11 +192,22 @@
         key = undefined;
       }
 
-      if(key) {
+      const oldKey = this.currentPacProviderKey;
+      if(key || key !== oldKey) {
         this.currentPacProviderKey = key;
+        const _cb = cb;
+        cb = (err, res) => {
+
+          if (err && !(err.clarification && err.clarification.ifNotCritical)) {
+            console.log('Rollback privider key.');
+            this.currentPacProviderKey = oldKey;
+          }
+          _cb(err, res);
+
+        };
       }
 
-      return this.syncWithPacProvider(cb);
+      this.syncWithPacProvider(cb);
 
     },
 
@@ -214,7 +224,7 @@
               return cb(err);
             }
             this.currentPacProviderKey = undefined;
-            return this.pushToStorage(cb);
+            this.pushToStorage(cb);
 
           }
         )
@@ -258,7 +268,7 @@
     if (antiCensorRu.ifFirstInstall) {
       // INSTALL
       console.log('Installing...');
-      return chrome.runtime.openOptionsPage();
+      chrome.runtime.openOptionsPage();
     }
 
     if (!antiCensorRu.pacProvider) {
@@ -311,7 +321,7 @@
 
       console.groupEnd();
       console.log('Group finished.');
-      return cb.apply(this, cbArgs);
+      cb.apply(this, cbArgs);
 
     }
   }
@@ -341,7 +351,7 @@
         args = replaceArgs;
       }
       const err = checkChromeError(stack);
-      return cb && cb.call(this, err, ...args);
+      cb && cb.call(this, err, ...args);
 
     };
 
@@ -371,7 +381,7 @@
           return cb({clarification: {message:'Настройки прокси контролирует другое расширение. <a href="chrome://settings/search#proxy">Какое?</a>'}});
         }
         console.log('Successfuly set PAC in proxy settings..');
-        return cb();
+        cb();
       });
 
     });
@@ -381,7 +391,7 @@
   function httpGet(url, cb) {
 
     const start = Date.now();
-    return fetch(url).then(
+    fetch(url).then(
       (res) => {
 
         const textCb =
@@ -393,13 +403,13 @@
           return textCb(res);
         }
         console.log('GETed with success:', url, Date.now() - start);
-        return textCb();
+        textCb();
 
       },
       (err) => {
 
         err.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'};
-        return cb && cb(err);
+        cb && cb(err);
 
       }
     );
@@ -455,7 +465,7 @@
             err.data = err.data || res;
           }
         }
-        return cb( err, res );
+        cb( err, res );
       }
     );
   };
@@ -528,7 +538,7 @@
 
           if ( ++i === provider.proxyHosts.length ) {
             failure = Object.keys(failure.errors).length ? failure : null;
-            return cb(failure, provider.proxyIps);
+            cb(failure, provider.proxyIps);
           }
         }
       )
@@ -574,6 +584,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
 chrome.proxy.settings.onChange.addListener((details) => {
 
-  console.log('Settings changed:', details);
+   console.log('Proxy settings changed.', details);
+   const ifOther = details.levelOfControl.startsWith('controlled_by_other');
 
 });
