@@ -1,29 +1,27 @@
 'use strict';
 
-chrome.runtime.getBackgroundPage( backgroundPage => {
+chrome.runtime.getBackgroundPage( (backgroundPage) => {
 
-  function getStatus() {
+  const getStatus = () => document.querySelector('#status');
 
-    return document.querySelector('#status');
-
-  }
-
-  function setStatusTo(msg) {
+  const setStatusTo = (msg) => {
 
     const status = getStatus();
     if (msg) {
       status.classList.remove('off');
       status.innerHTML = msg;
-    } else
+    }
+    else {
       status.classList.add('off');
+    }
 
-  }
+  };
 
   const antiCensorRu = backgroundPage.antiCensorRu;
 
   // SET DATE
 
-  function setDate() {
+  const setDate = () => {
 
     let dateForUser = 'никогда';
     if( antiCensorRu.lastPacUpdateStamp ) {
@@ -52,7 +50,7 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
     dateElement.innerText = dateForUser;
     dateElement.title = new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU');
 
-  }
+  };
 
   setDate();
   chrome.storage.onChanged.addListener( (changes) => changes.lastPacUpdateStamp.newValue && setDate() );
@@ -83,12 +81,12 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
   }
 
   const ul = document.querySelector('#list-of-providers');
-  //const _firstChild = ul.firstChild;
-  for( const providerKey of Object.keys(antiCensorRu.pacProviders) ) {
+  const _firstChild = ul.firstChild;
+  for( const providerKey of Object.keys(antiCensorRu.pacProviders).sort() ) {
     const li = document.createElement('li');
     li.innerHTML = '<input type="radio" name="pacProvider" id="' + providerKey + '"> <label for="' + providerKey + '">'+providerKey + '</label> <a href class="link-button checked-radio-panel">[обновить]</a>';
     li.querySelector('.link-button').onclick = () => { triggerChosenProvider(); return false; };
-    ul.insertBefore( li, ul.firstChild );
+    ul.insertBefore( li, _firstChild );
   }
 
   const radios = [].slice.apply( document.querySelectorAll('[name=pacProvider]') );
@@ -99,10 +97,13 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
       if (pacKey === 'none')
         return antiCensorRu.clearPac();
 
-      function enableDisableInputs() {
+      const enableDisableInputs = function () {
+
         const inputs = document.querySelectorAll('input');
-        for (const i = 0; i < inputs.length; i++)
+        for ( let i = 0; i < inputs.length; i++ ) {
           inputs[i].disabled = !inputs[i].disabled;
+        }
+
       }
 
       enableDisableInputs();
@@ -120,31 +121,27 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
           let clarification = err.clarification;
           do {
             message = message +' '+ (clarification && clarification.message || err.message || '');
-            clarification = clarification.prev;
+            clarification = clarification && clarification.prev;
           } while( clarification );
           message = message.trim();
           setStatusTo(
 `<span style="color:red">${ifNotCritical ? 'Некритичная ошибка.' : 'Ошибка!'}</span>
 <br/>
 <span style="font-size: 0.9em; color: darkred">${message}</span>
+<button>Сообщить автору</button><br/>
 <a href class="link-button">[Ещё&nbsp;подробнее]</a>`
           );
           getStatus().querySelector('.link-button').onclick = function() {
 
             const div = document.createElement('div');
+            backgroundPage.console.log('ERROR', err);
             div.innerHTML = `
 Более подробную информацию можно узнать из логов фоновой страницы:<br/>
-<a href class="ext">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)
+<a href="chrome://extensions?id=${chrome.runtime.id}" data-in-bg="true">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)
 <br>
 Ещё: ${JSON.stringify({err: err, stack: err.stack})}
 `;
             getStatus().replaceChild(div, this);
-            div.querySelector('.ext').onclick = () => {
-
-              chrome.tabs.create({ url: 'chrome://extensions?id='+ chrome.runtime.id });
-              return false;
-
-            }
             return false;
 
           };
@@ -156,11 +153,8 @@ chrome.runtime.getBackgroundPage( backgroundPage => {
 
   setStatusTo('');
   checkChosenProvider();
-  if (antiCensorRu.ifFirstInstall)
+  if (antiCensorRu.ifFirstInstall) {
     triggerChosenProvider();
-
-  // Debug
-
-  document.querySelector('#debug-link').onclick = () => chrome.tabs.create({ url: chrome.extension.getURL('./pages/debug/index.html') });
+  }
 
 });
