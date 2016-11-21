@@ -155,7 +155,8 @@
             (pushErr) => cb(pacErr || ipsErr || pushErr, pacRes)
           );
 
-        }
+        },
+        cb
       );
 
     },
@@ -346,6 +347,37 @@
 
   }
 
+  function setPac(pacData, cb) {
+
+    const config = {
+      mode: 'pac_script',
+      pacScript: {
+        mandatory: false,
+        data: pacData
+      }
+    };
+    console.log('Setting chrome proxy settings...');
+    chrome.proxy.settings.set( {value: config}, () => {
+
+      const err = checkChromeError();
+      if (err) {
+        return cb(err);
+      }
+      chrome.proxy.settings.get({}, (details) => {
+
+        const ifThis = details.levelOfControl.startsWith('controlled_by_this');
+        if (!ifThis) {
+          console.warn('Failed, other extension is in control.');
+          return cb({clarification: {message:'Настройки прокси контролирует другое расширение. <a href="chrome://settings/search#proxy">Какое?</a>'}});
+        }
+        console.log('Successfuly set PAC in proxy settings..');
+        return cb();
+      });
+
+    });
+
+  }
+
   function httpGet(url, cb) {
 
     const start = Date.now();
@@ -518,16 +550,7 @@
           };
           return cb(err);
         }
-
-        const config = {
-          mode: 'pac_script',
-          pacScript: {
-            mandatory: false,
-            data: pacData
-          }
-        };
-        console.log('Setting chrome proxy settings...');
-        chrome.proxy.settings.set( {value: config}, chromified(cb) );
+        setPac(pacData, cb);
 
       }
     );
@@ -546,5 +569,11 @@ window.addEventListener('unhandledrejection', (event) => {
   console.warn('Unhandled rejection. Throwing error.');
   event.preventDefault();
   throw event.reason;
+
+});
+
+chrome.proxy.settings.onChange.addListener((details) => {
+
+  console.log('Settings changed:', details);
 
 });

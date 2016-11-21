@@ -18,7 +18,10 @@
         height: 100%;
       }
       nav {
-        text-align: center;
+        padding: 0.2em;
+      }
+      #status {
+        padding-left: 0.5em;
       }
     </style>
   </head>
@@ -26,9 +29,10 @@
     <nav>
       <button id="read-button">READ</button>
       <button id="save-button">SAVE</button>
+      <span id="status">Press READ button to read PAC from settings</span>
     </nav>
-    <div id="editor">Press READ button.</div>
-    <script src="./ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="./index.js"></script>
+    <div id="editor"></div>
+    <script src="./vendor/ace-editor/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./index.js" charset="utf-8"></script>
   </body>
 </html>
