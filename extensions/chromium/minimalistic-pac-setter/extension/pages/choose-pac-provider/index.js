@@ -67,18 +67,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) => {
     return document.querySelector('#'+id);
 
   }
-  const checkChosenProvider = () => {
-
-    currentRadio().checked = true;
-
-  }
-  const triggerChosenProvider = () => {
-
-    const event = document.createEvent('HTMLEvents');
-    event.initEvent('change', false, true);
-    currentRadio().dispatchEvent(event);
-
-  }
+  const checkChosenProvider = () => currentRadio().checked = true;
+  const triggerChosenProvider = () => currentRadio().click();
 
   const ul = document.querySelector('#list-of-providers');
   const _firstChild = ul.firstChild;
@@ -91,11 +81,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) => {
 
   const radios = [].slice.apply( document.querySelectorAll('[name=pacProvider]') );
   for(const radio of radios) {
-    radio.onchange = function(event) {
+    radio.onclick = function(event) {
 
       const pacKey = event.target.id;
-      if (pacKey === 'none')
+      if (pacKey === 'none') {
         return antiCensorRu.clearPac();
+      }
 
       const enableDisableInputs = function () {
 
@@ -113,6 +104,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) => {
         backgroundPage.console.log('Popup callback...');
         if (!err) {
           setStatusTo('PAC-скрипт установлен.');
+          checkChosenProvider();
         }
         else {
           const ifNotCritical = err.clarification && err.clarification.ifNotCritical;
@@ -134,7 +126,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) => {
           getStatus().querySelector('.link-button').onclick = function() {
 
             const div = document.createElement('div');
-            backgroundPage.console.log('ERROR', err);
             div.innerHTML = `
 Более подробную информацию можно узнать из логов фоновой страницы:<br/>
 <a href="chrome://extensions?id=${chrome.runtime.id}" data-in-bg="true">chrome://extensions</a> › Это расширение › Отладка страниц: фоновая страница › Console (DevTools)
@@ -148,6 +139,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) => {
         }
         enableDisableInputs();
       });
+      return false;
     }
   }
 
