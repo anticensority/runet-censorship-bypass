@@ -9,9 +9,10 @@
         margin: 0;
         margin-bottom: 1em;
       }
-      li {
+      li, footer {
         display: block;
         white-space: nowrap;
+        word-break: keep-all;
       }
       li > * {
         vertical-align: middle;
@@ -49,8 +50,7 @@
     </div>
     <div id="status">Загрузка...</div>
     <footer>
-      <input type="button" value="Готово" class="close-button">
-      <a href="../debug/index.html" style="float: right; text-decoration: none">Отладка</a>
+      <input type="button" value="Готово" class="close-button">&nbsp;<a href="../debug/index.html" style="text-decoration: none; margin-left: 1em;">Отладка</a>
     </footer>
     <script src="./index.js"></script>
     <script src="./keep-links-clickable.js"></script>

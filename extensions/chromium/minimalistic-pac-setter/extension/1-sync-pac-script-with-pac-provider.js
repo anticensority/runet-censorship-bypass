@@ -49,15 +49,41 @@
 
     _currentPacProviderKey: 'Оба_и_на_свитчах',
 
+    isProxied(ip) {
+
+      // Executed on each request with ip. Make it as fast as possible.
+      return this._currentPacProviderKey && this.pacProviders[this._currentPacProviderKey].proxyIps.hasOwnProperty(ip);
+      // The benefit of removing lookups is little, e.g. this._currentProxyIps && this._currentProxyIps.hasOwnProperty(ip);
+
+    },
+
+    mustBeKey(key) {
+
+      if ( !(key === null || this.pacProviders[key]) ) {
+        throw new IllegalArgumentException('No provider for key:' + key);
+      }
+
+    },
+
     get currentPacProviderKey() { return this._currentPacProviderKey },
     set currentPacProviderKey(newKey) {
 
-      if (newKey && !this.pacProviders[newKey])
-        throw new IllegalArgumentException('No provider for key:' + newKey);
+      this.mustBeKey(newKey);
       this._currentPacProviderKey = newKey;
+
     },
 
-    get pacProvider() { return this.pacProviders[this.currentPacProviderKey] },
+    getPacProvider(key) {
+
+      if(key) {
+        this.mustBeKey(key);
+      }
+      else {
+        key = this.currentPacProviderKey;
+      }
+      return this.pacProviders[key];
+
+    },
 
     /*
       Is it the first time extension installed? Do something, e.g. initiate PAC sync.
@@ -106,19 +132,28 @@
       });
     },
 
-    syncWithPacProvider(cb) {
+    syncWithPacProvider(key, cb) {
 
-      cb = asyncLogGroup('Syncing with PAC provider...', cb);
-      if (!this.pacProvider) {
+      if( !key || typeof(key) === 'function' ) {
+        cb = key;
+        key = this.currentPacProviderKey;
+      }
+      cb = asyncLogGroup('Syncing with PAC provider ' + key + '...', cb);
+
+      if (key === null) {
+        // No pac provider set.
         return cb({clarification:{message:'Сперва выберите PAC-провайдера.'}});
       }
 
+      const pacProvider = this.getPacProvider(key);
+
       const pacSetPromise = new Promise(
         (resolve, reject) => setPacScriptFromProvider(
-          this.pacProvider,
+          pacProvider,
           (err, res) => {
 
             if (!err) {
+              this.currentPacProviderKey = key;
               this.lastPacUpdateStamp = Date.now();
               this.ifFirstInstall = false;
               this.setAlarms();
@@ -132,7 +167,7 @@
 
       const ipsPromise = new Promise(
         (resolve, reject) => updatePacProxyIps(
-          this.pacProvider,
+          pacProvider,
           (ipsError) => {
 
             if (ipsError && ipsError.clarification) {
@@ -186,28 +221,15 @@
 
     installPac(key, cb) {
 
-      console.log('Installing PAC');
-      if(typeof(key) === 'function') {
-        cb = key;
-        key = undefined;
+      console.log('Installing PAC...');
+      if (!key) {
+        throw new Error('Key must be defined.');
       }
-
-      const oldKey = this.currentPacProviderKey;
-      if(key || key !== oldKey) {
-        this.currentPacProviderKey = key;
-        const _cb = cb;
-        cb = (err, res) => {
-
-          if (err && !(err.clarification && err.clarification.ifNotCritical)) {
-            console.log('Rollback privider key.');
-            this.currentPacProviderKey = oldKey;
-          }
-          _cb(err, res);
-
-        };
+      if (this.currentProviderKey !== key) {
+        return this.syncWithPacProvider(key, cb);
       }
-
-      this.syncWithPacProvider(cb);
+      console.log(key + ' already installed.');
+      cb();
 
     },
 
@@ -223,7 +245,7 @@
             if (err) {
               return cb(err);
             }
-            this.currentPacProviderKey = undefined;
+            this.currentPacProviderKey = null;
             this.pushToStorage(cb);
 
           }
@@ -236,16 +258,12 @@
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
   chrome.storage.local.get(null, (oldStorage) => {
 
-    console.log('Init on storage:', oldStorage);
-    antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
-
-    if (!antiCensorRu.ifFirstInstall) {
-      // LAUNCH, RELOAD, UPDATE
-      antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey;
-      antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
-      console.log( 'Last PAC update was on', new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU') );
-    }
-
+    checkChromeError();
+    /*
+       Event handlers that ALWAYS work (even if installation is not done or failed).
+       E.g. install window may fail to open or be closed by user accidentally.
+       In such case extension _should_ try to work on default parameters.
+    */
     chrome.alarms.onAlarm.addListener(
       (alarm) => {
 
@@ -265,19 +283,28 @@
 
     });
 
-    if (antiCensorRu.ifFirstInstall) {
+    console.log('Storage on init:', oldStorage);
+    antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
+
+    if (!antiCensorRu.ifFirstInstall) {
+      // LAUNCH, RELOAD, UPDATE
+      antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey || null; // Old or migrate.
+      antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp; // Old or migrate to default.
+      console.log( 'Last PAC update was on', new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU') );
+    }
+    else {
       // INSTALL
       console.log('Installing...');
-      chrome.runtime.openOptionsPage();
+      return chrome.runtime.openOptionsPage();
     }
 
-    if (!antiCensorRu.pacProvider) {
-      return console.log('No PAC provider set. Do nothing.');
+    if (!antiCensorRu.getPacProvider()) {
       /*
         In case of UPDATE:
           1. new providers will still be shown.
           2. new version won't be pushed to storage
       */
+      return console.log('No PAC provider set. Do nothing.');
     }
 
     /*
