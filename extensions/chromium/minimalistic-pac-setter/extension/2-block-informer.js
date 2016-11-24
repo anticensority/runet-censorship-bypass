@@ -52,13 +52,81 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
   chrome.tabs.onRemoved.addListener( (tabId) => { onTabUpdate(tabId); delete window.tabWithError2ip[tabId] } );
 
+  function updateTitle(requestDetails, cb) {
+
+    chrome.browserAction.getTitle(
+      { tabId: requestDetails.tabId },
+      (title) => {
+
+        const ifTitleSetAlready = /\n/.test(title);
+        const proxyHost = window.antiCensorRu.getPacProvider().proxyIps[ requestDetails.ip ];
+
+        const hostname = new URL( requestDetails.url ).hostname;
+
+        let ifShouldUpdateTitle = false;
+        const indent = '  ';
+        const proxyTitle = 'Прокси:';
+
+        if (!ifTitleSetAlready) {
+          title = 'Разблокированы:\n'+ indent + hostname +'\n'+ proxyTitle +'\n'+ indent + proxyHost;
+          ifShouldUpdateTitle = true;
+
+          chrome.browserAction.setBadgeText({
+            tabId: requestDetails.tabId,
+            text: requestDetails.type === 'main_frame' ? '1' : '%1'
+          });
+
+        }
+        else {
+          const hostsProxiesPair = title.split(proxyTitle);
+
+          if (hostsProxiesPair[1].indexOf(proxyHost) === -1) {
+            title = title.replace(hostsProxiesPair[1], hostsProxiesPair[1] +'\n'+ indent + proxyHost);
+            ifShouldUpdateTitle = true;
+          }
+
+          if (hostsProxiesPair[0].indexOf(hostname) === -1) {
+            title = title.replace(proxyTitle, indent + hostname +'\n'+ proxyTitle);
+            ifShouldUpdateTitle = true;
+
+            const _cb = cb;
+            cb = () => chrome.browserAction.getBadgeText(
+              {tabId: requestDetails.tabId},
+              (result) => {
+
+                chrome.browserAction.setBadgeText(
+                  {
+                    tabId: requestDetails.tabId,
+                    text: ( isNaN( result.charAt(0) ) && result.charAt(0) || '' ) + (hostsProxiesPair[0].split('\n').length - 1)
+                  }
+                );
+                return _cb();
+
+              }
+            );
+
+          }
+        }
+
+        if (ifShouldUpdateTitle) {
+          chrome.browserAction.setTitle({
+            title: title,
+            tabId: requestDetails.tabId
+          });
+        }
+
+        return cb();
+
+      }
+    );
+  }
+
+
   let previousUpdateTitleFinished = Promise.resolve();
 
   function isProxiedAndInformed(requestDetails) {
 
-    if (
-      !( window.antiCensorRu.pacProvider && window.antiCensorRu.pacProvider.proxyIps && window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ] )
-    ) {
+    if ( !(requestDetails.ip && antiCensorRu.isProxied( requestDetails.ip )) ) {
       return false;
     }
 
@@ -74,75 +142,6 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
     );
 
     return true;
-
-    function updateTitle(requestDetails, cb) {
-
-      chrome.browserAction.getTitle(
-        { tabId: requestDetails.tabId },
-        (title) => {
-
-          const ifTitleSetAlready = /\n/.test(title);
-          const proxyHost = window.antiCensorRu.pacProvider.proxyIps[ requestDetails.ip ];
-
-          const hostname = new URL( requestDetails.url ).hostname;
-
-          let ifShouldUpdateTitle = false;
-          const indent = '  ';
-          const proxyTitle = 'Прокси:';
-
-          if (!ifTitleSetAlready) {
-            title = 'Разблокированы:\n'+ indent + hostname +'\n'+ proxyTitle +'\n'+ indent + proxyHost;
-            ifShouldUpdateTitle = true;
-
-            chrome.browserAction.setBadgeText({
-              tabId: requestDetails.tabId,
-              text: ifMainFrame ? '1' : '%1'
-            });
-
-          }
-          else {
-            const hostsProxiesPair = title.split(proxyTitle);
-
-            if (hostsProxiesPair[1].indexOf(proxyHost) === -1) {
-              title = title.replace(hostsProxiesPair[1], hostsProxiesPair[1] +'\n'+ indent + proxyHost);
-              ifShouldUpdateTitle = true;
-            }
-
-            if (hostsProxiesPair[0].indexOf(hostname) === -1) {
-              title = title.replace(proxyTitle, indent + hostname +'\n'+ proxyTitle);
-              ifShouldUpdateTitle = true;
-
-              const _cb = cb;
-              cb = () => chrome.browserAction.getBadgeText(
-                {tabId: requestDetails.tabId},
-                (result) => {
-
-                  chrome.browserAction.setBadgeText(
-                    {
-                      tabId: requestDetails.tabId,
-                      text: ( isNaN( result.charAt(0) ) && result.charAt(0) || '' ) + (hostsProxiesPair[0].split('\n').length - 1)
-                    }
-                  );
-                  return _cb();
-
-                }
-              );
-
-            }
-          }
-
-          if (ifShouldUpdateTitle) {
-            chrome.browserAction.setTitle({
-              title: title,
-              tabId: requestDetails.tabId
-            });
-          }
-
-          return cb();
-
-        }
-      );
-    }
   }
 
   chrome.webRequest.onResponseStarted.addListener(
