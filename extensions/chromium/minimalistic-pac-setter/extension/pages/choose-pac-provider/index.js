@@ -139,7 +139,7 @@ chrome://extensions</a> ›
     const li = document.createElement('li');
     li.innerHTML = `<input type="radio" name="pacProvider" id="${providerKey}">
       <label for="${providerKey}">${providerKey}</label>
-      <a href class="link-button checked-radio-panel">[обновить]</a>`;
+      <a href class="link-button checked-radio-panel" id="update-${providerKey}">[обновить]</a>`;
     li.querySelector('.link-button').onclick =
       () => {
         conduct(
@@ -183,7 +183,8 @@ chrome://extensions</a> ›
 
   setStatusTo('');
   if (antiCensorRu.ifFirstInstall) {
-    currentProviderRadio().click();
+    const id = antiCensorRu.currentPacProviderKey || 'none';
+    document.querySelector('#update-' + id).click();
   }
 
 });
