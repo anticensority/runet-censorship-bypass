@@ -13,9 +13,9 @@ const updateLinks = () => {
   for (let i = 0; i < links.length; i++) {
     const ln = links[i];
     const location = ln.href;
-    ln.onclick = function () {
+    ln.onclick = function() {
 
-      chrome.tabs.create({ active: !this.dataset.inBg, url: location });
+      chrome.tabs.create({active: !this.dataset.inBg, url: location});
       return false;
 
     };
@@ -24,6 +24,11 @@ const updateLinks = () => {
 };
 
 new MutationObserver( updateLinks )
-  .observe(target, { attributes: false, subtree: true, childList: true, characterData: false });
+  .observe(target, {
+    attributes: false,
+    subtree: true,
+    childList: true,
+    characterData: false,
+  });
 
 document.addEventListener('DOMContentLoaded', updateLinks);

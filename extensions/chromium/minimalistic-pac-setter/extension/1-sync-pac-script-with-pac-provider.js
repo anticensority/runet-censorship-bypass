@@ -3,7 +3,8 @@
 /*
   Task 1. Gets IPs for proxies of antizapret/anticenz via dns over https.
           These IPs are used in block-informer to inform user when proxy is ON.
-  Task 2. Downloads PAC proxy script from antizapret/anticenz/my Google Drive and sets it in Chromium settings.
+  Task 2. Downloads PAC proxy script from antizapret/anticenz/
+          my Google Drive and sets it in Chromium settings.
   Task 3. Schedules tasks 1 & 2 for every 4 hours.
 */
 
@@ -25,26 +26,26 @@
         proxyHosts: ['proxy.antizapret.prostovpn.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
-          '2a02:27ac::10':  'proxy.antizapret.prostovpn.org'
-        }
+          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
+        },
       },
       Антиценз: {
         pacUrl: 'https://config.anticenz.org/proxy.pac',
         proxyHosts: ['gw2.anticenz.org'],
         proxyIps: {
-          '5.196.220.114': 'gw2.anticenz.org'
-        }
+          '5.196.220.114': 'gw2.anticenz.org',
+        },
       },
       Оба_и_на_свитчах: {
-        //pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc', // 0.14
+        // pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0akpCOURNS2VCTmc', // 0.14
         pacUrl: 'https://drive.google.com/uc?export=download&id=0B-ZCVSvuNWf0bzNUR2F4RF8wOU0',   // 0.15
         proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
-          '2a02:27ac::10':  'proxy.antizapret.prostovpn.org',
-          '5.196.220.114':  'gw2.anticenz.org'
-        }
-      }
+          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
+          '5.196.220.114': 'gw2.anticenz.org',
+        },
+      },
     },
 
     _currentPacProviderKey: 'Оба_и_на_свитчах',
@@ -52,20 +53,26 @@
     isProxied(ip) {
 
       // Executed on each request with ip. Make it as fast as possible.
-      return this._currentPacProviderKey && this.pacProviders[this._currentPacProviderKey].proxyIps.hasOwnProperty(ip);
-      // The benefit of removing lookups is little, e.g. this._currentProxyIps && this._currentProxyIps.hasOwnProperty(ip);
+      // Property lookups are cheap (I tested).
+      return this._currentPacProviderKey
+        && this.pacProviders[this._currentPacProviderKey]
+          .proxyIps.hasOwnProperty(ip);
 
     },
 
     mustBeKey(key) {
 
       if ( !(key === null || this.pacProviders[key]) ) {
-        throw new IllegalArgumentException('No provider for key:' + key);
+        throw new TypeError('No provider for key:' + key);
       }
 
     },
 
-    get currentPacProviderKey() { return this._currentPacProviderKey },
+    get currentPacProviderKey() {
+
+      return this._currentPacProviderKey;
+
+    },
     set currentPacProviderKey(newKey) {
 
       this.mustBeKey(newKey);
@@ -77,16 +84,15 @@
 
       if(key) {
         this.mustBeKey(key);
-      }
-      else {
+      } else {
         key = this.currentPacProviderKey;
       }
       return this.pacProviders[key];
 
     },
 
-    /*
-      Is it the first time extension installed? Do something, e.g. initiate PAC sync.
+    /* Is it the first time extension installed?
+       Do something, e.g. initiate PAC sync.
     */
     ifFirstInstall: false,
     lastPacUpdateStamp: 0,
@@ -100,7 +106,10 @@
       // Copy only settable properties (except functions).
       const onlySettable = {};
       for(const key of Object.keys(this)) {
-        if (Object.getOwnPropertyDescriptor(this, key).writable && typeof(this[key]) !== 'function') {
+        if (
+          Object.getOwnPropertyDescriptor(this, key).writable
+            && typeof(this[key]) !== 'function'
+        ) {
           onlySettable[key] = this[key];
         }
       }
@@ -142,7 +151,11 @@
 
       if (key === null) {
         // No pac provider set.
-        return cb({clarification:{message:'Сперва выберите PAC-провайдера.'}});
+        return cb({
+          clarification: {
+            message: 'Сперва выберите PAC-провайдера.',
+          },
+        });
       }
 
       const pacProvider = this.getPacProvider(key);
@@ -199,23 +212,28 @@
 
     setAlarms() {
 
-      let nextUpdateMoment = this.lastPacUpdateStamp + this._pacUpdatePeriodInMinutes*60*1000;
+      let nextUpdateMoment = this.lastPacUpdateStamp
+        + this._pacUpdatePeriodInMinutes*60*1000;
       const now = Date.now();
       if (nextUpdateMoment < now) {
         nextUpdateMoment = now;
       }
 
-      console.log( 'Next PAC update is scheduled on', new Date(nextUpdateMoment).toLocaleString('ru-RU') );
+      console.log(
+        'Next PAC update is scheduled on',
+        new Date(nextUpdateMoment).toLocaleString('ru-RU')
+      );
 
       chrome.alarms.create(
         this._periodicUpdateAlarmReason,
         {
           when: nextUpdateMoment,
-          periodInMinutes: this._pacUpdatePeriodInMinutes
+          periodInMinutes: this._pacUpdatePeriodInMinutes,
         }
       );
 
-      return nextUpdateMoment === now; // ifAlarmTriggered. May be changed in the future.
+      // ifAlarmTriggered. May be changed in the future.
+      return nextUpdateMoment === now;
 
     },
 
@@ -251,7 +269,7 @@
           }
         )
       );
-    }
+    },
 
   };
 
@@ -260,15 +278,20 @@
 
     checkChromeError();
     /*
-       Event handlers that ALWAYS work (even if installation is not done or failed).
+       Event handlers that ALWAYS work (even if installation is not done
+       or failed).
        E.g. install window may fail to open or be closed by user accidentally.
        In such case extension _should_ try to work on default parameters.
     */
+    const antiCensorRu = window.antiCensorRu;
     chrome.alarms.onAlarm.addListener(
       (alarm) => {
 
         if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
-          console.log('Periodic PAC update triggered:', new Date().toLocaleString('ru-RU'));
+          console.log(
+            'Periodic PAC update triggered:',
+            new Date().toLocaleString('ru-RU')
+          );
           antiCensorRu.syncWithPacProvider(/* Swallows errors. */);
         }
 
@@ -276,7 +299,7 @@
     );
     console.log('Alarm listener installed. We won\'t miss any PAC update.');
 
-    window.addEventListener('online',  () => {
+    window.addEventListener('online', () => {
 
       console.log('We are online, checking periodic updates...');
       antiCensorRu.setAlarms();
@@ -288,11 +311,16 @@
 
     if (!antiCensorRu.ifFirstInstall) {
       // LAUNCH, RELOAD, UPDATE
-      antiCensorRu._currentPacProviderKey = oldStorage._currentPacProviderKey || null; // Old or migrate.
-      antiCensorRu.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp; // Old or migrate to default.
-      console.log( 'Last PAC update was on', new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU') );
-    }
-    else {
+      // Use old or migrate to default.
+      antiCensorRu._currentPacProviderKey =
+        oldStorage._currentPacProviderKey || null;
+      antiCensorRu.lastPacUpdateStamp =
+        oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
+      console.log(
+        'Last PAC update was on',
+        new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
+      );
+    } else {
       // INSTALL
       console.log('Installing...');
       return chrome.runtime.openOptionsPage();
@@ -308,7 +336,8 @@
     }
 
     /*
-      1. There is no way to check that chrome.runtime.onInstalled wasn't fired except timeout.
+      1. There is no way to check that chrome.runtime.onInstalled wasn't fired
+         except timeout.
          Otherwise we could put storage migration code only there.
       2. We have to check storage for migration before using it.
          Better on each launch then on each pull.
@@ -343,26 +372,27 @@
   function asyncLogGroup(...args) {
 
     const cb = args.pop() || (() => {});
-    console.group.apply(console, args);
+    console.group(...args);
     return function(...cbArgs) {
 
       console.groupEnd();
       console.log('Group finished.');
-      cb.apply(this, cbArgs);
+      cb(...cbArgs);
 
-    }
+    };
   }
 
   function checkChromeError(betterStack) {
 
-    // Chrome API calls your cb in a context different from the point of API method invokation.
+    // Chrome API calls your cb in a context different from the point of API
+    // method invokation.
     const err = chrome.runtime.lastError || chrome.extension.lastError || null;
     if (err) {
       const args = ['API returned error:', err];
       if (betterStack) {
         args.push('\n' + betterStack);
       }
-      console.warn.apply(console, args);
+      console.warn(...args);
     }
     return err;
 
@@ -371,14 +401,14 @@
   function chromified(cb, ...replaceArgs) {
 
     const stack = (new Error()).stack;
-    // Take error first callback and covert it to chrome api callback.
+    // Take error first callback and convert it to chrome api callback.
     return function(...args) {
 
       if (replaceArgs.length) {
         args = replaceArgs;
       }
       const err = checkChromeError(stack);
-      cb && cb.call(this, err, ...args);
+      cb && cb.call(null, err, ...args);
 
     };
 
@@ -390,8 +420,8 @@
       mode: 'pac_script',
       pacScript: {
         mandatory: false,
-        data: pacData
-      }
+        data: pacData,
+      },
     };
     console.log('Setting chrome proxy settings...');
     chrome.proxy.settings.set( {value: config}, () => {
@@ -405,7 +435,7 @@
         const ifThis = details.levelOfControl.startsWith('controlled_by_this');
         if (!ifThis) {
           console.warn('Failed, other extension is in control.');
-          return cb({clarification: {message:'Настройки прокси контролирует другое расширение. <a href="chrome://settings/search#proxy">Какое?</a>'}});
+          return cb({clarification: {message: 'Настройки прокси контролирует другое расширение. <a href="chrome://settings/search#proxy">Какое?</a>'}});
         }
         console.log('Successfuly set PAC in proxy settings..');
         cb();
@@ -426,7 +456,9 @@
             .then( (text) => cb(err, text), cb );
         const status = res.status;
         if ( !( status >= 200 && status < 300 || status === 304 ) ) {
-          res.clarification = {message: 'Получен ответ с неудачным HTTP-кодом ' + status + '.'};
+          res.clarification = {
+            message: 'Получен ответ с неудачным HTTP-кодом ' + status + '.',
+          };
           return textCb(res);
         }
         console.log('GETed with success:', url, Date.now() - start);
@@ -435,7 +467,9 @@
       },
       (err) => {
 
-        err.clarification = {message: 'Что-то не так с сетью, проверьте соединение.'};
+        err.clarification = {
+          message: 'Что-то не так с сетью, проверьте соединение.',
+        };
         cb && cb(err);
 
       }
@@ -446,17 +480,17 @@
 
     // args: { host:..., type: 'AAAA', filter: ['AAAA'] }
     if (!(args.host && args.type && cb)) {
-      throw new Error('Wrong args:' + host + ',' + type);
+      throw new Error('Wrong args:' + args.host + ',' + args.type);
     }
 
     const type2str = {
       // https://en.wikipedia.org/wiki/List_of_DNS_record_types
       // A, AAAA may be localized (github, e.g.), but you may use ANY
-      1:  'A',      // IPv4
+      1: 'A',      // IPv4
       28: 'AAAA',   // IPv6
-      2:  'NS',
-      5:  'CNAME',  // Synonyms, returned by server together with A/AAAA.
-      255: 'ANY'    // Deprecated on some servers, not recommended
+      2: 'NS',
+      5: 'CNAME',  // Synonyms, returned by server together with A/AAAA.
+      255: 'ANY',    // Deprecated on some servers, not recommended
     };
 
     httpGet(
@@ -468,25 +502,25 @@
             console.log('Json parsed.');
             if (err || res.Status) {
               const msg = ['Answer', 'Comment', 'Status']
-                .filter( (prop) => res[ prop ] )
-                .map( (prop) => prop + ': ' + JSON.stringify( res[ prop ] ) )
+                .filter( (prop) => res[prop] )
+                .map( (prop) => prop + ': ' + JSON.stringify( res[prop] ) )
                 .join(', \n');
               err.clarification.message += ' Сервер (json): ' + msg;
               err.data = err.data || res;
-            }
-            else {
+            } else {
               res = res.Answer || [];
               for (const record of res) {
-                record.type = type2str[ record.type ];
+                record.type = type2str[record.type];
               }
               if ( args.filter ) {
-                res = res.filter( (record) => args.filter.indexOf( record.type ) > -1 );
+                res = res.filter(
+                  (record) => args.filter.indexOf( record.type ) > -1
+                );
               }
             }
-          }
-          catch(e) {
-            err = e || err || {clarification:{message:''}};
-            err.clarification = err.clarification || { message: '' };
+          } catch(e) {
+            err = e || err || {clarification: {message: ''}};
+            err.clarification = err.clarification || {message: ''};
             err.clarification.message += ' Сервер (текст): '+ res;
             err.clarification.message.trim();
             err.data = err.data || res;
@@ -495,7 +529,7 @@
         cb( err, res );
       }
     );
-  };
+  }
 
   function getDnsRecords(args, cb) {
 
@@ -506,18 +540,22 @@
             host: 'proxy.navalny.cia.gov',
           // Optional
             types: {
-              string: ['A', 'AAAA'], // <- Default. Makes one request per each type.
-              filter: ['A', 'AAAA'], // <- Default. E.g., you want to get rid of CNAME type from response.
+              string: ['A', 'AAAA'],
+              // ^ Default. Makes one request per each type.
+              filter: ['A', 'AAAA'],
+              // ^ Default. E.g., you want to get rid of CNAME type from
+              // response.
             }
         }
       Exmple of answer from google:
         "Answer":
         [
           {
-            "name": "apple.com.",   // Always matches name in the Question section
-            "type": 1,              // A - Standard DNS RR type
-            "TTL": 3599,            // Record's time-to-live in seconds
-            "data": "17.178.96.59"  // Data for A - IP address as text
+            "name": "apple.com.",   // Always matches name in the Question
+            // section.
+            "type": 1,              // A - Standard DNS RR type.
+            "TTL": 3599,            // Record's time-to-live in seconds.
+            "data": "17.178.96.59"  // Data for A - IP address as text.
           },
         ...
       Exmple of output:
@@ -529,25 +567,37 @@
     }
     args.types = Object.assign({
       string: ['A', 'AAAA'],
-      filter: ['A', 'AAAA']
+      filter: ['A', 'AAAA'],
     }, args.types);
 
     const promises = args.types.string.map(
       (type) => new Promise( (resolve, reject) =>
-        getOneDnsRecord({ host: args.host, type: type, filter: args.types.filter }, (err, res) => err ? reject(err) : resolve(res) )
+        getOneDnsRecord(
+          {host: args.host, type: type, filter: args.types.filter},
+          (err, res) => err ? reject(err) : resolve(res) )
       )
     );
-    Promise.all(promises).then( (answers) => cb( null, [].concat.apply([], answers) ), cb );
+    Promise.all(promises).then(
+      (answers) => cb( null, [].concat(...answers) ),
+      cb
+    );
   }
 
-  const getIpDnsRecords = (host, cb) => getDnsRecords({ host: host }, cb);
+  const getIpDnsRecords = (host, cb) => getDnsRecords({host: host}, cb);
 
   function updatePacProxyIps(provider, cb) {
 
-    cb = asyncLogGroup('Getting IP for '+ provider.proxyHosts.join(', ') +'...', cb);
+    cb = asyncLogGroup(
+      'Getting IP for '+ provider.proxyHosts.join(', ') + '...',
+      cb
+    );
     let failure = {
-      clarification: {message:'Не удалось получить один или несколько IP адресов для прокси-серверов. Иконка для уведомления об обходе блокировок может не отображаться.'},
-      errors: {}
+      clarification: {
+        message: 'Не удалось получить один или несколько IP адресов для' +
+        ' прокси-серверов. Иконка для уведомления об обходе блокировок ' +
+        'может не отображаться.',
+      },
+      errors: {},
     };
     let i = 0;
     provider.proxyHosts.map(
@@ -557,9 +607,10 @@
 
           if (!err) {
             provider.proxyIps = provider.proxyIps || {};
-            records.forEach( (ans) => provider.proxyIps[ ans.data ] = proxyHost );
-          }
-          else {
+            records.forEach(
+              (ans) => provider.proxyIps[ans.data] = proxyHost
+            );
+          } else {
             failure.errors[proxyHost] = err;
           }
 
@@ -574,7 +625,10 @@
 
   function setPacScriptFromProvider(provider, cb) {
 
-    cb = asyncLogGroup('Getting pac script from provider...', provider.pacUrl, cb);
+    cb = asyncLogGroup(
+      'Getting pac script from provider...', provider.pacUrl,
+      cb
+    );
 
     httpGet(
       provider.pacUrl,
@@ -582,8 +636,9 @@
 
         if (err) {
           err.clarification = {
-            message: 'Не удалось скачать PAC-скрипт с адреса: ' + provider.pacUrl + '.',
-            prev: err.clarification
+            message: 'Не удалось скачать PAC-скрипт с адреса: '
+              + provider.pacUrl + '.',
+            prev: err.clarification,
           };
           return cb(err);
         }
@@ -612,6 +667,6 @@ window.addEventListener('unhandledrejection', (event) => {
 chrome.proxy.settings.onChange.addListener((details) => {
 
    console.log('Proxy settings changed.', details);
-   const ifOther = details.levelOfControl.startsWith('controlled_by_other');
+   // const ifOther = details.levelOfControl.startsWith('controlled_by_other');
 
 });

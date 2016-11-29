@@ -1,10 +1,12 @@
 'use strict';
 
-// Shows user browserAction icon if any part of the current site is being blocked and proxied.
+// Shows user browserAction icon if any part of the current site is being
+// blocked and proxied.
 
 /*
   In what moment the title of the previous icon is cleared?
-  By my observations it usually takes place near tabs.onUpdate of tab status to "loading".
+  By my observations it usually takes place near tabs.onUpdate of tab status
+  to "loading".
   So if you set a title earlier it may be cleared by browser.
   It pertains not only to page refesh but to newly opened pages too.
   Also on loosing title see:
@@ -13,7 +15,7 @@
 **/
 
 window.chrome.browserAction.setBadgeBackgroundColor({
-  color: '#db4b2f'
+  color: '#db4b2f',
 });
 
 window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
@@ -30,7 +32,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
   function onTabUpdate(tabId) {
     if (_tabCallbacks[tabId]) {
-      _tabCallbacks[tabId].map( f => f() );
+      _tabCallbacks[tabId].map( (f) => f() );
       delete _tabCallbacks[tabId];
     }
   }
@@ -38,28 +40,34 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
   chrome.tabs.onUpdated.addListener( onTabUpdate );
 
   function isInsideTabWithIp(requestDetails) {
-    return requestDetails.tabId !== -1 && requestDetails.ip
+    return requestDetails.tabId !== -1 && requestDetails.ip;
   }
 
   chrome.webRequest.onErrorOccurred.addListener(
     (requestDetails) =>
       isInsideTabWithIp(requestDetails) &&
       (
-        isProxiedAndInformed(requestDetails) || requestDetails.type === 'main_frame' && ( window.tabWithError2ip[requestDetails.tabId] = requestDetails.ip )
+        isProxiedAndInformed(requestDetails)
+          || requestDetails.type === 'main_frame'
+          && (window.tabWithError2ip[requestDetails.tabId] = requestDetails.ip)
       ),
-    { urls: ['<all_urls>'] }
+    {urls: ['<all_urls>']}
   );
 
-  chrome.tabs.onRemoved.addListener( (tabId) => { onTabUpdate(tabId); delete window.tabWithError2ip[tabId] } );
+  chrome.tabs.onRemoved.addListener( (tabId) => {
+    onTabUpdate(tabId);
+    delete window.tabWithError2ip[tabId];
+  });
 
   function updateTitle(requestDetails, cb) {
 
     chrome.browserAction.getTitle(
-      { tabId: requestDetails.tabId },
+      {tabId: requestDetails.tabId},
       (title) => {
 
         const ifTitleSetAlready = /\n/.test(title);
-        const proxyHost = window.antiCensorRu.getPacProvider().proxyIps[ requestDetails.ip ];
+        const proxyHost = window.antiCensorRu.getPacProvider()
+          .proxyIps[requestDetails.ip];
 
         const hostname = new URL( requestDetails.url ).hostname;
 
@@ -68,25 +76,31 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
         const proxyTitle = 'Прокси:';
 
         if (!ifTitleSetAlready) {
-          title = 'Разблокированы:\n'+ indent + hostname +'\n'+ proxyTitle +'\n'+ indent + proxyHost;
+          title = 'Разблокированы:\n' + indent + hostname + '\n'
+            + proxyTitle + '\n' + indent + proxyHost;
           ifShouldUpdateTitle = true;
 
           chrome.browserAction.setBadgeText({
             tabId: requestDetails.tabId,
-            text: requestDetails.type === 'main_frame' ? '1' : '%1'
+            text: requestDetails.type === 'main_frame' ? '1' : '%1',
           });
 
-        }
-        else {
+        } else {
           const hostsProxiesPair = title.split(proxyTitle);
 
           if (hostsProxiesPair[1].indexOf(proxyHost) === -1) {
-            title = title.replace(hostsProxiesPair[1], hostsProxiesPair[1] +'\n'+ indent + proxyHost);
+            title = title.replace(
+              hostsProxiesPair[1],
+              hostsProxiesPair[1] + '\n' + indent + proxyHost
+            );
             ifShouldUpdateTitle = true;
           }
 
           if (hostsProxiesPair[0].indexOf(hostname) === -1) {
-            title = title.replace(proxyTitle, indent + hostname +'\n'+ proxyTitle);
+            title = title.replace(
+              proxyTitle,
+              indent + hostname + '\n' + proxyTitle
+            );
             ifShouldUpdateTitle = true;
 
             const _cb = cb;
@@ -97,7 +111,8 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
                 chrome.browserAction.setBadgeText(
                   {
                     tabId: requestDetails.tabId,
-                    text: ( isNaN( result.charAt(0) ) && result.charAt(0) || '' ) + (hostsProxiesPair[0].split('\n').length - 1)
+                    text: (isNaN( result.charAt(0)) && result.charAt(0) || '')
+                      + (hostsProxiesPair[0].split('\n').length - 1),
                   }
                 );
                 return _cb();
@@ -111,7 +126,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
         if (ifShouldUpdateTitle) {
           chrome.browserAction.setTitle({
             title: title,
-            tabId: requestDetails.tabId
+            tabId: requestDetails.tabId,
           });
         }
 
@@ -121,12 +136,12 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
     );
   }
 
-
   let previousUpdateTitleFinished = Promise.resolve();
 
   function isProxiedAndInformed(requestDetails) {
 
-    if ( !(requestDetails.ip && antiCensorRu.isProxied( requestDetails.ip )) ) {
+    if ( !(requestDetails.ip
+             && window.antiCensorRu.isProxied( requestDetails.ip )) ) {
       return false;
     }
 
@@ -136,7 +151,8 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
       () => new Promise(
         (resolve) => {
           const cb = () => updateTitle( requestDetails, resolve );
-          return ifMainFrame ? afterTabUpdated(requestDetails.tabId, cb) : cb();
+          return ifMainFrame
+            ? afterTabUpdated(requestDetails.tabId, cb) : cb();
         }
       )
     );
@@ -145,8 +161,9 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
   }
 
   chrome.webRequest.onResponseStarted.addListener(
-    (requestDetails) => isInsideTabWithIp(requestDetails) && isProxiedAndInformed(requestDetails),
-    { urls: ['<all_urls>'] }
+    (requestDetails) => isInsideTabWithIp(requestDetails)
+      && isProxiedAndInformed(requestDetails),
+    {urls: ['<all_urls>']}
   );
 
 }
