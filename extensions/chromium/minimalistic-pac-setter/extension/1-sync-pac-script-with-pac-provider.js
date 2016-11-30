@@ -123,6 +123,7 @@
 
     },
 
+    /*
     pullFromStorage(cb) {
 
       chrome.storage.local.get(null, (storage) => {
@@ -140,6 +141,7 @@
 
       });
     },
+    */
 
     syncWithPacProvider(key, cb) {
 
@@ -476,114 +478,67 @@
     );
   }
 
-  function getOneDnsRecord(args, cb) {
+  function getIpsFor(host, cb) {
 
-    // args: { host:..., type: 'AAAA', filter: ['AAAA'] }
-    if (!(args.host && args.type && cb)) {
-      throw new Error('Wrong args:' + args.host + ',' + args.type);
-    }
+    const types = [1, 28];
+    const promises = types.map(
+      (type) => new Promise((resolve) =>
+        httpGet(
+          'https://dns.google.com/resolve?type=' + type + '&name=' + host,
+          (err, res) => {
 
-    const type2str = {
-      // https://en.wikipedia.org/wiki/List_of_DNS_record_types
-      // A, AAAA may be localized (github, e.g.), but you may use ANY
-      1: 'A',      // IPv4
-      28: 'AAAA',   // IPv6
-      2: 'NS',
-      5: 'CNAME',  // Synonyms, returned by server together with A/AAAA.
-      255: 'ANY',    // Deprecated on some servers, not recommended
-    };
-
-    httpGet(
-      'https://dns.google.com/resolve?type=' + args.type + '&name=' + args.host,
-      (err, res) => {
-        if (res) {
-          try {
-            res = JSON.parse(res);
-            console.log('Json parsed.');
-            if (err || res.Status) {
-              const msg = ['Answer', 'Comment', 'Status']
-                .filter( (prop) => res[prop] )
-                .map( (prop) => prop + ': ' + JSON.stringify( res[prop] ) )
-                .join(', \n');
-              err.clarification.message += ' Сервер (json): ' + msg;
-              err.data = err.data || res;
-            } else {
-              res = res.Answer || [];
-              for (const record of res) {
-                record.type = type2str[record.type];
-              }
-              if ( args.filter ) {
-                res = res.filter(
-                  (record) => args.filter.indexOf( record.type ) > -1
-                );
+            if (res) {
+              try {
+                res = JSON.parse(res);
+                console.log('Json parsed.');
+                if (err || res.Status) {
+                  const msg = ['Answer', 'Comment', 'Status']
+                    .filter( (prop) => res[prop] )
+                    .map( (prop) => prop + ': ' + JSON.stringify( res[prop] ) )
+                    .join(', \n');
+                  err.clarification.message += ' Сервер (json): ' + msg;
+                  err.data = err.data || res;
+                } else {
+                  res = res.Answer || [];
+                  res = res.filter(
+                    (record) => types.includes(record.type)
+                  );
+                }
+              } catch(e) {
+                err = e || err || {clarification: {message: ''}};
+                err.clarification = err.clarification || {message: ''};
+                err.clarification.message = (
+                  error.clarification.message
+                  + ' Сервер (текст): '+ res
+                ).trim();
+                err.data = err.data || res;
               }
             }
-          } catch(e) {
-            err = e || err || {clarification: {message: ''}};
-            err.clarification = err.clarification || {message: ''};
-            err.clarification.message += ' Сервер (текст): '+ res;
-            err.clarification.message.trim();
-            err.data = err.data || res;
+            resolve([err, res]);
+
           }
-        }
-        cb( err, res );
-      }
-    );
-  }
-
-  function getDnsRecords(args, cb) {
-
-    /*
-      Example of input:
-        {
-          // Required
-            host: 'proxy.navalny.cia.gov',
-          // Optional
-            types: {
-              string: ['A', 'AAAA'],
-              // ^ Default. Makes one request per each type.
-              filter: ['A', 'AAAA'],
-              // ^ Default. E.g., you want to get rid of CNAME type from
-              // response.
-            }
-        }
-      Exmple of answer from google:
-        "Answer":
-        [
-          {
-            "name": "apple.com.",   // Always matches name in the Question
-            // section.
-            "type": 1,              // A - Standard DNS RR type.
-            "TTL": 3599,            // Record's time-to-live in seconds.
-            "data": "17.178.96.59"  // Data for A - IP address as text.
-          },
-        ...
-      Exmple of output:
-        The same as google, but types _may be_ canonical strings ('AAAA', 'A')
-    **/
-
-    if ( !args.host.length ) {
-      throw new Error('args.host is required: ' + args.host);
-    }
-    args.types = Object.assign({
-      string: ['A', 'AAAA'],
-      filter: ['A', 'AAAA'],
-    }, args.types);
-
-    const promises = args.types.string.map(
-      (type) => new Promise( (resolve, reject) =>
-        getOneDnsRecord(
-          {host: args.host, type: type, filter: args.types.filter},
-          (err, res) => err ? reject(err) : resolve(res) )
+        )
       )
     );
     Promise.all(promises).then(
-      (answers) => cb( null, [].concat(...answers) ),
-      cb
-    );
-  }
+      ([[v4err, v4res], [v6err, v6res]]) => {
 
-  const getIpDnsRecords = (host, cb) => getDnsRecords({host: host}, cb);
+        if(v4err) {
+          return cb(v4err, v4res);
+        }
+        const ips = v4res;
+        if (!v6err) {
+          ips.push(...v6res);
+        } else {
+          v6err.clarification.ifNotCritical = true;
+          console.warn(v6err);
+        }
+        cb(v6err, ips);
+
+      }
+    );
+
+  }
 
   function updatePacProxyIps(provider, cb) {
 
@@ -600,15 +555,15 @@
       errors: {},
     };
     let i = 0;
-    provider.proxyHosts.map(
-      (proxyHost) => getIpDnsRecords(
+    provider.proxyHosts.forEach(
+      (proxyHost) => getIpsFor(
         proxyHost,
-        (err, records) => {
+        (err, ips) => {
 
-          if (!err) {
+          if (!err || err.clarification.ifNotCritical) {
             provider.proxyIps = provider.proxyIps || {};
-            records.forEach(
-              (ans) => provider.proxyIps[ans.data] = proxyHost
+            ips.forEach(
+              (ip) => provider.proxyIps[ip] = proxyHost
             );
           } else {
             failure.errors[proxyHost] = err;
