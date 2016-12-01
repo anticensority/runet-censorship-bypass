@@ -20,6 +20,28 @@
 
     version: chrome.runtime.getManifest().version,
 
+    fixErrorsContext() {
+      /* `setTimeout` changes context of execution from other window
+          (e.g. popup) to background window, so we may catch errors
+          in bg error handlers.
+          More: https://bugs.chromium.org/p/chromium/issues/detail?id=357568
+      */
+      for(const prop of Object.keys(this)) {
+        if ( typeof(this[prop]) === 'function' ) {
+          const method = this[prop];
+          this[prop] = function(...args) {
+
+            setTimeout(method.bind(this, ...args), 0);
+
+          };
+        }
+      }
+    },
+
+    throw() {
+      throw new Error('Artificial error');
+    },
+
     pacProviders: {
       Антизапрет: {
         pacUrl: 'https://antizapret.prostovpn.org/proxy.pac',
@@ -286,6 +308,8 @@
        In such case extension _should_ try to work on default parameters.
     */
     const antiCensorRu = window.antiCensorRu;
+    antiCensorRu.fixErrorsContext();
+
     chrome.alarms.onAlarm.addListener(
       (alarm) => {
 
@@ -508,7 +532,7 @@
                 err = e || err || {clarification: {message: ''}};
                 err.clarification = err.clarification || {message: ''};
                 err.clarification.message = (
-                  error.clarification.message
+                  err.clarification.message
                   + ' Сервер (текст): '+ res
                 ).trim();
                 err.data = err.data || res;
@@ -604,24 +628,3 @@
   }
 
 }
-
-window.addEventListener('error', (err) => {
-
-  console.error('Global error');
-
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-
-  console.warn('Unhandled rejection. Throwing error.');
-  event.preventDefault();
-  throw event.reason;
-
-});
-
-chrome.proxy.settings.onChange.addListener((details) => {
-
-   console.log('Proxy settings changed.', details);
-   // const ifOther = details.levelOfControl.startsWith('controlled_by_other');
-
-});
