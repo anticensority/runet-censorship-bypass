@@ -9,38 +9,16 @@
 */
 
 /*
-  In background scripts use window.antiCensorRu public variables.
-  In pages window.antiCensorRu is not accessible,
+  In background scripts use window.apis.antiCensorRu public variables.
+  In pages window.apis.antiCensorRu is not accessible,
     use chrome.runtime.getBackgroundPage(..),
     extension.getBackgroundPage is deprecated
 */
 { // Private namespace starts.
 
-  window.antiCensorRu = {
+  window.apis.antiCensorRu = {
 
     version: chrome.runtime.getManifest().version,
-
-    fixErrorsContext() {
-      /* `setTimeout` changes context of execution from other window
-          (e.g. popup) to background window, so we may catch errors
-          in bg error handlers.
-          More: https://bugs.chromium.org/p/chromium/issues/detail?id=357568
-      */
-      for(const prop of Object.keys(this)) {
-        if ( typeof(this[prop]) === 'function' ) {
-          const method = this[prop];
-          this[prop] = function(...args) {
-
-            setTimeout(method.bind(this, ...args), 0);
-
-          };
-        }
-      }
-    },
-
-    throw() {
-      throw new Error('Artificial error');
-    },
 
     pacProviders: {
       Антизапрет: {
@@ -293,6 +271,7 @@
           }
         )
       );
+
     },
 
   };
@@ -307,8 +286,7 @@
        E.g. install window may fail to open or be closed by user accidentally.
        In such case extension _should_ try to work on default parameters.
     */
-    const antiCensorRu = window.antiCensorRu;
-    antiCensorRu.fixErrorsContext();
+    const antiCensorRu = window.apis.antiCensorRu;
 
     chrome.alarms.onAlarm.addListener(
       (alarm) => {
@@ -393,6 +371,7 @@
         * Changed storage.ifNotInstalled to storage.ifFirstInstall
         * Added storage.lastPacUpdateStamp
     **/
+
   });
 
   function asyncLogGroup(...args) {
@@ -406,6 +385,7 @@
       cb(...cbArgs);
 
     };
+
   }
 
   function checkChromeError(betterStack) {
@@ -458,8 +438,7 @@
       }
       chrome.proxy.settings.get({}, (details) => {
 
-        const ifThis = details.levelOfControl.startsWith('controlled_by_this');
-        if (!ifThis) {
+        if ( window.utils.areSettingsNotControlledFor( details ) ) {
           console.warn('Failed, other extension is in control.');
           return cb({clarification: {message: 'Настройки прокси контролирует другое расширение. <a href="chrome://settings/search#proxy">Какое?</a>'}});
         }
@@ -500,6 +479,7 @@
 
       }
     );
+
   }
 
   function getIpsFor(host, cb) {
@@ -600,6 +580,7 @@
         }
       )
     );
+
   }
 
   function setPacScriptFromProvider(provider, cb) {
@@ -625,6 +606,7 @@
 
       }
     );
+
   }
 
 }

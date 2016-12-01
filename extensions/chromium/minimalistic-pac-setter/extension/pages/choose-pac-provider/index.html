@@ -3,6 +3,9 @@
   <head>
     <title>Выбор провайдера PAC</title>
     <style>
+      label {
+        user-select: none;
+      }
       ul {
         list-style-type: none;
         padding: 0;
@@ -39,6 +42,12 @@
       footer {
         margin: 2em 1em 1em;
       }
+      hr {
+        border-width: 1px 0 0 0;
+      }
+      #configs-panel > header {
+        margin: 0.6em 0 0.4em;
+      }
     </style>
   </head>
   <body>
@@ -49,6 +58,12 @@
       Обновлялись: <span class="update-date">...</span>
     </div>
     <div id="status">Загрузка...</div>
+    <hr/>
+    <div id="configs-panel">
+      <header>Я ❤️ уведомления:</header>
+      <ul id="list-of-handlers">
+      </ul>
+    </div>
     <footer>
       <input type="button" value="Готово" class="close-button">&nbsp;<a href="../debug/index.html" style="text-decoration: none; margin-left: 1em;">Отладка</a>
     </footer>

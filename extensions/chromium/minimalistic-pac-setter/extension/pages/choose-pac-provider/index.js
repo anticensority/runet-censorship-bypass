@@ -16,7 +16,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) => {
 
   };
 
-  const antiCensorRu = backgroundPage.antiCensorRu;
+  const antiCensorRu = backgroundPage.apis.antiCensorRu;
 
   // SET DATE
 
@@ -181,6 +181,25 @@ chrome://extensions</a> ›
       return false;
     };
   }
+
+  const conpanel = document.getElementById('list-of-handlers');
+  backgroundPage.apis.errorHandlers.getEventsMap().forEach( (value, name) => {
+
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <input type="checkbox" id="if-on-${name}"/>
+      <label for="if-on-${name}">${value}</label>`;
+    const box = li.querySelector('input');
+    box.checked = backgroundPage.apis.errorHandlers.isOn(name);
+    box.onclick = function() {
+
+      const id = this.id.replace('if-on-', '');
+      backgroundPage.apis.errorHandlers.switch(this.checked ? 'on' : 'off', id);
+
+    };
+    conpanel.appendChild(li);
+
+  });
 
   setStatusTo('');
   if (antiCensorRu.ifFirstInstall) {

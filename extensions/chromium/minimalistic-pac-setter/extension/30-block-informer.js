@@ -14,6 +14,8 @@
   Crazy parallel Chrome.
 **/
 
+const antiCensorRu = window.apis.antiCensorRu;
+
 window.chrome.browserAction.setBadgeBackgroundColor({
   color: '#db4b2f',
 });
@@ -66,7 +68,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
       (title) => {
 
         const ifTitleSetAlready = /\n/.test(title);
-        const proxyHost = window.antiCensorRu.getPacProvider()
+        const proxyHost = antiCensorRu.getPacProvider()
           .proxyIps[requestDetails.ip];
 
         const hostname = new URL( requestDetails.url ).hostname;
@@ -141,7 +143,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
   function isProxiedAndInformed(requestDetails) {
 
     if ( !(requestDetails.ip
-             && window.antiCensorRu.isProxied( requestDetails.ip )) ) {
+             && antiCensorRu.isProxied( requestDetails.ip )) ) {
       return false;
     }
 

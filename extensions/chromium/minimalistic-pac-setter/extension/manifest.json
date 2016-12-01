@@ -21,7 +21,7 @@
     "notifications"
   ],
   "background": {
-    "scripts": ["0-error-handlers.js", "1-sync-pac-script-with-pac-provider.js", "2-block-informer.js", "3-context-menus.js"]
+    "scripts": ["00-init-apis.js", "11-api-error-handlers.js", "12-api-sync-pac-script-with-pac-provider.js", "20-api-fixes.js", "30-block-informer.js", "40-context-menus.js"]
   },
   "browser_action": {
     "default_title": "Этот сайт благословлён",
