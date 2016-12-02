@@ -4,7 +4,6 @@
 
   const handlersState = function(key, value) {
 
-    console.log(key, value, '!');
     key = 'handlers-' + key;
     if (value === null) {
       return localStorage.removeItem(key);
@@ -21,6 +20,7 @@
   };
 
   const ifPrefix = 'if-on-';
+  const extName = chrome.runtime.getManifest().name;
 
   window.apis.errorHandlers = {
 
@@ -67,29 +67,19 @@
 
     },
 
-  };
+    idToErr: {},
 
-}
-
-// INIT
-chrome.proxy.settings.get(
-  {},
-  (details) => window.apis.errorHandlers.isNotControlled(details)
-);
-
-{
-
-  const extName = chrome.runtime.getManifest().name;
-
-  const mayNotify = function(
-      id, title, message,
+    mayNotify(
+      id, title, errOrMessage,
       icon = 'default-128.png',
       context = extName
     ) {
 
-      if ( !window.apis.errorHandlers.isOn(id) ) {
+      if ( !this.isOn(id) ) {
         return;
       }
+      this.idToErr[id] = errOrMessage;
+      const message = errOrMessage.message || errOrMessage.toString();
       chrome.notifications.create(
         id,
         {
@@ -103,31 +93,66 @@ chrome.proxy.settings.get(
         }
       );
 
-    };
+    },
 
-  window.addEventListener('error', (err) => {
+    installListenersOn(win, name, cb) {
 
-    console.warn('GLOBAL ERROR', err);
-    mayNotify('ext-error', 'Unhandled error', JSON.stringify(err),
-      'ext-error-128.png');
+      win.addEventListener('error', (errEvent) => {
+
+        console.warn(name + ':GLOBAL ERROR', errEvent);
+        this.mayNotify('ext-error', 'Ошибка расширения', errEvent,
+          'ext-error-128.png');
+
+      });
+
+      win.addEventListener('unhandledrejection', (event) => {
+
+        console.warn(name + ':Unhandled rejection. Throwing error.');
+        event.preventDefault();
+        throw event.reason;
+
+      });
+
+      if (cb) {
+        // setTimeout changes error context.
+        setTimeout(cb, 0);
+      }
+
+    },
+
+  };
+
+}
+
+{
+
+  const handlers = window.apis.errorHandlers;
+
+  // INIT
+  chrome.proxy.settings.get(
+    {},
+    (details) => handlers.isNotControlled(details)
+  );
+
+  chrome.notifications.onClicked.addListener( function(notId) {
+
+    chrome.notifications.clear(notId);
+    if(notId === 'no-control') {
+      return chrome.tabs.create({active: true, url: 'chrome://settings/#proxy'});
+    }
+    chrome.tabs.create({active: true, url: './pages/view-error/index.html#' + notId});
 
   });
 
-  window.addEventListener('unhandledrejection', (event) => {
-
-    console.warn('Unhandled rejection. Throwing error.');
-    event.preventDefault();
-    throw event.reason;
-
-  });
+  handlers.installListenersOn(window, 'BG');
 
   chrome.proxy.onProxyError.addListener((details) => {
 
-    if (window.apis.errorHandlers.ifNoControl) {
+    if (handlers.ifNoControl) {
       return;
     }
     console.warn('PAC ERROR', details);
-    mayNotify('pac-error', ' PAC !', JSON.stringify(details),
+    handlers.mayNotify('pac-error', 'Ошибка PAC!', details,
       'pac-error-128.png' );
 
   });
@@ -136,8 +161,9 @@ chrome.proxy.settings.get(
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
-    if ( window.apis.errorHandlers.isNotControlled(details) ) {
-      mayNotify(noCon, 'Proxy changed', JSON.stringify(details),
+    if ( handlers.isNotControlled(details) ) {
+      console.log(details);
+      handlers.mayNotify(noCon, 'Прокси контролирует другое расширение', details,
         'no-control-128.png');
     } else {
       chrome.notifications.clear( noCon );
