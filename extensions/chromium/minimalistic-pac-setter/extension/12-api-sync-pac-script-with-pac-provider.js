@@ -99,7 +99,7 @@
 
     _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
 
-    pushToStorage(cb) {
+    pushToStorageAsync(cb) {
 
       console.log('Pushing to storage...');
 
@@ -143,7 +143,7 @@
     },
     */
 
-    syncWithPacProvider(key, cb) {
+    syncWithPacProviderAsync(key, cb) {
 
       if( !key || typeof(key) === 'function' ) {
         cb = key;
@@ -200,7 +200,7 @@
           if (pacErr && ipsErr) {
             return cb(pacErr, pacRes);
           }
-          this.pushToStorage(
+          this.pushToStorageAsync(
             (pushErr) => cb(pacErr || ipsErr || pushErr, pacRes)
           );
 
@@ -239,21 +239,21 @@
 
     },
 
-    installPac(key, cb) {
+    installPacAsync(key, cb) {
 
       console.log('Installing PAC...');
       if (!key) {
         throw new Error('Key must be defined.');
       }
       if (this.currentProviderKey !== key) {
-        return this.syncWithPacProvider(key, cb);
+        return this.syncWithPacProviderAsync(key, cb);
       }
       console.log(key + ' already installed.');
       cb();
 
     },
 
-    clearPac(cb) {
+    clearPacAsync(cb) {
 
       cb = asyncLogGroup('Cearing alarms and PAC...', cb);
       chrome.alarms.clearAll(
@@ -266,7 +266,7 @@
               return cb(err);
             }
             this.currentPacProviderKey = null;
-            this.pushToStorage(cb);
+            this.pushToStorageAsync(cb);
 
           }
         )
@@ -296,7 +296,7 @@
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU')
           );
-          antiCensorRu.syncWithPacProvider(/* Swallows errors. */);
+          antiCensorRu.syncWithPacProviderAsync(/* Swallows errors. */);
         }
 
       }
@@ -358,7 +358,7 @@
     // UPDATE & MIGRATION
     console.log('Extension updated.');
     if (!ifAlarmTriggered) {
-      antiCensorRu.pushToStorage(/* Swallows errors. */);
+      antiCensorRu.pushToStorageAsync(/* Swallows errors. */);
     }
 
     /*
@@ -414,7 +414,9 @@
         args = replaceArgs;
       }
       const err = checkChromeError(stack);
-      cb && cb.call(null, err, ...args);
+      if (cb) {
+        setTimeout( cb.bind(null, err, ...args), 0 );
+      }
 
     };
 
