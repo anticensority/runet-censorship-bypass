@@ -89,16 +89,20 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         </span>
         <br/>
         <span style="font-size: 0.9em; color: darkred">${message}</span>
-        <a href class="link-button">[Ещё&nbsp;подробнее]</a>`
+        <a href="../view-error/index.html" class="link-button">
+          [Ещё&nbsp;подробнее]
+        </a>`
       );
       getStatus().querySelector('.link-button').onclick = function() {
 
         const div = document.createElement('div');
         div.innerHTML = `
-          Более подробную информацию можно узнать из логов фоновой страницы:<br/>
-          <a href="chrome://extensions?id=${chrome.runtime.id}" data-in-bg="true">
-          chrome://extensions</a> ›
-          Это расширение › Отладка страниц: фоновая страница › Console (DevTools)
+          Более подробную информацию можно узнать из логов фоновой страницы:
+          <br/>
+          <a href="chrome://extensions?id=${chrome.runtime.id}"
+            data-in-bg="true">
+          chrome://extensions</a> › Это расширение › Отладка страниц: фоновая
+          страница › Console (DevTools)
           <br>
           Ещё: ` + JSON.stringify({err: err, stack: err.stack});
         getStatus().replaceChild(div, this);
@@ -137,7 +141,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
     const _firstChild = ul.firstChild;
     for( const providerKey of Object.keys(antiCensorRu.pacProviders).sort() ) {
       const li = document.createElement('li');
-      li.innerHTML = `<input type="radio" name="pacProvider" id="${providerKey}">
+      li.innerHTML = `
+        <input type="radio" name="pacProvider" id="${providerKey}">
         <label for="${providerKey}">${providerKey}</label>
         <a href class="link-button checked-radio-panel"
           id="update-${providerKey}">[обновить]</a>`;
@@ -159,7 +164,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
     for(const radio of radios) {
       radio.onclick = function(event) {
 
-        if (event.target.id === (antiCensorRu.currentPacProviderKey || 'none')) {
+        if (
+          event.target.id === (antiCensorRu.currentPacProviderKey || 'none')
+        ) {
           return false;
         }
         const pacKey = event.target.id;
@@ -194,7 +201,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       box.onclick = function() {
 
         const id = this.id.replace('if-on-', '');
-        backgroundPage.apis.errorHandlers.switch(this.checked ? 'on' : 'off', id);
+        backgroundPage.apis.errorHandlers.switch(
+          this.checked ? 'on' : 'off',
+          id
+        );
 
       };
       conpanel.appendChild(li);

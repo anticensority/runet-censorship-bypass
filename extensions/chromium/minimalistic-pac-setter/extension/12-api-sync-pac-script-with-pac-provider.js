@@ -16,6 +16,71 @@
 */
 { // Private namespace starts.
 
+  function mandatory() {
+
+    throw new TypeError('Missing required argument. ' +
+      'Be explicit if you swallow errors.');
+
+  }
+
+  function throwIfError(err) {
+
+    if(err) {
+      throw err;
+    }
+
+  }
+
+  function asyncLogGroup(...args) {
+
+    const cb = args.pop();
+    if(!(cb && typeof(cb) === 'function')) {
+      throw new TypeError('cb must be a function, but got: ' + cb);
+    }
+    console.group(...args);
+    return function(...cbArgs) {
+
+      console.groupEnd();
+      console.log('Group finished.');
+      cb(...cbArgs);
+
+    };
+
+  }
+
+  function checkChromeError(betterStack) {
+
+    // Chrome API calls your cb in a context different from the point of API
+    // method invokation.
+    const err = chrome.runtime.lastError || chrome.extension.lastError || null;
+    if (err) {
+      const args = ['API returned error:', err];
+      if (betterStack) {
+        args.push('\n' + betterStack);
+      }
+      console.warn(...args);
+    }
+    return err;
+
+  }
+
+  function chromified(cb = mandatory(), ...replaceArgs) {
+
+    const stack = (new Error()).stack;
+    // Take error first callback and convert it to chrome api callback.
+    return function(...args) {
+
+      if (replaceArgs.length) {
+        args = replaceArgs;
+      }
+      const err = checkChromeError(stack);
+      // setTimeout fixes error context.
+      setTimeout( cb.bind(null, err, ...args), 0 );
+
+    };
+
+  }
+
   window.apis.antiCensorRu = {
 
     version: chrome.runtime.getManifest().version,
@@ -99,7 +164,7 @@
 
     _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
 
-    pushToStorageAsync(cb) {
+    pushToStorageAsync(cb = throwIfError) {
 
       console.log('Pushing to storage...');
 
@@ -123,29 +188,10 @@
 
     },
 
-    /*
-    pullFromStorage(cb) {
+    syncWithPacProviderAsync(
+      key = this.currentPacProvierKey, cb = throwIfError) {
 
-      chrome.storage.local.get(null, (storage) => {
-
-        const err = checkChromeError();
-        if (!err) {
-          console.log('Pulled from storage:', storage);
-          for(const key of Object.keys(storage)) {
-            this[key] = storage[key];
-          }
-        }
-
-        console.log('Synced with storage, any callback?', !!cb);
-        cb && cb(err, storage);
-
-      });
-    },
-    */
-
-    syncWithPacProviderAsync(key, cb) {
-
-      if( !key || typeof(key) === 'function' ) {
+      if( typeof(key) === 'function' ) {
         cb = key;
         key = this.currentPacProviderKey;
       }
@@ -239,7 +285,7 @@
 
     },
 
-    installPacAsync(key, cb) {
+    installPacAsync(key, cb = throwIfError) {
 
       console.log('Installing PAC...');
       if (!key) {
@@ -253,7 +299,7 @@
 
     },
 
-    clearPacAsync(cb) {
+    clearPacAsync(cb = throwIfError) {
 
       cb = asyncLogGroup('Cearing alarms and PAC...', cb);
       chrome.alarms.clearAll(
@@ -279,7 +325,11 @@
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
   chrome.storage.local.get(null, (oldStorage) => {
 
-    checkChromeError();
+    const err = checkChromeError();
+    if (err) {
+      throw err;
+    }
+
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
@@ -296,7 +346,7 @@
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU')
           );
-          antiCensorRu.syncWithPacProviderAsync(/* Swallows errors. */);
+          antiCensorRu.syncWithPacProviderAsync(() => {/* swallow */});
         }
 
       }
@@ -358,7 +408,7 @@
     // UPDATE & MIGRATION
     console.log('Extension updated.');
     if (!ifAlarmTriggered) {
-      antiCensorRu.pushToStorageAsync(/* Swallows errors. */);
+      antiCensorRu.pushToStorageAsync();
     }
 
     /*
@@ -374,55 +424,7 @@
 
   });
 
-  function asyncLogGroup(...args) {
-
-    const cb = args.pop() || (() => {});
-    console.group(...args);
-    return function(...cbArgs) {
-
-      console.groupEnd();
-      console.log('Group finished.');
-      cb(...cbArgs);
-
-    };
-
-  }
-
-  function checkChromeError(betterStack) {
-
-    // Chrome API calls your cb in a context different from the point of API
-    // method invokation.
-    const err = chrome.runtime.lastError || chrome.extension.lastError || null;
-    if (err) {
-      const args = ['API returned error:', err];
-      if (betterStack) {
-        args.push('\n' + betterStack);
-      }
-      console.warn(...args);
-    }
-    return err;
-
-  }
-
-  function chromified(cb, ...replaceArgs) {
-
-    const stack = (new Error()).stack;
-    // Take error first callback and convert it to chrome api callback.
-    return function(...args) {
-
-      if (replaceArgs.length) {
-        args = replaceArgs;
-      }
-      const err = checkChromeError(stack);
-      if (cb) {
-        setTimeout( cb.bind(null, err, ...args), 0 );
-      }
-
-    };
-
-  }
-
-  function setPac(pacData, cb) {
+  function setPac(pacData, cb = throwIfError) {
 
     const config = {
       mode: 'pac_script',
@@ -452,15 +454,14 @@
 
   }
 
-  function httpGet(url, cb) {
+  function httpGet(url, cb = mandatory()) {
 
     const start = Date.now();
     fetch(url).then(
       (res) => {
 
         const textCb =
-          (err) => cb && res.text()
-            .then( (text) => cb(err, text), cb );
+          (err) => res.text().then( (text) => cb(err, text), cb );
         const status = res.status;
         if ( !( status >= 200 && status < 300 || status === 304 ) ) {
           res.clarification = {
@@ -477,14 +478,14 @@
         err.clarification = {
           message: 'Что-то не так с сетью, проверьте соединение.',
         };
-        cb && cb(err);
+        cb(err);
 
       }
     );
 
   }
 
-  function getIpsFor(host, cb) {
+  function getIpsFor(host, cb = mandatory()) {
 
     const types = [1, 28];
     const promises = types.map(
@@ -546,7 +547,7 @@
 
   }
 
-  function updatePacProxyIps(provider, cb) {
+  function updatePacProxyIps(provider, cb = throwIfError) {
 
     cb = asyncLogGroup(
       'Getting IP for '+ provider.proxyHosts.join(', ') + '...',
@@ -585,7 +586,7 @@
 
   }
 
-  function setPacScriptFromProvider(provider, cb) {
+  function setPacScriptFromProvider(provider, cb = throwIfError) {
 
     cb = asyncLogGroup(
       'Getting pac script from provider...', provider.pacUrl,

@@ -57,7 +57,7 @@
 
     isNotControlled(details) {
 
-      this.ifNotControlled = window.utils.areSettingsNotControlledFor( details );
+      this.ifNotControlled = window.utils.areSettingsNotControlledFor(details);
       if (this.ifNotControlled) {
         chrome.browserAction.disable();
       } else {
@@ -134,13 +134,22 @@
     (details) => handlers.isNotControlled(details)
   );
 
+  const openAndFocus = (url) => {
+
+    chrome.tabs.create(
+      {active: true, url: url},
+      (tab) => chrome.windows.update(tab.windowId, {focused: true})
+    );
+
+  };
+
   chrome.notifications.onClicked.addListener( function(notId) {
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return chrome.tabs.create({active: true, url: 'chrome://settings/#proxy'});
+      return openAndFocus('chrome://settings/#proxy');
     }
-    chrome.tabs.create({active: true, url: './pages/view-error/index.html#' + notId});
+    openAndFocus('./pages/view-error/index.html#' + notId);
 
   });
 
@@ -151,9 +160,18 @@
     if (handlers.ifNoControl) {
       return;
     }
+    /*
+      Example:
+        details: "line: 7: Uncaught Error: This is error, man.",
+        error: "net::ERR_PAC_SCRIPT_FAILED",
+        fatal: false,
+    */
     console.warn('PAC ERROR', details);
-    handlers.mayNotify('pac-error', 'Ошибка PAC!', details,
-      'pac-error-128.png' );
+    // TOOD: add "view pac script at this line" button.
+    handlers.mayNotify('pac-error', 'Ошибка PAC!',
+      details.error + '\n' + details.details,
+      'pac-error-128.png'
+    );
 
   });
 
@@ -163,7 +181,8 @@
     const noCon = 'no-control';
     if ( handlers.isNotControlled(details) ) {
       console.log(details);
-      handlers.mayNotify(noCon, 'Прокси контролирует другое расширение', details,
+      handlers.mayNotify(noCon, 'Другое расширение контролирует прокси',
+        'Какое?',
         'no-control-128.png');
     } else {
       chrome.notifications.clear( noCon );

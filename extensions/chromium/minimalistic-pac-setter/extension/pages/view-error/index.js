@@ -1,13 +1,17 @@
 'use strict';
-
+/* global Raven:false, hljs:false */
 function errorJsonReplacer(key, value) {
 
-  if ( !['Error', 'ErrorEvent'].includes( value.constructor.name ) ) {
+  if (!( value && value.constructor
+    && ['Error', 'Event'].some(
+      (suff) => value.constructor.name.endsWith(suff)
+    )
+  )) {
     return value;
   }
   const alt = {};
 
-  Object.getOwnPropertyNames(value).forEach(function (key) {
+  Object.getOwnPropertyNames(value).forEach(function(key) {
       alt[key] = value[key];
   }, value);
 
@@ -34,34 +38,57 @@ function errorJsonReplacer(key, value) {
 
 }
 
-chrome.runtime.getBackgroundPage( (backgroundPage) =>
-  backgroundPage.apis.errorHandlers.installListenersOn(window, 'ErrView', () => {
+chrome.runtime.getBackgroundPage( (bgPage) =>
+  bgPage.apis.errorHandlers.installListenersOn(window, 'ErrView', () => {
 
     Raven.config('https://bc534321358f455b9ae861740c2d3af8@sentry.io/116007', {
       release: chrome.runtime.getManifest().version,
       autoBreadcrumbs: false,
     }).install();
 
-    const errId = window.location.hash.slice(1);
-    const err = backgroundPage.apis.errorHandlers.idToErr[errId];
-    const json = JSON.stringify(err, errorJsonReplacer, 2);
-    document.getElementById('output').innerHTML = hljs.highlight('json', json).value;
+    const originalComment = document.querySelector('#comment').value.trim();
+    let json;
+    let err;
+    {
+      const output = document.getElementById('output');
+      const errId = window.location.hash.slice(1);
+      const idToErr = bgPage.apis.errorHandlers.idToErr;
+      err = errId && idToErr[errId] || idToErr;
+      if (!Object.keys(err).length) {
+        output.innerHTML = 'Ошибок не найдено. ' +
+          'Оставьте, пожалуйста, подробный комментарий.';
+      } else {
+        json = JSON.stringify(err, errorJsonReplacer, 2);
+        output.innerHTML = hljs.highlight('json', json).value;
+      }
+    }
 
     document.addEventListener('ravenSuccess', () => alert('Готово'));
-    document.addEventListener('ravenFailure', () => alert('Ошибка sentry.io! (подробности недоступны)'));
+    document.addEventListener('ravenFailure',
+      () => alert('Ошибка sentry.io! (подробности недоступны)'));
 
     document.getElementById('raven-report').onclick = () => {
 
       const e = err.error || err;
-      const extra = JSON.parse(json);
-      const comment = document.getElementById('comment').value;
-      if (comment.trim()) {
+      let comment = document.getElementById('comment').value.trim();
+      if (comment === originalComment) {
+        comment = '';
+      }
+      if (!comment && !json) {
+        return alert('Посылать нечего, так как вы не оставили комментария.');
+      }
+      const extra = json && JSON.parse(json) || {};
+      if (comment) {
         extra.comment = comment;
       }
       Raven.captureException(e, {
         extra: extra,
         onSuccess: () => alert('Готово'),
-        onError: (err) => { throw err; }
+        onError: (err) => {
+
+          throw err;
+
+        },
       });
 
     };
@@ -70,8 +97,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const title = err.message || err;
       chrome.tabs.create({
-        active: true,
-        url: 'https://rebrand.ly/ac-search-issues?q=' + encodeURIComponent(title)
+        url: 'https://rebrand.ly/ac-search-issues?q=' + encodeURIComponent(title),
       });
 
     };
@@ -90,11 +116,16 @@ ${json}
 Версия: ${chrome.runtime.getManifest().version}
 `;
       chrome.tabs.create({
-        active: true,
-        url: `https://rebrand.ly/ac-new-issue?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`
+        url: `https://rebrand.ly/ac-new-issue?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`,
       });
 
     };
+
+    document.querySelector('main').style.display = '';
+    document.body.style.background =
+        'linear-gradient(to bottom, black ' +
+        document.querySelector('textarea').offsetTop +
+        'px, transparent)';
 
   })
 );
