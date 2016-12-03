@@ -26,13 +26,13 @@
   );
 
   createMenuLinkEntry(
-    'Открыть веб прокси (не наш)',
-    (tab) => 'https://kproxy.com'
+    'Через Google Translate',
+    (tab) => 'https://translate.google.com/translate?hl=&sl=en&tl=ru&anno=2&sandbox=1&u=' + tab.url
   );
 
   createMenuLinkEntry(
     'Другие варианты разблокировки',
-    (tab) => 'https://rebrand.ly/unblock#' + tab.url
+    (tab) => 'https://rebrand.ly/ac-unblock#' + tab.url
   );
 
   createMenuLinkEntry(
