@@ -50,28 +50,26 @@
     </style>
   </head>
   <body>
-    <div id='for-bg'>
-      <header>
-        <h2>Информация об ошибке</h2>
-      </header>
-      <main style="display: none">
-        <ol>
-          <li>Тип: <span>ext-error</span></li>
-          <li><pre><code id="output" class='hljs'></code></pre></li>
-          <li><textarea placeholder='Ваш комментарий (опционально)' id="comment">
+    <header>
+      <h2>Информация об ошибке</h2>
+    </header>
+    <main style="display: none">
+      <ol>
+        <li>Тип: <span>ext-error</span></li>
+        <li><pre><code id="output" class='hljs'></code></pre></li>
+        <li><textarea placeholder='Ваш комментарий (опционально)' id="comment">
 К этой ошибке приводят следующие действия:
 1. ...
 2. ...
 </textarea>
-          </li>
-          <li>
-            <button id="raven-report">Отправить автору</button>
-            <button id="github-search">Искать на GitHub</button>
-            <button id="github-report">Написать на GitHub</button>
-          </li>
-        </ol>
-      </main>
-    </div>
+        </li>
+        <li>
+          <button id="raven-report">Отправить автору</button>
+          <button id="github-search">Искать на GitHub</button>
+          <button id="github-report">Написать на GitHub</button>
+        </li>
+      </ol>
+    </main>
     <script src="./vendor/raven3.8.1.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="./vendor/highlight.js/styles/atom-one-dark.css">
     <script src="./vendor/highlight.js/highlight9.8.0.min.js"></script>
