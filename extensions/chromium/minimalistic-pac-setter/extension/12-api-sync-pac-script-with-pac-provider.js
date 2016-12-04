@@ -424,7 +424,7 @@
 
   });
 
-  function setPac(pacData, cb = throwIfError) {
+  function setPacAsync(pacData, cb = throwIfError) {
 
     const config = {
       mode: 'pac_script',
@@ -605,7 +605,7 @@
           };
           return cb(err);
         }
-        setPac(pacData, cb);
+        setPacAsync(pacData, cb);
 
       }
     );
