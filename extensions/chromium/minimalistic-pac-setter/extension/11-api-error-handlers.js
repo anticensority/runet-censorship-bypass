@@ -67,7 +67,7 @@
 
     },
 
-    idToErr: {},
+    idToError: {},
 
     mayNotify(
       id, title, errOrMessage,
@@ -78,7 +78,7 @@
       if ( !this.isOn(id) ) {
         return;
       }
-      this.idToErr[id] = errOrMessage;
+      this.idToError[id] = errOrMessage;
       const message = errOrMessage.message || errOrMessage.toString();
       chrome.notifications.create(
         id,
@@ -90,6 +90,9 @@
           type: 'basic',
           iconUrl: './icons/' + icon,
           isClickable: true,
+          buttons: [
+            {title: 'Сообшить о всех ошибках автору'},
+          ]
         }
       );
 
@@ -126,6 +129,51 @@
 
 {
 
+  function errorJsonReplacer(key, value) {
+
+    // fooWindow.ErrorEvent !== barWindow.ErrorEvent
+    if (!( value && value.constructor
+      && ['Error', 'Event'].some(
+        (suff) => value.constructor.name.endsWith(suff)
+      )
+    )) {
+      return value;
+    }
+    const alt = {};
+
+    Object.getOwnPropertyNames(value).forEach(function(key) {
+
+        alt[key] = value[key];
+
+    }, value);
+
+    for(const prop in value) {
+      if (/^[A-Z]/.test(prop)) {
+        continue;
+      }
+      alt[prop] = value[prop];
+    }
+
+    if (value.constructor.name === 'ErrorEvent') {
+      for(const circularProp of
+        [  // First line are circular props.
+          'target', 'srcElement', 'path', 'currentTarget',
+          'bubbles', 'cancelBubble', 'cancelable', 'composed',
+          'defaultPrevented', 'eventPhase', 'isTrusted', 'returnValue',
+          'timeStamp']) {
+        delete alt[circularProp];
+      }
+    }
+
+    if (value.name) {
+      alt.name = value.name;
+    }
+
+    return alt;
+
+  }
+
+
   const handlers = window.apis.errorHandlers;
 
   // INIT
@@ -137,7 +185,7 @@
   const openAndFocus = (url) => {
 
     chrome.tabs.create(
-      {active: true, url: url},
+      {url: url},
       (tab) => chrome.windows.update(tab.windowId, {focused: true})
     );
 
@@ -149,7 +197,8 @@
     if(notId === 'no-control') {
       return openAndFocus('chrome://settings/#proxy');
     }
-    openAndFocus('./pages/view-error/index.html#' + notId);
+    const err = handlers.idToError[notId];
+    openAndFocus('http://localhost:8000/error/?' + JSON.stringify(err, errorJsonReplacer, 0));
 
   });
 

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ошибка</title>
+    <style type="text/css" media="screen">
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100%;
+      }
+      html {
+        height: 100%;
+        background: black url('./err.jpg') repeat;
+        background-position: bottom;
+        color: white;
+        padding-bottom: 10em;
+        box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      }
+      header {
+        padding-top: 1em;
+      }
+      h2 {
+        margin-top: 0;
+      }
+      input:checked + * {
+        color: #dfe20f;
+      }
+      input:not(:checked) + * {
+        text-decoration: line-through;
+        color: #aaa;
+      }
+      pre {
+        margin: 0 !important;
+        padding: 1em !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        box-sizing: border-box !important;
+        background-color: transparent !important;
+      }
+      header {
+        padding-left: 2em;
+      }
+      ol, ul {
+        list-style-type: none;
+      }
+      textarea {
+        width: 40em;
+        height: 10em;
+        font: inherit;
+        font-size: 1rem;
+        margin-top: 0.3rem;
+      }
+      #output {
+        background-color: black;
+      }
+      .error-info {
+        padding: 0;
+        padding-bottom: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2 class="if-error">Информация об ошибке</h2>
+      <h2 class="if-no-error">Сообщить об ошибке</h2>
+    </header>
+    <main id="main-error" style="display: none">
+      <ol>
+        <li><ol class='error-info'>
+          <li class="if-error">Тип ошибки: <span>неизвестно</span></li>
+          <li class="if-error"><pre><code id="output" class='hljs'></code></pre></li>
+          <li class="if-error">
+            <a class='btn' href target="_blank" id="github-search">Искать ошибку на GitHub</a>
+          </li>
+        </ol></li>
+        <li><input type="checkbox" checked><span id='user-agent'></span></li>
+        <li><input type="checkbox" checked><span id='platform'></span></li>
+        <li><input type="checkbox" checked disabled><span>Ваш IP будет записан! (особенность чужого сервера)</span></li>
+        <li><textarea placeholder='Ваш комментарий (опционально)' id="comment">
+К этой ошибке приводит следующая очерёдность действий:
+1. ...
+2. ...</textarea>
+        </li>
+        <li>
+          <button id="raven-report">Отправить автору</button> или
+          <a class='btn' href target="_blank" id="github-report">Экспорт данных на GitHub</a>
+        </li>
+      </ol>
+    </main>
+    <script src="./vendor/raven3.8.1.min.js"></script>
+    <link rel="stylesheet" href="./vendor/highlight.js/styles/atom-one-dark.css">
+    <script src="./vendor/highlight.js/highlight9.8.0.min.js"></script>
+    <script src="./index.js" charset="utf-8"></script>
+  </body>
+</html>

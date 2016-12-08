@@ -13,6 +13,10 @@
   In pages window.apis.antiCensorRu is not accessible,
     use chrome.runtime.getBackgroundPage(..),
     extension.getBackgroundPage is deprecated
+
+  If you want to catch errors, then call api from setTimeout!
+  See errorHandlers api for more.
+
 */
 { // Private namespace starts.
 
@@ -82,6 +86,8 @@
   }
 
   window.apis.antiCensorRu = {
+
+    throw1() { throw new Error('Artifical Error'); },
 
     version: chrome.runtime.getManifest().version,
 
