@@ -18,6 +18,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
     };
 
     const antiCensorRu = backgroundPage.apis.antiCensorRu;
+    antiCensorRu.throw1();
 
     // SET DATE
 

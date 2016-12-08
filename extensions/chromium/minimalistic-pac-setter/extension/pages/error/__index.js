@@ -52,8 +52,8 @@ chrome.runtime.getBackgroundPage( (bgPage) =>
     {
       const output = document.getElementById('output');
       const errId = window.location.hash.slice(1);
-      const idToError = bgPage.apis.errorHandlers.idToError;
-      err = errId && idToError[errId] || idToError;
+      const idToErr = bgPage.apis.errorHandlers.idToErr;
+      err = errId && idToErr[errId] || idToErr;
       if (!Object.keys(err).length) {
         output.innerHTML = 'Ошибок не найдено. ' +
           'Оставьте, пожалуйста, подробный комментарий.';
