@@ -87,8 +87,6 @@
 
   window.apis.antiCensorRu = {
 
-    throw1() { throw new Error('Artifical Error'); },
-
     version: chrome.runtime.getManifest().version,
 
     pacProviders: {
@@ -97,7 +95,10 @@
         proxyHosts: ['proxy.antizapret.prostovpn.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
+          '137.74.171.91': 'proxy.antizapret.prostovpn.org',
+          '51.15.39.201': 'proxy.antizapret.prostovpn.org',
           '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
+          '2001:bc8:4700:2300::1:d07': 'proxy.antizapret.prostovpn.org',
         },
       },
       Антиценз: {
@@ -113,7 +114,10 @@
         proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
+          '137.74.171.91': 'proxy.antizapret.prostovpn.org',
+          '51.15.39.201': 'proxy.antizapret.prostovpn.org',
           '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
+          '2001:bc8:4700:2300::1:d07': 'proxy.antizapret.prostovpn.org',
           '5.196.220.114': 'gw2.anticenz.org',
         },
       },
@@ -262,7 +266,7 @@
 
     },
 
-    _pacUpdatePeriodInMinutes: 4*60,
+    _pacUpdatePeriodInMinutes: 12*60,
 
     setAlarms() {
 

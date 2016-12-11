@@ -47,12 +47,9 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
   chrome.webRequest.onErrorOccurred.addListener(
     (requestDetails) =>
-      isInsideTabWithIp(requestDetails) &&
-      (
-        isProxiedAndInformed(requestDetails)
-          || requestDetails.type === 'main_frame'
-          && (window.tabWithError2ip[requestDetails.tabId] = requestDetails.ip)
-      ),
+      isInsideTabWithIp(requestDetails)
+        && isProxiedAndInformed(requestDetails)
+      ,
     {urls: ['<all_urls>']}
   );
 
