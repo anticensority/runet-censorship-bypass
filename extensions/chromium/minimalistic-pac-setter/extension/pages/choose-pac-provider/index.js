@@ -18,7 +18,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
     };
 
     const antiCensorRu = backgroundPage.apis.antiCensorRu;
-    antiCensorRu.throw1();
 
     // SET DATE
 
@@ -90,23 +89,13 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         </span>
         <br/>
         <span style="font-size: 0.9em; color: darkred">${message}</span>
-        <a href="../view-error/index.html" class="link-button">
+        <a href class="link-button">
           [Ещё&nbsp;подробнее]
         </a>`
       );
       getStatus().querySelector('.link-button').onclick = function() {
 
-        const div = document.createElement('div');
-        div.innerHTML = `
-          Более подробную информацию можно узнать из логов фоновой страницы:
-          <br/>
-          <a href="chrome://extensions?id=${chrome.runtime.id}"
-            data-in-bg="true">
-          chrome://extensions</a> › Это расширение › Отладка страниц: фоновая
-          страница › Console (DevTools)
-          <br>
-          Ещё: ` + JSON.stringify({err: err, stack: err.stack});
-        getStatus().replaceChild(div, this);
+        backgroundPage.apis.errorHandlers.viewError(err);
         return false;
 
       };

@@ -2,6 +2,50 @@
 
 { // Private namespace
 
+  function errorJsonReplacer(key, value) {
+
+    // fooWindow.ErrorEvent !== barWindow.ErrorEvent
+    if (!( value && value.constructor
+      && ['Error', 'Event'].some(
+        (suff) => value.constructor.name.endsWith(suff)
+      )
+    )) {
+      return value;
+    }
+    const alt = {};
+
+    Object.getOwnPropertyNames(value).forEach(function(key) {
+
+        alt[key] = value[key];
+
+    }, value);
+
+    for(const prop in value) {
+      if (/^[A-Z]/.test(prop)) {
+        continue;
+      }
+      alt[prop] = value[prop];
+    }
+
+    if (value.constructor.name === 'ErrorEvent') {
+      for(const circularProp of
+        [  // First line are circular props.
+          'target', 'srcElement', 'path', 'currentTarget',
+          'bubbles', 'cancelBubble', 'cancelable', 'composed',
+          'defaultPrevented', 'eventPhase', 'isTrusted', 'returnValue',
+          'timeStamp']) {
+        delete alt[circularProp];
+      }
+    }
+
+    if (value.name) {
+      alt.name = value.name;
+    }
+
+    return alt;
+
+  }
+
   const handlersState = function(key, value) {
 
     key = 'handlers-' + key;
@@ -19,10 +63,27 @@
 
   };
 
+  const openAndFocus = (url) => {
+
+    chrome.tabs.create(
+      {url: url},
+      (tab) => chrome.windows.update(tab.windowId, {focused: true})
+    );
+
+  };
+
   const ifPrefix = 'if-on-';
   const extName = chrome.runtime.getManifest().name;
 
   window.apis.errorHandlers = {
+
+    viewError(err) {
+
+      openAndFocus(
+        'https://rebrand.ly/ac-error/?' + JSON.stringify(err, errorJsonReplacer, 0)
+      );
+
+    },
 
     getEventsMap() {
 
@@ -90,9 +151,6 @@
           type: 'basic',
           iconUrl: './icons/' + icon,
           isClickable: true,
-          buttons: [
-            {title: 'Сообшить о всех ошибках автору'},
-          ]
         }
       );
 
@@ -112,6 +170,7 @@
 
         console.warn(name + ':Unhandled rejection. Throwing error.');
         event.preventDefault();
+        console.log('ev', event);
         throw event.reason;
 
       });
@@ -125,55 +184,6 @@
 
   };
 
-}
-
-{
-
-  function errorJsonReplacer(key, value) {
-
-    // fooWindow.ErrorEvent !== barWindow.ErrorEvent
-    if (!( value && value.constructor
-      && ['Error', 'Event'].some(
-        (suff) => value.constructor.name.endsWith(suff)
-      )
-    )) {
-      return value;
-    }
-    const alt = {};
-
-    Object.getOwnPropertyNames(value).forEach(function(key) {
-
-        alt[key] = value[key];
-
-    }, value);
-
-    for(const prop in value) {
-      if (/^[A-Z]/.test(prop)) {
-        continue;
-      }
-      alt[prop] = value[prop];
-    }
-
-    if (value.constructor.name === 'ErrorEvent') {
-      for(const circularProp of
-        [  // First line are circular props.
-          'target', 'srcElement', 'path', 'currentTarget',
-          'bubbles', 'cancelBubble', 'cancelable', 'composed',
-          'defaultPrevented', 'eventPhase', 'isTrusted', 'returnValue',
-          'timeStamp']) {
-        delete alt[circularProp];
-      }
-    }
-
-    if (value.name) {
-      alt.name = value.name;
-    }
-
-    return alt;
-
-  }
-
-
   const handlers = window.apis.errorHandlers;
 
   // INIT
@@ -182,23 +192,14 @@
     (details) => handlers.isNotControlled(details)
   );
 
-  const openAndFocus = (url) => {
-
-    chrome.tabs.create(
-      {url: url},
-      (tab) => chrome.windows.update(tab.windowId, {focused: true})
-    );
-
-  };
-
   chrome.notifications.onClicked.addListener( function(notId) {
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
       return openAndFocus('chrome://settings/#proxy');
     }
-    const err = handlers.idToError[notId];
-    openAndFocus('http://localhost:8000/error/?' + JSON.stringify(err, errorJsonReplacer, 0));
+    const errors = handlers.idToError;
+    handlers.viewError(errors);
 
   });
 
