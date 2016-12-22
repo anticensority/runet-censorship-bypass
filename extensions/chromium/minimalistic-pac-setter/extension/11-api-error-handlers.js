@@ -22,6 +22,7 @@
 
     for(const prop in value) {
       if (/^[A-Z]/.test(prop)) {
+        console.log(prop);
         continue;
       }
       alt[prop] = value[prop];
@@ -80,7 +81,7 @@
     viewError(err) {
 
       openAndFocus(
-        'https://rebrand.ly/ac-error/?' + JSON.stringify(err, errorJsonReplacer, 0)
+        'https://rebrand.ly/ac-error/?' + btoa(JSON.stringify(err, errorJsonReplacer, 0))
       );
 
     },
@@ -120,9 +121,9 @@
 
       this.ifNotControlled = window.utils.areSettingsNotControlledFor(details);
       if (this.ifNotControlled) {
-        chrome.browserAction.disable();
+        chrome.browserAction.setIcon( {path: './icons/default-grayscale-128.png'} );
       } else {
-        chrome.browserAction.enable();
+        chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
       }
       return this.ifNotControlled;
 
@@ -150,6 +151,7 @@
           requireInteraction: true,
           type: 'basic',
           iconUrl: './icons/' + icon,
+          appIconMaskUrl: './icons/default-mask-128.png',
           isClickable: true,
         }
       );
@@ -186,7 +188,9 @@
 
   const handlers = window.apis.errorHandlers;
 
-  // INIT
+  // INITIALIZATION
+  // ==============
+
   chrome.proxy.settings.get(
     {},
     (details) => handlers.isNotControlled(details)
@@ -196,7 +200,7 @@
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return openAndFocus('chrome://settings/#proxy');
+      return openAndFocus( window.utils.messages.searchSettingsUrlFor('proxy') );
     }
     const errors = handlers.idToError;
     handlers.viewError(errors);
@@ -230,10 +234,12 @@
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
     if ( handlers.isNotControlled(details) ) {
-      console.log(details);
-      handlers.mayNotify(noCon, 'Другое расширение контролирует прокси',
-        'Какое?',
-        'no-control-128.png');
+      handlers.mayNotify(
+        noCon,
+        chrome.i18n.getMessage('noControl'),
+        chrome.i18n.getMessage('which'),
+        'no-control-128.png'
+      );
     } else {
       chrome.notifications.clear( noCon );
     }

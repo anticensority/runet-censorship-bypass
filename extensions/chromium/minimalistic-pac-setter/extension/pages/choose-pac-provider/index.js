@@ -7,17 +7,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
     const setStatusTo = (msg) => {
 
-      const status = getStatus();
-      if (msg) {
-        status.classList.remove('off');
-        status.innerHTML = msg;
-      } else {
-        status.classList.add('off');
-      }
+      getStatus().innerHTML = msg;
 
     };
 
     const antiCensorRu = backgroundPage.apis.antiCensorRu;
+    const errorHandlers = backgroundPage.apis.errorHandlers;
 
     // SET DATE
 
@@ -26,15 +21,14 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       let dateForUser = 'никогда';
       if( antiCensorRu.lastPacUpdateStamp ) {
         let diff = Date.now() - antiCensorRu.lastPacUpdateStamp;
-        let units = ' мс';
+        let units = 'мс';
         const gauges = [
-          [1000, ' с'],
-          [60, ' мин'],
-          [60, ' ч'],
-          [24, ' дн'],
+          [1000, 'с'],
+          [60, 'мин'],
+          [60, 'ч'],
+          [24, 'дн'],
           [7, ' недель'],
           [4, ' месяцев'],
-          [12, ' г'],
         ];
         for(const g of gauges) {
           const diffy = Math.floor(diff / g[0]);
@@ -47,7 +41,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       }
 
       const dateElement = document.querySelector('.update-date');
-      dateElement.innerText = dateForUser;
+      dateElement.innerText = dateForUser + ' / T=' + (antiCensorRu.pacUpdatePeriodInMinutes/60) + 'ч';
       dateElement.title = new Date(antiCensorRu.lastPacUpdateStamp)
         .toLocaleString('ru-RU');
 
@@ -95,7 +89,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       );
       getStatus().querySelector('.link-button').onclick = function() {
 
-        backgroundPage.apis.errorHandlers.viewError(err);
+        errorHandlers.viewError(err);
         return false;
 
       };
@@ -180,7 +174,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
     }
 
     const conpanel = document.getElementById('list-of-handlers');
-    backgroundPage.apis.errorHandlers.getEventsMap().forEach( (value, name) => {
+    errorHandlers.getEventsMap().forEach( (value, name) => {
 
       const li = document.createElement('li');
       li.innerHTML = `
@@ -201,11 +195,22 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
     });
 
+    if( errorHandlers.ifNotControlled ) {
+      console.log('ADDING');
+      document.getElementById('which-extension').innerHTML = backgroundPage.utils.messages.whichExtensionHtml();
+      document.querySelectorAll('.if-not-controlled').forEach( (node) => {
+
+        node.style.display = 'block';
+
+      });
+    }
     setStatusTo('');
+
     if (antiCensorRu.ifFirstInstall) {
       const id = antiCensorRu.currentPacProviderKey || 'none';
       document.querySelector('#update-' + id).click();
     }
+    document.documentElement.style.display = '';
 
   })
 );
