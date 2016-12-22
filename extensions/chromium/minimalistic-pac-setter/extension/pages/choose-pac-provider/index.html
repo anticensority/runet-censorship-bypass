@@ -1,8 +1,12 @@
 ﻿<!DOCTYPE html>
-<html>
+<html style="display: none">
   <head>
     <title>Выбор провайдера PAC</title>
     <style>
+      div {
+        margin: 0;
+        padding: 0;
+      }
       label {
         user-select: none;
       }
@@ -44,20 +48,29 @@
       }
       hr {
         border-width: 1px 0 0 0;
+        margin: 0.6em 0;
+        padding: 0;
       }
       #configs-panel > header {
-        margin: 0.6em 0 0.4em;
+        margin: 0 0 0.4em;
+      }
+      .if-not-controlled {
+        display: none;
       }
     </style>
   </head>
   <body>
+    <span class="if-not-controlled">
+      <span id="which-extension"></span>
+      <hr style="border-color: red; border-style: solid;"/>
+    </span>
     <ul id="list-of-providers">
       <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
     </ul>
     <div style="white-space: nowrap">
       Обновлялись: <span class="update-date">...</span>
     </div>
-    <div id="status">Загрузка...</div>
+    <span id="status">Загрузка...</span>
     <hr/>
     <div id="configs-panel">
       <header>Я ❤️ уведомления:</header>
