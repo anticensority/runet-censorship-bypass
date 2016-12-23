@@ -2,8 +2,8 @@
   "manifest_version": 2,
 
   "name": "__MSG_extName__",
-  "default_locale": "en",
-  "description": "__MSG_extDesc__ https://rebrand.ly/ac-wiki",
+  "default_locale": "ru",
+  "description": "__MSG_extDesc__",
   "version": "0.0.0.16",
   "icons": {
     "128": "/icons/default-128.png"
@@ -27,6 +27,7 @@
       "00-init-apis.js",
       "11-api-error-handlers.js",
       "12-api-sync-pac-script-with-pac-provider.js",
+      "20-api-fixes.js",
       "30-block-informer.js",
       "40-context-menus.js"
     ]
