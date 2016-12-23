@@ -1,7 +1,7 @@
 'use strict';
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
-  backgroundPage.apis.errorHandlers.installListenersOn(window, 'POPUP', () => {
+  backgroundPage.apis.errorHandlers.installListenersOnAsync(window, 'POPUP', () => {
 
     const getStatus = () => document.querySelector('#status');
 
@@ -41,7 +41,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       }
 
       const dateElement = document.querySelector('.update-date');
-      dateElement.innerText = dateForUser + ' / T=' + (antiCensorRu.pacUpdatePeriodInMinutes/60) + 'ч';
+      dateElement.innerText = dateForUser + ' / ' + (antiCensorRu.pacUpdatePeriodInMinutes/60) + 'ч';
       dateElement.title = new Date(antiCensorRu.lastPacUpdateStamp)
         .toLocaleString('ru-RU');
 
@@ -89,7 +89,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       );
       getStatus().querySelector('.link-button').onclick = function() {
 
-        errorHandlers.viewError(err);
+        errorHandlers.viewErrorVoid(err);
         return false;
 
       };
@@ -185,7 +185,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       box.onclick = function() {
 
         const id = this.id.replace('if-on-', '');
-        backgroundPage.apis.errorHandlers.switch(
+        return backgroundPage.apis.errorHandlers.switchVoid(
           this.checked ? 'on' : 'off',
           id
         );
@@ -196,7 +196,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
     });
 
     if( errorHandlers.ifNotControlled ) {
-      console.log('ADDING');
       document.getElementById('which-extension').innerHTML = backgroundPage.utils.messages.whichExtensionHtml();
       document.querySelectorAll('.if-not-controlled').forEach( (node) => {
 

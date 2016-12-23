@@ -11,7 +11,7 @@ window.utils = {
 
   messages: {
 
-    searchSettingsUrlFor(niddle) {
+    searchSettingsForUrl(niddle) {
 
       return 'chrome://settings/search#' + (chrome.i18n.getMessage(niddle) || niddle);
 
@@ -20,7 +20,7 @@ window.utils = {
     whichExtensionHtml() {
 
       return chrome.i18n.getMessage('noControl') +
-        ` <a href="${ this.searchSettingsUrlFor('proxy') }">
+        ` <a href="${ this.searchSettingsForUrl('proxy') }">
           ${ chrome.i18n.getMessage('which') }
         </a>`;
 

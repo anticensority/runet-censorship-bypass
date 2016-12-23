@@ -10,7 +10,6 @@ Use only if really required because of performance penalty.
 
   const updateLinks = () => {
 
-    console.log('UPDATE');
     const links = document.querySelectorAll('a:not([href=""])');
     for (let i = 0; i < links.length; i++) {
       const ln = links[i];

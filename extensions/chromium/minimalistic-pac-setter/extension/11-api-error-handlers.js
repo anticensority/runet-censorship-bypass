@@ -22,7 +22,7 @@
 
     for(const prop in value) {
       if (/^[A-Z]/.test(prop)) {
-        console.log(prop);
+        // MOUSEMOVE, CLICK, KEYUP, NONE, etc.
         continue;
       }
       alt[prop] = value[prop];
@@ -78,10 +78,11 @@
 
   window.apis.errorHandlers = {
 
-    viewError(err) {
+    viewErrorVoid(err) {
 
+      const json = JSON.stringify(err, errorJsonReplacer, 0);
       openAndFocus(
-        'https://rebrand.ly/ac-error/?' + btoa(JSON.stringify(err, errorJsonReplacer, 0))
+        'https://rebrand.ly/ac-error/?' + btoa(json)
       );
 
     },
@@ -96,7 +97,7 @@
 
     },
 
-    switch(onOffStr, eventName) {
+    switchVoid(onOffStr, eventName) {
 
       if (!['on', 'off'].includes(onOffStr)) {
         throw new TypeError('First argument bust be "on" or "off".');
@@ -131,7 +132,7 @@
 
     idToError: {},
 
-    mayNotify(
+    mayNotifyVoid(
       id, title, errOrMessage,
       icon = 'default-128.png',
       context = extName
@@ -158,19 +159,19 @@
 
     },
 
-    installListenersOn(win, name, cb) {
+    installListenersOnAsync(win, name, cb) {
 
       win.addEventListener('error', (errEvent) => {
 
         console.warn(name + ':GLOBAL ERROR', errEvent);
-        this.mayNotify('ext-error', 'Ошибка расширения', errEvent,
+        this.mayNotifyVoid('ext-error', 'Ошибка расширения', errEvent,
           'ext-error-128.png');
 
       });
 
       win.addEventListener('unhandledrejection', (event) => {
 
-        console.warn(name + ':Unhandled rejection. Throwing error.');
+        console.warn(name + ': Unhandled rejection. Throwing error.');
         event.preventDefault();
         console.log('ev', event);
         throw event.reason;
@@ -200,14 +201,14 @@
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return openAndFocus( window.utils.messages.searchSettingsUrlFor('proxy') );
+      return openAndFocus( window.utils.messages.searchSettingsForUrl('proxy') );
     }
     const errors = handlers.idToError;
-    handlers.viewError(errors);
+    handlers.viewErrorVoid(errors);
 
   });
 
-  handlers.installListenersOn(window, 'BG');
+  handlers.installListenersOnAsync(window, 'BG');
 
   chrome.proxy.onProxyError.addListener((details) => {
 
@@ -222,7 +223,7 @@
     */
     console.warn('PAC ERROR', details);
     // TOOD: add "view pac script at this line" button.
-    handlers.mayNotify('pac-error', 'Ошибка PAC!',
+    handlers.mayNotifyVoid('pac-error', 'Ошибка PAC!',
       details.error + '\n' + details.details,
       'pac-error-128.png'
     );
@@ -234,7 +235,7 @@
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
     if ( handlers.isNotControlled(details) ) {
-      handlers.mayNotify(
+      handlers.mayNotifyVoid(
         noCon,
         chrome.i18n.getMessage('noControl'),
         chrome.i18n.getMessage('which'),
