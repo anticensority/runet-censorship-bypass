@@ -122,7 +122,9 @@
 
       this.ifNotControlled = window.utils.areSettingsNotControlledFor(details);
       if (this.ifNotControlled) {
-        chrome.browserAction.setIcon( {path: './icons/default-grayscale-128.png'} );
+        chrome.browserAction.setIcon({
+          path: './icons/default-grayscale-128.png',
+        });
       } else {
         chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
       }
@@ -201,7 +203,9 @@
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return openAndFocus( window.utils.messages.searchSettingsForUrl('proxy') );
+      return openAndFocus(
+        window.utils.messages.searchSettingsForUrl('proxy')
+      );
     }
     const errors = handlers.idToError;
     handlers.viewErrorVoid(errors);

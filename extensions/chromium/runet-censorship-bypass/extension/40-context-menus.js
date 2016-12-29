@@ -12,12 +12,18 @@
 
   createMenuLinkEntry(
     'Сайт доступен из-за границы? Is up?',
-    (tab) => 'http://isup.me/' + new URL(tab.url).hostname
+    (tab) => `data:text/html;charset=utf8,<title>Запрашиваю...</title>
+            <form class='tracker-form' method='POST'
+              action='https://www.host-tracker.com/ru/InstantCheck/Create'>
+            <input name='InstantCheckUrl' value='${new URL(tab.url).hostname}'
+              type='hidden'>
+            </form>
+            <script>document.querySelector('.tracker-form').submit()<\/script>`
   );
 
   createMenuLinkEntry(
     'Сайт в реестре блокировок?',
-    (tab) => 'https://antizapret.info/index.php?search=' + tab.url
+    (tab) => 'https://antizapret.info/index.php?search=' + new URL(tab.url).hostname
   );
 
   createMenuLinkEntry(

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "./node_modules/.bin/eslint ./extension/**/*.js --ignore-pattern vendor"
+    "lint": "./node_modules/.bin/eslint ./runet-censorship-bypass/extension/**/*.js --ignore-pattern vendor"
   },
   "author": "Ilya Ig. Petrov",
   "license": "GPLv3",
