@@ -14,7 +14,7 @@ chrome.proxy.settings.onChange.addListener(
   (details) => setStatusTo(red( details.levelOfControl + '!') )
 );
 
-document.querySelector('#read-button').onclick = () => {
+function _read() {
 
   chrome.proxy.settings.get({}, (details) => {
 
@@ -30,7 +30,9 @@ document.querySelector('#read-button').onclick = () => {
 
   });
 
-};
+}
+
+document.querySelector('#read-button').onclick = _read;
 
 document.querySelector('#save-button').onclick = () => {
 
@@ -42,6 +44,17 @@ document.querySelector('#save-button').onclick = () => {
     },
   };
   chrome.proxy.settings.set( {value: config}, () => alert('Saved!') );
+
+};
+
+document.querySelector('#clear-button').onclick = () => {
+
+  chrome.proxy.settings.clear({}, () => {
+
+    alert('Cleared! Reading...');
+    _read();
+
+  });
 
 };
 

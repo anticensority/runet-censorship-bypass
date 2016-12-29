@@ -113,9 +113,9 @@
         /*
           Don't use in system configs! Because Win does poor caching.
           Url is encoded to counter abuse.
-          Version: 0.15
+          Version: 0.17
         */
-        pacUrl: '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x62\x7a\x4e\x55\x52\x32\x46\x34\x52\x46\x38\x77\x4f\x55\x30',
+        pacUrl: '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67',
         proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
@@ -224,7 +224,7 @@
       const pacProvider = this.getPacProvider(key);
 
       const pacSetPromise = new Promise(
-        (resolve, reject) => setPacScriptFromProvider(
+        (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
           (err, res) => {
 
@@ -444,7 +444,10 @@
 
   });
 
-  function setPacAsync(pacData, cb = throwIfError) {
+  function setPacAsync(
+    {pacData = mandatory(), pacUrl = mandatory()},
+    cb = throwIfError
+  ) {
 
     const config = {
       mode: 'pac_script',
@@ -454,20 +457,44 @@
       },
     };
     console.log('Setting chrome proxy settings...');
-    chrome.proxy.settings.set( {value: config}, () => {
+    chrome.proxy.settings.set( {value: config}, async () => {
 
-      const err = checkChromeError();
+      let err = checkChromeError();
+      let asciiErr;
       if (err) {
-        return cb(err);
+        if (err.message.startsWith('\'pacScript.data\' supports only ASCII')) {
+          asciiErr = err;
+          asciiErr.clarification = {ifNotCritical: true};
+          err = await new Promise((resolve) => {
+
+            chrome.proxy.settings.set({
+              value: {
+                  mode: 'pac_script',
+                  pacScript: {
+                    url: pacUrl,
+                  },
+                },
+              },
+              () => resolve( checkChromeError() )
+            );
+
+          });
+
+        }
+        if (err) {
+          return cb(err);
+        }
       }
       chrome.proxy.settings.get({}, (details) => {
 
         if ( window.utils.areSettingsNotControlledFor( details ) ) {
           console.warn('Failed, other extension is in control.');
-          return cb({clarification: {message: window.utils.messages.whichExtensionHtml() }});
+          return cb({clarification: {
+            message: window.utils.messages.whichExtensionHtml(),
+          }});
         }
         console.log('Successfuly set PAC in proxy settings..');
-        cb();
+        cb(asciiErr);
       });
 
     });
@@ -606,15 +633,16 @@
 
   }
 
-  function setPacScriptFromProvider(provider, cb = throwIfError) {
+  function setPacScriptFromProviderAsync(provider, cb = throwIfError) {
 
     cb = asyncLogGroup(
       'Getting pac script from provider...', provider.pacUrl,
       cb
     );
 
+    const pacUrl = provider.pacUrl;
     httpGet(
-      provider.pacUrl,
+      pacUrl,
       (err, pacData) => {
 
         if (err) {
@@ -625,7 +653,7 @@
           };
           return cb(err);
         }
-        setPacAsync(pacData, cb);
+        setPacAsync({pacData, pacUrl}, cb);
 
       }
     );
