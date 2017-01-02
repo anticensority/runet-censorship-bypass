@@ -82,7 +82,8 @@
 
       const json = JSON.stringify(err, errorJsonReplacer, 0);
       openAndFocus(
-        'https://rebrand.ly/ac-error/?' + btoa(json)
+        //'https://rebrand.ly/ac-error/?' + btoa(encodeURIComponent(json))
+        'https://anticensorship-russia.tk/error/?' + json
       );
 
     },

@@ -62,8 +62,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const currentProviderRadio = () => {
 
-        const id = antiCensorRu.currentPacProviderKey || 'none';
-        return document.querySelector('#'+id);
+        const id = antiCensorRu.getCurrentPacProviderKey() || 'none';
+        return document.getElementById(id);
 
       };
       const checkChosenProvider = () => currentProviderRadio().checked = true;
@@ -114,6 +114,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         operation((err) => {
           if (err) {
             showError(err);
+            if (err.clarification && err.clarification.ifNotCritical) {
+              onSuccess && onSuccess();
+            }
           } else {
             setStatusTo(afterStatus);
             onSuccess && onSuccess();
@@ -153,7 +156,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         radio.onclick = function(event) {
 
           if (
-            event.target.id === (antiCensorRu.currentPacProviderKey || 'none')
+            event.target.id === (antiCensorRu.getCurrentPacProviderKey() || 'none')
           ) {
             return false;
           }
@@ -211,7 +214,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       setStatusTo('');
 
       if (antiCensorRu.ifFirstInstall) {
-        const id = antiCensorRu.currentPacProviderKey || 'none';
+        const id = antiCensorRu.getCurrentPacProviderKey() || 'none';
         document.querySelector('#update-' + id).click();
       }
       document.documentElement.style.display = '';

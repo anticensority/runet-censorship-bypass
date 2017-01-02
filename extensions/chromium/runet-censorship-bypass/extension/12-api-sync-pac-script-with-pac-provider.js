@@ -92,7 +92,7 @@
 
     pacProviders: {
       Антизапрет: {
-        pacUrl: 'https://antizapret.prostovpn.org/proxy.pac',
+        pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
         proxyHosts: ['proxy.antizapret.prostovpn.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
@@ -103,7 +103,7 @@
         },
       },
       Антиценз: {
-        pacUrl: 'https://config.anticenz.org/proxy.pac',
+        pacUrls: ['https://config.anticenz.org/proxy.pac'],
         proxyHosts: ['gw2.anticenz.org'],
         proxyIps: {
           '5.196.220.114': 'gw2.anticenz.org',
@@ -115,7 +115,13 @@
           Url is encoded to counter abuse.
           Version: 0.17
         */
-        pacUrl: '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67',
+        pacUrls: [
+          // Cloud Flare
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x74\x6b\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6f\x6e\x2d\x73\x77\x69\x74\x63\x68\x65\x73\x2d\x30\x2e\x31\x37\x2e\x70\x61\x63',
+          // GitHub
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x6f\x6e\x2d\x73\x77\x69\x74\x63\x68\x65\x73\x2d\x30\x2e\x31\x37\x2e\x70\x61\x63',
+          // Google Drive
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'],
         proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
@@ -130,6 +136,28 @@
 
     _currentPacProviderKey: 'Оба_и_на_свитчах',
 
+    /* Is it the first time extension installed?
+       Do something, e.g. initiate PAC sync.
+    */
+    ifFirstInstall: false,
+    lastPacUpdateStamp: 0,
+
+    _currentPacProviderLastModified: 0, // Not initialized.
+
+    getLastModifiedForKey(key = mandatory()) {
+
+      if (this._currentPacProviderKey === key) {
+        return new Date(this._currentPacProviderLastModified).toUTCString();
+      }
+      return new Date(0).toUTCString();
+
+    },
+    setLastModified(newValue = mandatory()) {
+
+      this._currentPacProviderLastModified = newValue;
+
+    },
+
     isProxied(ip) {
 
       // Executed on each request with ip. Make it as fast as possible.
@@ -140,7 +168,7 @@
 
     },
 
-    mustBeKey(key) {
+    mustBeKey(key = mandatory()) {
 
       if ( !(key === null || this.pacProviders[key]) ) {
         throw new TypeError('No provider for key:' + key);
@@ -148,15 +176,16 @@
 
     },
 
-    get currentPacProviderKey() {
+    getCurrentPacProviderKey() {
 
       return this._currentPacProviderKey;
 
     },
-    set currentPacProviderKey(newKey) {
+    setCurrentPacProviderKey(newKey, lastModified = new Date().toUTCString()) {
 
       this.mustBeKey(newKey);
       this._currentPacProviderKey = newKey;
+      this._currentPacProviderLastModified = lastModified;
 
     },
 
@@ -165,17 +194,11 @@
       if(key) {
         this.mustBeKey(key);
       } else {
-        key = this.currentPacProviderKey;
+        key = this.getCurrentPacProviderKey();
       }
       return this.pacProviders[key];
 
     },
-
-    /* Is it the first time extension installed?
-       Do something, e.g. initiate PAC sync.
-    */
-    ifFirstInstall: false,
-    lastPacUpdateStamp: 0,
 
     _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
 
@@ -208,7 +231,7 @@
 
       if( typeof(key) === 'function' ) {
         cb = key;
-        key = this.currentPacProviderKey;
+        key = this.getCurrentPacProviderKey();
       }
       cb = asyncLogGroup('Syncing with PAC provider ' + key + '...', cb);
 
@@ -226,10 +249,11 @@
       const pacSetPromise = new Promise(
         (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
+          this.getLastModifiedForKey(key),
           (err, res) => {
 
-            if (!err) {
-              this.currentPacProviderKey = key;
+            if (res && res.ifPacSet) {
+              this.setCurrentPacProviderKey(key, res.lastModified);
               this.lastPacUpdateStamp = Date.now();
               this.ifFirstInstall = false;
               this.setAlarms();
@@ -331,7 +355,7 @@
             if (err) {
               return cb(err);
             }
-            this.currentPacProviderKey = null;
+            this.setCurrentPacProviderKey(null);
             this.pushToStorageAsync(cb);
 
           }
@@ -390,6 +414,9 @@
         oldStorage._currentPacProviderKey || null;
       antiCensorRu.lastPacUpdateStamp =
         oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
+      antiCensorRu._currentPacProviderLastModified =
+        oldStorage._currentPacProviderLastModified
+        || antiCensorRu._currentPacProviderLastModified;
       console.log(
         'Last PAC update was on',
         new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
@@ -444,6 +471,9 @@
 
   });
 
+  /*
+    * result.ifPacSet is true if PAC was set (maybe with non-critical errors).
+    * */
   function setPacAsync(
     {pacData = mandatory(), pacUrl = mandatory()},
     cb = throwIfError
@@ -494,17 +524,48 @@
           }});
         }
         console.log('Successfuly set PAC in proxy settings..');
-        cb(asciiErr);
+        cb(asciiErr, {ifPacSet: true});
       });
 
     });
 
   }
 
+  function clarifyFetchErrorThen(cb) {
+
+    return (err) => {
+
+      err.clarification = {
+        message: 'Что-то не так с сетью, проверьте соединение.',
+      };
+      return cb(err);
+
+    }
+
+  }
+
+  function ifModifiedSince(url, lastModified = mandatory(), cb = mandatory()) {
+
+    fetch(url, {
+      method: 'HEAD',
+      headers: new Headers({
+        'If-Modified-Since': lastModified
+      })
+    }).then(
+      (res) => {
+        console.log('HEAD', res);
+        window.R = res;
+        cb(null, res.status === 304 ? false : (res.headers.get('Last-Modified') || new Date(0).toUTCString()) );
+      },
+      clarifyFetchErrorThen(cb)
+    );
+
+  }
+
   function httpGet(url, cb = mandatory()) {
 
     const start = Date.now();
-    fetch(url).then(
+    fetch(url, {cache: 'no-store'}).then(
       (res) => {
 
         const textCb =
@@ -520,14 +581,7 @@
         textCb();
 
       },
-      (err) => {
-
-        err.clarification = {
-          message: 'Что-то не так с сетью, проверьте соединение.',
-        };
-        cb(err);
-
-      }
+      clarifyFetchErrorThen(cb)
     );
 
   }
@@ -633,30 +687,48 @@
 
   }
 
-  function setPacScriptFromProviderAsync(provider, cb = throwIfError) {
+  /*
+   * result.ifPacSet is true if PAC was set.
+  **/
+  function setPacScriptFromProviderAsync(provider = mandatory(), lastModified = mandatory(), cb = throwIfError) {
 
+    const pacUrl = provider.pacUrls[0];
     cb = asyncLogGroup(
-      'Getting pac script from provider...', provider.pacUrl,
+      'Getting PAC script from provider...', pacUrl,
       cb
     );
 
-    const pacUrl = provider.pacUrl;
-    httpGet(
-      pacUrl,
-      (err, pacData) => {
+    ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
 
-        if (err) {
-          err.clarification = {
-            message: 'Не удалось скачать PAC-скрипт с адреса: '
-              + provider.pacUrl + '.',
-            prev: err.clarification,
-          };
-          return cb(err);
-        }
-        setPacAsync({pacData, pacUrl}, cb);
-
+      if (!newLastModified) {
+        return cb(
+          {clarification: {
+            message: 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' + lastModified,
+            ifNotCritical: true,
+          }}
+        );
       }
-    );
+
+      httpGet(
+        pacUrl,
+        (err, pacData) => {
+
+          if (err) {
+            err.clarification = {
+              message: 'Не удалось скачать PAC-скрипт с адреса: '
+                + provider.pacUrl + '.',
+              prev: err.clarification,
+            };
+            return cb(err);
+          }
+          setPacAsync(
+            {pacData, pacUrl},
+            (err, res) => cb( err, Object.assign(res || {}, {lastModified: newLastModified}) )
+          );
+
+        }
+      );
+    })
 
   }
 
