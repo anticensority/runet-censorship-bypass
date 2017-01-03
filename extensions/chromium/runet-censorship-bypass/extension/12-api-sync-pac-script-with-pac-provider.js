@@ -546,6 +546,7 @@
 
   function ifModifiedSince(url, lastModified = mandatory(), cb = mandatory()) {
 
+    const nowModified = new Date(0).toUTCString();
     fetch(url, {
       method: 'HEAD',
       headers: new Headers({
@@ -553,11 +554,9 @@
       })
     }).then(
       (res) => {
-        console.log('HEAD', res);
-        window.R = res;
-        cb(null, res.status === 304 ? false : (res.headers.get('Last-Modified') || new Date(0).toUTCString()) );
+        cb(null, res.status === 304 ? false : (res.headers.get('Last-Modified') || nowModified) );
       },
-      clarifyFetchErrorThen(cb)
+      clarifyFetchErrorThen((err) => cb(err, nowModified))
     );
 
   }
@@ -709,26 +708,43 @@
         );
       }
 
-      httpGet(
-        pacUrl,
-        (err, pacData) => {
+      // Employ all urls, the latter are fallbacks for the former.
+      let pacDataPromise = Promise.reject();
+      for(const url of provider.pacUrls) {
 
-          if (err) {
-            err.clarification = {
-              message: 'Не удалось скачать PAC-скрипт с адреса: '
-                + provider.pacUrl + '.',
-              prev: err.clarification,
-            };
-            return cb(err);
-          }
+        pacDataPromise = pacDataPromise.catch(
+          (err) => new Promise(
+            (resolve, reject) => httpGet(
+              url,
+              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
+            )
+          )
+        );
+
+      }
+
+      pacDataPromise.then(
+        (pacData) => {
+
           setPacAsync(
             {pacData, pacUrl},
             (err, res) => cb( err, Object.assign(res || {}, {lastModified: newLastModified}) )
           );
 
+        },
+        (err) => {
+
+          err.clarification = {
+            message: 'Не удалось скачать PAC-скрипт с адресов: [ '
+              + provider.pacUrls.join(' , ') + ' ].',
+            prev: err.clarification,
+          };
+          return cb(err);
+
         }
       );
-    })
+
+    });
 
   }
 

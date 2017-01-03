@@ -217,7 +217,7 @@
 
   chrome.proxy.onProxyError.addListener((details) => {
 
-    if (handlers.ifNoControl) {
+    if (handlers.ifNotControlled) {
       return;
     }
     /*

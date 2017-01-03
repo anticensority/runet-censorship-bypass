@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html style="display: none">
+  <head>
+    <title>Выбор провайдера PAC</title>
+    <style>
+      footer {
+        display: block;
+        white-space: nowrap;
+        word-break: keep-all;
+      }
+      footer {
+        margin: 2em 1em 1em;
+      }
+      hr {
+        border-width: 1px 0 0 0;
+        margin: 0.6em 0;
+        padding: 0;
+      }
+      .if-not-controlled {
+        display: none;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      Обход блокировок Рунета облегчённый
+    </header>
+    <span class="if-not-controlled">
+      <span id="which-extension"></span>
+      <hr style="border-color: red; border-style: solid;"/>
+    </span>
+    <span class="if-error">
+      <span id="last-error"></span>
+      <hr style="border-color: red; border-style: solid;"/>
+    </span>
+    <hr/>
+    <footer>
+      <input type="button" value="Готово" class="close-button">&nbsp;<a href="../debug/index.html" style="text-decoration: none; margin-left: 1em;">Полная версия расширения</a>
+    </footer>
+    <script src="./index.js"></script>
+  </body>
+</html>
