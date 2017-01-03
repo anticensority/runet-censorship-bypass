@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Light Runet Censorship Bypass"
+  },
+  "extDesc": {
+      "message": "Circumvent Russian Internet Censorship: https://rebrand.ly/ac-wiki"
+  },
+  "proxy": {
+    "message": "proxy"
+  },
+  "noControl": {
+    "message": "Other extension controls proxy!"
+  },
+  "which": {
+    "message": "Which?"
+  }
+}
