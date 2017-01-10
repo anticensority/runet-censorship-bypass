@@ -2,7 +2,11 @@
 <html style="display: none">
   <head>
     <title>Выбор провайдера PAC</title>
+    <link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css">
     <style>
+      :root {
+        --ribbon-color: #4169e1; /* #1a6cc8 */
+      }
       div {
         margin: 0;
         padding: 0;
@@ -26,9 +30,6 @@
       }
       input[type="radio"], label {
         cursor: pointer;
-      }
-      .off {
-        display: none;
       }
       .link-button, .link-button:visited {
         color: #0000EE;
@@ -58,6 +59,112 @@
         display: none;
         color: red;
       }
+      li.provider {
+        display: table;
+        width: 100%;        
+      }
+      
+      .desc i {
+        vertical-align: bottom;
+        font-size: 1.1em;
+      }
+      /* Source: https://jsfiddle.net/greypants/zgCb7/ */
+      .tooltip {
+        display: none;
+        white-space: initial;
+        padding: 1em;
+      }
+      .desc {
+        display: table-cell;
+        text-align: right;
+        color: var(--ribbon-color);
+        cursor: help;
+      }
+      .desc:hover br .tooltip {
+        display: block;
+        text-align: left;
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 2.6em;
+        background-color: var(--ribbon-color);
+        color: white;
+        z-index: 1;
+      }
+      .tooltip a {
+        color: white;
+      }
+      
+      /* CSS Triangles - courtesy of Trevor */
+      .desc .tooltip:after {
+        border-top: solid transparent 7px;
+        border-bottom: solid transparent 7px;
+        border-left: solid var(--ribbon-color) 7px;
+        right: -7px;
+        content: "";
+        width: 0;
+        top: 7px;
+        margin-top: -13px;
+        position: absolute;
+        height: 0;
+      }
+      /* This bridges the gap so you can mouse into the tooltip without it disappearing 
+      .desc .tooltip:before {
+        position: absolute;
+        right: -14px;
+        content: " ";
+        display: block;
+        width: 14px;
+        top: 0;        
+        height: 100%;
+      }
+      */
+      
+      
+      li.provider {
+        position: relative;
+      }
+      .xyz {
+        display: none;
+        position: absolute;
+        white-space: initial;
+        word-break: initial;
+        top: 100%;
+        left: 0;
+        right: 1em;
+        z-index: 1;
+        background-color: var(--ribbon-color);
+        padding: 1em;
+        color: white;
+        text-align: initial;
+      }
+      .desc:hover .xyz {
+        display: block;
+      }      
+      .xyz a {
+        color: white;
+      }
+      .desc .xyz:after {
+        border-left: solid transparent 7px;
+        border-bottom: solid var(--ribbon-color) 7px;
+        position: absolute;
+        top: -7px;
+        content: "";
+        width: 0;
+        right: 0;
+        height: 0;
+      }      
+      /* This bridges the gap so you can mouse into the tooltip without it disappearing */
+      .desc .xyz:before {
+        position: absolute;
+        top: -14px;
+        content: "";
+        display: block;
+        height: 22px;
+        left: 0;
+        width: calc(100% + 0.6em);
+      }      
     </style>
   </head>
   <body>

@@ -11,7 +11,7 @@
   });
 
   createMenuLinkEntry(
-    'Сайт доступен из-за границы? Is up?',
+    'Сайт доступен из-за границы?',
     (tab) => `data:text/html;charset=utf8,<title>Запрашиваю...</title>
             <form class='tracker-form' method='POST'
               action='https://www.host-tracker.com/ru/InstantCheck/Create'>
@@ -42,8 +42,8 @@
   );
 
   createMenuLinkEntry(
-    'У меня проблемы с расширением!',
-    (tab) => 'https://rebrand.ly/ac-support'
+    'Руководство / Помощь / Ссылки',
+    (tab) => 'https://rebrand.ly/ac-wiki'
   );
 
 }

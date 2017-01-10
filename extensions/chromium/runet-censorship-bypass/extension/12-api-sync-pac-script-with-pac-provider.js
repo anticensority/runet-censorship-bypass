@@ -21,22 +21,22 @@
 
 { // Private namespace starts.
 
-  function mandatory() {
+  const mandatory = function mandatory() {
 
     throw new TypeError('Missing required argument. ' +
       'Be explicit if you swallow errors.');
 
-  }
+  };
 
-  function throwIfError(err) {
+  const throwIfError = function throwIfError(err) {
 
     if(err) {
       throw err;
     }
 
-  }
+  };
 
-  function asyncLogGroup(...args) {
+  const asyncLogGroup = function asyncLogGroup(...args) {
 
     const cb = args.pop();
     if(!(cb && typeof(cb) === 'function')) {
@@ -51,13 +51,13 @@
 
     };
 
-  }
+  };
 
-  function checkChromeError(betterStack) {
+  const checkChromeError = function checkChromeError(betterStack) {
 
     // Chrome API calls your cb in a context different from the point of API
     // method invokation.
-    const err = chrome.runtime.lastError || chrome.extension.lastError || null;
+    const err = chrome.runtime.lastError || chrome.extension.lastError;
     if (err) {
       const args = ['API returned error:', err];
       if (betterStack) {
@@ -67,9 +67,9 @@
     }
     return err;
 
-  }
+  };
 
-  function chromified(cb = mandatory(), ...replaceArgs) {
+  const chromified = function chromified(cb = mandatory(), ...replaceArgs) {
 
     const stack = (new Error()).stack;
     // Take error first callback and convert it to chrome api callback.
@@ -84,57 +84,355 @@
 
     };
 
-  }
+  };
+
+  class Clarification {
+
+    constructor(message = mandatory(), prevClarification) {
+
+      this.message = message;
+      if (prevClarification) {
+        this.prev = prevClarification;
+      }
+
+    }
+
+  };
+
+  const clarify = function clarify(err = mandatory(), message = mandatory(), {data} = {}) {
+
+    err.clarification = new Clarification(message, err.clarification);
+    if (data) {
+      err.clarification.data = data;
+    }
+    return err;
+
+  };
+
+  class Warning {
+
+    constructor(message) {
+
+      clarify(this, message);
+
+    }
+
+  };
+
+
+  const setPacAsync = function setPacAsync(
+    pacData = mandatory(), cb = throwIfError
+  ) {
+
+    const config = {
+      mode: 'pac_script',
+      pacScript: {
+        mandatory: false,
+        data: pacData,
+      },
+    };
+    console.log('Setting chrome proxy settings...');
+    chrome.proxy.settings.set( {value: config}, () => {
+
+      const err = checkChromeError();
+      if (err) {
+        return cb(err);
+      }
+      chrome.proxy.settings.get({}, (details) => {
+
+        if ( window.utils.areSettingsNotControlledFor( details ) ) {
+
+          console.warn('Failed, other extension is in control.');
+          return cb(
+            null, null,
+            [new Warning( window.utils.messages.whichExtensionHtml() )]
+          );
+
+        }
+        console.log('Successfuly set PAC in proxy settings..');
+        cb();
+      });
+
+    });
+
+  };
+
+  const clarifyErrorThen = function clarifyFetchErrorThen(message, cb) {
+
+    return (err, ...args) => cb( clarify(err || {}, message), ...args );
+
+  };
+
+  const clarifyFetchErrorThen = (cb) => clarifyErrorThen('Что-то не так с сетью, проверьте соединение.', cb);
+
+  const ifModifiedSince = function ifModifiedSince(url = mandatory(), lastModified = mandatory(), cb = mandatory()) {
+
+    const wasModified = new Date(0).toUTCString();
+    const notModifiedCode = 304;
+    fetch(url, {
+      method: 'HEAD',
+      headers: new Headers({
+        'If-Modified-Since': lastModified
+      })
+    }).then(
+      (res) => {
+        cb(
+          null,
+          res.status === notModifiedCode ?
+            false :
+            (res.headers.get('Last-Modified') || wasModified)
+        );
+      },
+      clarifyFetchErrorThen((err) => cb(err, wasModified))
+    );
+
+  };
+
+  const httpGet = function httpGet(url, cb = mandatory()) {
+
+    const start = Date.now();
+    fetch(url, {cache: 'no-store'}).then(
+      (res) => {
+
+        const textCb =
+          (err) => res.text().then( (text) => cb(err, text), cb );
+
+        const status = res.status;
+        if ( !( status >= 200 && status < 300 || status === 304 ) ) {
+          return textCb(
+            clarify(
+              res,
+              'Получен ответ с неудачным HTTP-кодом ' + status + '.'
+            )
+          );
+        }
+
+        console.log('GETed with success:', url, Date.now() - start);
+        textCb();
+
+      },
+      clarifyFetchErrorThen(cb)
+    );
+
+  };
+
+  const getIpsFor = function getIpsFor(host = mandatory(), cb = mandatory()) {
+
+    const types = [1, 28];
+    const promises = types.map(
+      (type) => new Promise((resolve) =>
+        httpGet(
+          'https://dns.google.com/resolve?type=' + type + '&name=' + host,
+          (err, res) => {
+
+            if (res) {
+              try {
+                res = JSON.parse(res);
+                console.log('Json parsed.');
+                if (err || res.Status) {
+                  const msg = ['Answer', 'Comment', 'Status']
+                    .filter( (prop) => res[prop] )
+                    .map( (prop) => prop + ': ' + JSON.stringify( res[prop] ) )
+                    .join(', \n');
+                  clarify(err, 'Сервер (json): ' + msg, {data: res});
+                } else {
+                  res = res.Answer || [];
+                  res = res.filter(
+                    (record) => types.includes(record.type)
+                  );
+                }
+              } catch(e) {
+                err = clarify(e, 'Сервер (текст): ' + res, err ? {data: err} : null)
+              }
+            }
+            resolve([err, res]);
+
+          }
+        )
+      )
+    );
+    Promise.all(promises).then(
+      ([[v4err, v4res], [v6err, v6res]]) => {
+
+        if(v4err) {
+          return cb(v4err, v4res);
+        }
+        const ips = v4res;
+        let warns = null;
+        if (!v6err) {
+          ips.push(...v6res);
+        } else {
+          warns = [v6err];
+        }
+        cb(null, ips, warns);
+
+      }
+    );
+
+  };
+
+  const updatePacProxyIps = function updatePacProxyIps(provider, cb = throwIfError) {
+
+    cb = asyncLogGroup(
+      'Getting IP for '+ provider.proxyHosts.join(', ') + '...',
+      cb
+    );
+    let failure = {
+      errors: {},
+    };
+    let hostsProcessed = 0;
+    provider.proxyHosts.forEach(
+      (proxyHost) => getIpsFor(
+        proxyHost,
+        (err, ips, warns) => {
+
+          if (!err) {
+            provider.proxyIps = provider.proxyIps || {};
+            ips.forEach(
+              (ip) => provider.proxyIps[ip] = proxyHost
+            );
+          }
+          if (err || warns) {
+            failure.errors[proxyHost] = err || warns;
+          }
+
+          if ( ++hostsProcessed < provider.proxyHosts.length ) {
+            return;
+          }
+          // All hosts were processed.
+          const errorsCount = Object.keys(failure.errors).length;
+          if (!errorsCount) {
+            return cb();
+          }
+          clarify(
+            failure,
+            'Не удалось получить один или несколько IP адресов для' +
+            ' прокси-серверов. Иконка для уведомления об обходе' +
+            ' блокировок может не отображаться.'
+          );
+          errorsCount === hostsProcessed
+            ? cb(failure)
+            : cb(null, null, [failure])
+        }
+      )
+    );
+
+  };
+
+  const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
+    provider = mandatory(), lastModified = mandatory(), cb = throwIfError
+  ) {
+
+    const pacUrl = provider.pacUrls[0];
+    cb = asyncLogGroup(
+      'Getting PAC script from provider...', pacUrl,
+      cb
+    );
+
+    ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
+
+      if (!newLastModified) {
+        return cb(
+          null,
+          {lastModified},
+          [new Warning('Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' + lastModified)]
+        );
+      }
+
+      // Employ all urls, the latter are fallbacks for the former.
+      let pacDataPromise = Promise.reject();
+      for(const url of provider.pacUrls) {
+
+        pacDataPromise = pacDataPromise.catch(
+          (err) => new Promise(
+            (resolve, reject) => httpGet(
+              url,
+              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
+            )
+          )
+        );
+
+      }
+
+      pacDataPromise.then(
+        (pacData) => {
+
+          setPacAsync(
+            pacData,
+            (err, res) => cb(
+              err,
+              Object.assign(res || {}, {lastModified: newLastModified})
+            )
+          );
+
+        },
+        clarifyErrorThen(
+          'Не удалось скачать PAC-скрипт с адресов: [ '
+          + provider.pacUrls.join(' , ') + ' ].',
+          cb
+        )
+      );
+
+    });
+
+  };
 
   window.apis.antiCensorRu = {
 
     version: chrome.runtime.getManifest().version,
 
+    throwAsync() { throw new Error('ABC') }, // TODO: delete
+
     pacProviders: {
       Антизапрет: {
+        label: 'Антизапрет',
+        desc: 'Альтернативный PAC-скрипт от стороннего разработчика.' +
+          ' Блокировка определяется по доменному имени,' +
+          ' для некоторых провайдеров есть автоопредление.' +
+          ' <br/> <a href="https://antizapret.prostovpn.org">Страница проекта</a>.',
+
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
         proxyHosts: ['proxy.antizapret.prostovpn.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
           '137.74.171.91': 'proxy.antizapret.prostovpn.org',
           '51.15.39.201': 'proxy.antizapret.prostovpn.org',
-          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
           '2001:bc8:4700:2300::1:d07': 'proxy.antizapret.prostovpn.org',
+          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
         },
       },
-      Антиценз: {
-        pacUrls: ['https://config.anticenz.org/proxy.pac'],
-        proxyHosts: ['gw2.anticenz.org'],
-        proxyIps: {
-          '5.196.220.114': 'gw2.anticenz.org',
-        },
-      },
-      Оба_и_на_свитчах: {
+      Антицензорити: {
+        label: 'Антицензорити',
+        desc: 'Основной PAC-скрипт от автора расширения.' +
+        ' Блокировка определятся по доменному имени или IP адресу. Работает на switch-ах.' +
+        ' <br/><a href="https://rebrand.ly/ac-wiki">Страница проекта</a>.',
+
         /*
-          Don't use in system configs! Because Win does poor caching.
-          Url is encoded to counter abuse.
+          Don't use in system configs! Because Windows does poor caching.
+          Some urls are encoded to counter abuse.
           Version: 0.17
         */
         pacUrls: [
-          // Cloud Flare
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x74\x6b\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6f\x6e\x2d\x73\x77\x69\x74\x63\x68\x65\x73\x2d\x30\x2e\x31\x37\x2e\x70\x61\x63',
-          // GitHub
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x6f\x6e\x2d\x73\x77\x69\x74\x63\x68\x65\x73\x2d\x30\x2e\x31\x37\x2e\x70\x61\x63',
-          // Google Drive
+          // Official, Cloud Flare with caching:
+          'https://anticensorship-russia.tk/generated-pac-scripts/anticensority.pac',
+          // GitHub.io:
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63',
+          // GitHub repo:
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63',
+          // Google Drive (0.17):
           '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'],
-        proxyHosts: ['proxy.antizapret.prostovpn.org', 'gw2.anticenz.org'],
+        proxyHosts: ['proxy.antizapret.prostovpn.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
           '137.74.171.91': 'proxy.antizapret.prostovpn.org',
           '51.15.39.201': 'proxy.antizapret.prostovpn.org',
-          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
           '2001:bc8:4700:2300::1:d07': 'proxy.antizapret.prostovpn.org',
-          '5.196.220.114': 'gw2.anticenz.org',
+          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
         },
       },
     },
 
-    _currentPacProviderKey: 'Оба_и_на_свитчах',
+    _currentPacProviderKey: 'Антицензорити',
 
     /* Is it the first time extension installed?
        Do something, e.g. initiate PAC sync.
@@ -181,7 +479,7 @@
       return this._currentPacProviderKey;
 
     },
-    setCurrentPacProviderKey(newKey, lastModified = new Date().toUTCString()) {
+    setCurrentPacProviderKey(newKey = mandatory(), lastModified = new Date().toUTCString()) {
 
       this.mustBeKey(newKey);
       this._currentPacProviderKey = newKey;
@@ -237,11 +535,7 @@
 
       if (key === null) {
         // No pac provider set.
-        return cb({
-          clarification: {
-            message: 'Сперва выберите PAC-провайдера.',
-          },
-        });
+        return clarifyErrorThen('Сперва выберите PAC-провайдера.', cb);
       }
 
       const pacProvider = this.getPacProvider(key);
@@ -250,43 +544,40 @@
         (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
           this.getLastModifiedForKey(key),
-          (err, res) => {
+          (err, res, warns) => {
 
-            if (res && res.ifPacSet) {
+            if (!err) {
               this.setCurrentPacProviderKey(key, res.lastModified);
               this.lastPacUpdateStamp = Date.now();
               this.ifFirstInstall = false;
               this.setAlarms();
             }
 
-            resolve([err, res]);
+            resolve([err, null, warns]);
 
           }
         )
       );
 
-      const ipsPromise = new Promise(
+      const ipsErrorPromise = new Promise(
         (resolve, reject) => updatePacProxyIps(
           pacProvider,
-          (ipsError) => {
-
-            if (ipsError && ipsError.clarification) {
-              ipsError.clarification.ifNotCritical = true;
-            }
-            resolve([ipsError]);
-
-          }
+          resolve
         )
       );
 
-      Promise.all([pacSetPromise, ipsPromise]).then(
-        ([[pacErr, pacRes], [ipsErr]]) => {
+      Promise.all([pacSetPromise, ipsErrorPromise]).then(
+        ([[pacErr, pacRes, pacWarns], ipsErr]) => {
 
           if (pacErr && ipsErr) {
             return cb(pacErr, pacRes);
           }
+          let warns = [...(pacWarns || []), ipsErr].filter( (_) => _ );
+          if (!warns.length) {
+            warns = null;
+          }
           this.pushToStorageAsync(
-            (pushErr) => cb(pacErr || ipsErr || pushErr, pacRes)
+            (pushErr) => cb(pacErr || pushErr, null, warns)
           );
 
         },
@@ -407,24 +698,45 @@
     console.log('Storage on init:', oldStorage);
     antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
 
-    if (!antiCensorRu.ifFirstInstall) {
-      // LAUNCH, RELOAD, UPDATE
-      // Use old or migrate to default.
-      antiCensorRu._currentPacProviderKey =
-        oldStorage._currentPacProviderKey || null;
-      antiCensorRu.lastPacUpdateStamp =
-        oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
-      antiCensorRu._currentPacProviderLastModified =
-        oldStorage._currentPacProviderLastModified
-        || antiCensorRu._currentPacProviderLastModified;
-      console.log(
-        'Last PAC update was on',
-        new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
-      );
-    } else {
+    if (antiCensorRu.ifFirstInstall) {
       // INSTALL
       console.log('Installing...');
       return chrome.runtime.openOptionsPage();
+    }
+
+    // LAUNCH, RELOAD, UPDATE
+    // Use old or migrate to default.
+    antiCensorRu._currentPacProviderKey =
+      oldStorage._currentPacProviderKey || null;
+    antiCensorRu.lastPacUpdateStamp =
+      oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
+    antiCensorRu._currentPacProviderLastModified =
+      oldStorage._currentPacProviderLastModified
+      || antiCensorRu._currentPacProviderLastModified;
+    console.log(
+      'Last PAC update was on',
+      new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
+    );
+
+    const ifUpdating = antiCensorRu.version !== oldStorage.version;
+    console.log('IF_UPD?', ifUpdating, antiCensorRu.version, 'vs', oldStorage.version);
+
+    const pushOnUpdate = () => ifUpdating ? antiCensorRu.pushToStorageAsync() : null;
+
+    if (!ifUpdating) {
+      // LAUNCH, RELOAD, ENABLE
+      antiCensorRu.pacProviders = oldStorage.pacProviders;
+      console.log('Extension launched, reloaded or enabled.');
+    } else {
+      // UPDATE & MIGRATION
+      const key = antiCensorRu._currentPacProviderKey;
+      if (
+        key !== null &&
+        !Object.keys(antiCensorRu.pacProviders).includes(key)
+      ) {
+        antiCensorRu._currentPacProviderKey = 'Антицензорити'
+      }
+      console.log('Extension updated.');
     }
 
     if (!antiCensorRu.getPacProvider()) {
@@ -433,7 +745,8 @@
           1. new providers will still be shown.
           2. new version won't be pushed to storage
       */
-      return console.log('No PAC provider set. Do nothing.');
+      console.log('No PAC provider set. Do nothing.');
+      return pushOnUpdate();
     }
 
     /*
@@ -446,306 +759,24 @@
 
     const ifAlarmTriggered = antiCensorRu.setAlarms();
 
-    if (antiCensorRu.version === oldStorage.version) {
-      // LAUNCH, RELOAD, ENABLE
-      antiCensorRu.pacProviders = oldStorage.pacProviders;
-      return console.log('Extension launched, reloaded or enabled.');
-    }
-
-    // UPDATE & MIGRATION
-    console.log('Extension updated.');
     if (!ifAlarmTriggered) {
-      antiCensorRu.pushToStorageAsync();
+      return pushOnUpdate();
     }
 
     /*
       History of Changes to Storage (Migration Guide)
       -----------------------------------------------
-      Version 0.0.0.10
-        * Added this.version
-        * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}
-      Version 0.0.0.8-9
-        * Changed storage.ifNotInstalled to storage.ifFirstInstall
-        * Added storage.lastPacUpdateStamp
+      Version 0.0.0.17:
+        * "Антиценз" removed.
+        * "Оба_и_на_свитчах" renamed to "Антицензорити".
+      Version 0.0.0.10:
+        * Added this.version.
+        * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}.
+      Version 0.0.0.8-9:
+        * Changed storage.ifNotInstalled to storage.ifFirstInstall.
+        * Added storage.lastPacUpdateStamp.
     **/
 
   });
-
-  /*
-    * result.ifPacSet is true if PAC was set (maybe with non-critical errors).
-    * */
-  function setPacAsync(
-    {pacData = mandatory(), pacUrl = mandatory()},
-    cb = throwIfError
-  ) {
-
-    const config = {
-      mode: 'pac_script',
-      pacScript: {
-        mandatory: false,
-        data: pacData,
-      },
-    };
-    console.log('Setting chrome proxy settings...');
-    chrome.proxy.settings.set( {value: config}, async () => {
-
-      let err = checkChromeError();
-      let asciiErr;
-      if (err) {
-        if (err.message.startsWith('\'pacScript.data\' supports only ASCII')) {
-          asciiErr = err;
-          asciiErr.clarification = {ifNotCritical: true};
-          err = await new Promise((resolve) => {
-
-            chrome.proxy.settings.set({
-              value: {
-                  mode: 'pac_script',
-                  pacScript: {
-                    url: pacUrl,
-                  },
-                },
-              },
-              () => resolve( checkChromeError() )
-            );
-
-          });
-
-        }
-        if (err) {
-          return cb(err);
-        }
-      }
-      chrome.proxy.settings.get({}, (details) => {
-
-        if ( window.utils.areSettingsNotControlledFor( details ) ) {
-          console.warn('Failed, other extension is in control.');
-          return cb({clarification: {
-            message: window.utils.messages.whichExtensionHtml(),
-          }});
-        }
-        console.log('Successfuly set PAC in proxy settings..');
-        cb(asciiErr, {ifPacSet: true});
-      });
-
-    });
-
-  }
-
-  function clarifyFetchErrorThen(cb) {
-
-    return (err) => {
-
-      err.clarification = {
-        message: 'Что-то не так с сетью, проверьте соединение.',
-      };
-      return cb(err);
-
-    }
-
-  }
-
-  function ifModifiedSince(url, lastModified = mandatory(), cb = mandatory()) {
-
-    const nowModified = new Date(0).toUTCString();
-    fetch(url, {
-      method: 'HEAD',
-      headers: new Headers({
-        'If-Modified-Since': lastModified
-      })
-    }).then(
-      (res) => {
-        cb(null, res.status === 304 ? false : (res.headers.get('Last-Modified') || nowModified) );
-      },
-      clarifyFetchErrorThen((err) => cb(err, nowModified))
-    );
-
-  }
-
-  function httpGet(url, cb = mandatory()) {
-
-    const start = Date.now();
-    fetch(url, {cache: 'no-store'}).then(
-      (res) => {
-
-        const textCb =
-          (err) => res.text().then( (text) => cb(err, text), cb );
-        const status = res.status;
-        if ( !( status >= 200 && status < 300 || status === 304 ) ) {
-          res.clarification = {
-            message: 'Получен ответ с неудачным HTTP-кодом ' + status + '.',
-          };
-          return textCb(res);
-        }
-        console.log('GETed with success:', url, Date.now() - start);
-        textCb();
-
-      },
-      clarifyFetchErrorThen(cb)
-    );
-
-  }
-
-  function getIpsFor(host, cb = mandatory()) {
-
-    const types = [1, 28];
-    const promises = types.map(
-      (type) => new Promise((resolve) =>
-        httpGet(
-          'https://dns.google.com/resolve?type=' + type + '&name=' + host,
-          (err, res) => {
-
-            if (res) {
-              try {
-                res = JSON.parse(res);
-                console.log('Json parsed.');
-                if (err || res.Status) {
-                  const msg = ['Answer', 'Comment', 'Status']
-                    .filter( (prop) => res[prop] )
-                    .map( (prop) => prop + ': ' + JSON.stringify( res[prop] ) )
-                    .join(', \n');
-                  err.clarification.message += ' Сервер (json): ' + msg;
-                  err.data = err.data || res;
-                } else {
-                  res = res.Answer || [];
-                  res = res.filter(
-                    (record) => types.includes(record.type)
-                  );
-                }
-              } catch(e) {
-                err = e || err || {clarification: {message: ''}};
-                err.clarification = err.clarification || {message: ''};
-                err.clarification.message = (
-                  err.clarification.message
-                  + ' Сервер (текст): '+ res
-                ).trim();
-                err.data = err.data || res;
-              }
-            }
-            resolve([err, res]);
-
-          }
-        )
-      )
-    );
-    Promise.all(promises).then(
-      ([[v4err, v4res], [v6err, v6res]]) => {
-
-        if(v4err) {
-          return cb(v4err, v4res);
-        }
-        const ips = v4res;
-        if (!v6err) {
-          ips.push(...v6res);
-        } else {
-          v6err.clarification.ifNotCritical = true;
-          console.warn(v6err);
-        }
-        cb(v6err, ips);
-
-      }
-    );
-
-  }
-
-  function updatePacProxyIps(provider, cb = throwIfError) {
-
-    cb = asyncLogGroup(
-      'Getting IP for '+ provider.proxyHosts.join(', ') + '...',
-      cb
-    );
-    let failure = {
-      clarification: {
-        message: 'Не удалось получить один или несколько IP адресов для' +
-        ' прокси-серверов. Иконка для уведомления об обходе блокировок ' +
-        'может не отображаться.',
-      },
-      errors: {},
-    };
-    let i = 0;
-    provider.proxyHosts.forEach(
-      (proxyHost) => getIpsFor(
-        proxyHost,
-        (err, ips) => {
-
-          if (!err || err.clarification.ifNotCritical) {
-            provider.proxyIps = provider.proxyIps || {};
-            ips.forEach(
-              (ip) => provider.proxyIps[ip] = proxyHost
-            );
-          } else {
-            failure.errors[proxyHost] = err;
-          }
-
-          if ( ++i === provider.proxyHosts.length ) {
-            failure = Object.keys(failure.errors).length ? failure : null;
-            cb(failure, provider.proxyIps);
-          }
-        }
-      )
-    );
-
-  }
-
-  /*
-   * result.ifPacSet is true if PAC was set.
-  **/
-  function setPacScriptFromProviderAsync(provider = mandatory(), lastModified = mandatory(), cb = throwIfError) {
-
-    const pacUrl = provider.pacUrls[0];
-    cb = asyncLogGroup(
-      'Getting PAC script from provider...', pacUrl,
-      cb
-    );
-
-    ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
-
-      if (!newLastModified) {
-        return cb(
-          {clarification: {
-            message: 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' + lastModified,
-            ifNotCritical: true,
-          }}
-        );
-      }
-
-      // Employ all urls, the latter are fallbacks for the former.
-      let pacDataPromise = Promise.reject();
-      for(const url of provider.pacUrls) {
-
-        pacDataPromise = pacDataPromise.catch(
-          (err) => new Promise(
-            (resolve, reject) => httpGet(
-              url,
-              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
-            )
-          )
-        );
-
-      }
-
-      pacDataPromise.then(
-        (pacData) => {
-
-          setPacAsync(
-            {pacData, pacUrl},
-            (err, res) => cb( err, Object.assign(res || {}, {lastModified: newLastModified}) )
-          );
-
-        },
-        (err) => {
-
-          err.clarification = {
-            message: 'Не удалось скачать PAC-скрипт с адресов: [ '
-              + provider.pacUrls.join(' , ') + ' ].',
-            prev: err.clarification,
-          };
-          return cb(err);
-
-        }
-      );
-
-    });
-
-  }
 
 }

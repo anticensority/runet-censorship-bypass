@@ -68,33 +68,43 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       };
       const checkChosenProvider = () => currentProviderRadio().checked = true;
 
-      const showError = (err) => {
+      const showErrors = (err, warns) => {
 
-        let clarification = err.clarification;
-        const ifNotCritical = clarification && clarification.ifNotCritical;
-        let message = err.message || '';
+        warns = warns || [];
+        const warning = warns
+          .map( (w) => '✘ ' + (w.clarification && w.clarification.message || w.message || '') )
+          .join('<br/>');
 
-        while( clarification ) {
-          message = (clarification && (clarification.message + ' ')) + message;
-          clarification = clarification.prev;
+        let message = '';
+        if (err) {
+          let clarification = err.clarification;
+          message = err.message || '';
+
+          while( clarification ) {
+            message = (clarification && (clarification.message + ' ')) + message;
+            clarification = clarification.prev;
+          }
         }
         message = message.trim();
+        if (warning) {
+          message += ' ' + warning;
+        }
         setStatusTo(
           `<span style="color:red">
-          ${ifNotCritical ? 'Некритичная ошибка.' : 'Ошибка!'}
+          ${err ? '🔥 Ошибка!' : 'Некритичная ошибка.'}
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred">${message}</span>
-          <a href class="link-button">
-            [Ещё&nbsp;подробнее]
-          </a>`
+          ${err ? '<a href class="link-button">[Ещё&nbsp;подробнее]</a>' : ''}`
         );
-        getStatus().querySelector('.link-button').onclick = function() {
+        if (err) {
+          getStatus().querySelector('.link-button').onclick = function() {
 
-          errorHandlers.viewErrorVoid(err);
-          return false;
+            errorHandlers.viewErrorVoid(err);
+            return false;
 
-        };
+          };
+        }
 
       };
 
@@ -111,14 +121,13 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         setStatusTo(beforeStatus);
         enableDisableInputs();
-        operation((err) => {
-          if (err) {
-            showError(err);
-            if (err.clarification && err.clarification.ifNotCritical) {
-              onSuccess && onSuccess();
-            }
+        operation((err, res, warns) => {
+          if (err || warns) {
+            showErrors(err, warns);
           } else {
             setStatusTo(afterStatus);
+          }
+          if (!err) {
             onSuccess && onSuccess();
           }
           enableDisableInputs();
@@ -131,12 +140,20 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       for(
         const providerKey of Object.keys(antiCensorRu.pacProviders).sort()
       ) {
+        const provider = antiCensorRu.getPacProvider(providerKey);
         const li = document.createElement('li');
+        li.className = 'provider';
         li.innerHTML = `
           <input type="radio" name="pacProvider" id="${providerKey}">
-          <label for="${providerKey}">${providerKey}</label>
+          <label for="${providerKey}"> ${provider.label}</label>
           <a href class="link-button checked-radio-panel"
-            id="update-${providerKey}">[обновить]</a>`;
+            id="update-${providerKey}"> [обновить]</a>
+          <div class="desc">
+            &nbsp;<i class="fa fa-question-circle" aria-hidden="true"></i>
+            <div class="tooltip">${provider.desc}</div>
+            <div class="xyz">${provider.desc}</div>
+          </div>
+          `
         li.querySelector('.link-button').onclick =
           () => {
             conduct(
