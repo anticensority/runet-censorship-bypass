@@ -82,8 +82,7 @@
 
       const json = JSON.stringify(err, errorJsonReplacer, 0);
       openAndFocus(
-        //'https://rebrand.ly/ac-error/?' + btoa(encodeURIComponent(json))
-        'https://anticensorship-russia.tk/error/?' + json
+        'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) + '&version=' + chrome.runtime.getManifest().version
       );
 
     },
@@ -137,8 +136,11 @@
 
     mayNotifyVoid(
       id, title, errOrMessage,
-      icon = 'default-128.png',
-      context = extName
+      {
+        icon = 'default-128.png',
+        context = extName,
+        ifSticky = true
+      }
     ) {
 
       if ( !this.isOn(id) ) {
@@ -152,7 +154,7 @@
           title: title,
           message: message,
           contextMessage: context,
-          requireInteraction: true,
+          requireInteraction: ifSticky,
           type: 'basic',
           iconUrl: './icons/' + icon,
           appIconMaskUrl: './icons/default-mask-128.png',
@@ -168,7 +170,7 @@
 
         console.warn(name + ':GLOBAL ERROR', errEvent);
         this.mayNotifyVoid('ext-error', 'Ошибка расширения', errEvent,
-          'ext-error-128.png');
+          {icon: 'ext-error-128.png'});
 
       });
 
@@ -230,7 +232,7 @@
     // TOOD: add "view pac script at this line" button.
     handlers.mayNotifyVoid('pac-error', 'Ошибка PAC!',
       details.error + '\n' + details.details,
-      'pac-error-128.png'
+      {icon: 'pac-error-128.png'}
     );
 
   });
@@ -244,7 +246,7 @@
         noCon,
         chrome.i18n.getMessage('noControl'),
         chrome.i18n.getMessage('which'),
-        'no-control-128.png'
+        {icon:'no-control-128.png', ifSticky: false}
       );
     } else {
       chrome.notifications.clear( noCon );

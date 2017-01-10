@@ -1,5 +1,18 @@
 'use strict';
 
+const IF_DEBUG = true;
+
+if (!IF_DEBUG) {
+  // I believe logging objects precludes them from being GCed.
+  // I also don't remove logs for sake of client-side troubleshooting
+  // (though no one sent me logs so far).
+  ['log', 'warn', 'error'].forEach( (meth) => {
+    const _meth = window.console[meth].bind(console);
+    window.console[meth] = function(...args) { _meth(...args.map((a) => '' + a)) }
+  });
+}
+
+
 window.utils = {
 
   areSettingsNotControlledFor(details) {
