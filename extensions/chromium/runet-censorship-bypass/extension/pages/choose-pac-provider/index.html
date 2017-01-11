@@ -44,9 +44,6 @@
       input:checked ~ .checked-radio-panel {
         visibility: visible;
       }
-      footer {
-        margin: 2em 1em 1em;
-      }
       hr {
         border-width: 1px 0 0 0;
         margin: 0.6em 0;
@@ -61,71 +58,22 @@
       }
       li.provider {
         display: table;
-        width: 100%;        
+        width: 100%;
+        position: relative;
       }
-      
       .desc i {
         vertical-align: bottom;
         font-size: 1.1em;
       }
       /* Source: https://jsfiddle.net/greypants/zgCb7/ */
-      .tooltip {
-        display: none;
-        white-space: initial;
-        padding: 1em;
-      }
       .desc {
         display: table-cell;
         text-align: right;
         color: var(--ribbon-color);
         cursor: help;
+        width: 1%;
       }
-      .desc:hover br .tooltip {
-        display: block;
-        text-align: left;
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        right: 2.6em;
-        background-color: var(--ribbon-color);
-        color: white;
-        z-index: 1;
-      }
-      .tooltip a {
-        color: white;
-      }
-      
-      /* CSS Triangles - courtesy of Trevor */
-      .desc .tooltip:after {
-        border-top: solid transparent 7px;
-        border-bottom: solid transparent 7px;
-        border-left: solid var(--ribbon-color) 7px;
-        right: -7px;
-        content: "";
-        width: 0;
-        top: 7px;
-        margin-top: -13px;
-        position: absolute;
-        height: 0;
-      }
-      /* This bridges the gap so you can mouse into the tooltip without it disappearing 
-      .desc .tooltip:before {
-        position: absolute;
-        right: -14px;
-        content: " ";
-        display: block;
-        width: 14px;
-        top: 0;        
-        height: 100%;
-      }
-      */
-      
-      
-      li.provider {
-        position: relative;
-      }
-      .xyz {
+      .tooltip {
         display: none;
         position: absolute;
         white-space: initial;
@@ -139,32 +87,36 @@
         color: white;
         text-align: initial;
       }
-      .desc:hover .xyz {
+      .desc:hover .tooltip {
         display: block;
-      }      
-      .xyz a {
+      }
+      .tooltip a {
         color: white;
       }
-      .desc .xyz:after {
-        border-left: solid transparent 7px;
-        border-bottom: solid var(--ribbon-color) 7px;
+      .desc .tooltip:after {
+        border-left: solid transparent 0.5em;
+        border-bottom: solid var(--ribbon-color) 0.5em;
         position: absolute;
-        top: -7px;
+        top: -0.5em;
         content: "";
         width: 0;
         right: 0;
         height: 0;
-      }      
+      }
       /* This bridges the gap so you can mouse into the tooltip without it disappearing */
-      .desc .xyz:before {
+      .desc .tooltip:before {
         position: absolute;
-        top: -14px;
+        top: -1em;
         content: "";
         display: block;
-        height: 22px;
-        left: 0;
-        width: calc(100% + 0.6em);
-      }      
+        height: 1.8em;
+        left: 75%;
+        width: calc(25% + 0.6em);
+      }
+
+      footer {
+        margin: 2em 0 1em 0;
+      }
     </style>
   </head>
   <body>
@@ -185,10 +137,13 @@
       <ul id="list-of-handlers">
       </ul>
     </div>
-    <footer>
-      <input type="button" value="Готово" class="close-button">&nbsp;<a href="../debug/index.html" style="text-decoration: none; margin-left: 1em;">Отладка</a>
+    <footer style="display: table; width: 100%;">
+      <input type="button" value="Готово" class="close-button" style="display: table-cell">
+      <a href="../troubleshoot/index.html" style="text-decoration: none; margin-left: 1em; display: table-cell; text-align: right;">
+        Проблемы?
+      </a>
     </footer>
     <script src="./index.js"></script>
-    <script src="./keep-links-clickable.js"></script>
+    <script src="../lib/keep-links-clickable.js"></script>
   </body>
 </html>

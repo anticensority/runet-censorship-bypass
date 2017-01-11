@@ -78,13 +78,18 @@
 
   window.apis.errorHandlers = {
 
-    viewErrorVoid(errId) {
+    viewErrorVoid(type = window.utils.mandatory(), err) {
 
-      const errors = this.idToError;
+      let errors = {};
+      if (err) {
+        errors[type] = err;
+      } else {
+        errors = this.idToError;
+      }
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
       openAndFocus(
         'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
-          '&type=' + encodeURIComponent(errId) +
+          (type ? '&type=' + encodeURIComponent(type) : '') +
           '&version=' + chrome.runtime.getManifest().version
       );
 
@@ -142,7 +147,7 @@
       {
         icon = 'default-128.png',
         context = extName,
-        ifSticky = true
+        ifSticky = true,
       }
     ) {
 
@@ -248,7 +253,7 @@
         noCon,
         chrome.i18n.getMessage('noControl'),
         chrome.i18n.getMessage('which'),
-        {icon:'no-control-128.png', ifSticky: false}
+        {icon: 'no-control-128.png', ifSticky: false}
       );
     } else {
       chrome.notifications.clear( noCon );
