@@ -718,16 +718,24 @@
       new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
     );
 
-    const ifUpdating = antiCensorRu.version !== oldStorage.version;
-    console.log('IF_UPD?', ifUpdating, antiCensorRu.version, 'vs', oldStorage.version);
 
-    const pushOnUpdate = () => ifUpdating ? antiCensorRu.pushToStorageAsync() : null;
+    /*
+      1. There is no way to check that chrome.runtime.onInstalled wasn't fired
+         except timeout.
+         Otherwise we could put storage migration code only there.
+      2. We have to check storage for migration before using it.
+         Better on each launch then on each pull.
+    */
+    const ifUpdating = antiCensorRu.version !== oldStorage.version;
 
     if (!ifUpdating) {
+
       // LAUNCH, RELOAD, ENABLE
       antiCensorRu.pacProviders = oldStorage.pacProviders;
       console.log('Extension launched, reloaded or enabled.');
+
     } else {
+
       // UPDATE & MIGRATION
       const key = antiCensorRu._currentPacProviderKey;
       if (
@@ -737,44 +745,35 @@
         antiCensorRu._currentPacProviderKey = 'Антицензорити'
       }
       console.log('Extension updated.');
+
     }
 
-    if (!antiCensorRu.getPacProvider()) {
-      /*
-        In case of UPDATE:
-          1. new providers will still be shown.
-          2. new version won't be pushed to storage
-      */
-      console.log('No PAC provider set. Do nothing.');
-      return pushOnUpdate();
+    if (antiCensorRu.getPacProvider()) {
+
+      const ifAlarmTriggered = antiCensorRu.setAlarms();
+
+      if (ifAlarmTriggered) {
+        return; // Already pushed.
+      }
+
     }
-
-    /*
-      1. There is no way to check that chrome.runtime.onInstalled wasn't fired
-         except timeout.
-         Otherwise we could put storage migration code only there.
-      2. We have to check storage for migration before using it.
-         Better on each launch then on each pull.
-    */
-
-    const ifAlarmTriggered = antiCensorRu.setAlarms();
-
-    if (!ifAlarmTriggered) {
-      return pushOnUpdate();
+    if( ifUpdating ) {
+      antiCensorRu.pushToStorageAsync();
     }
 
     /*
       History of Changes to Storage (Migration Guide)
       -----------------------------------------------
       Version 0.0.0.17:
-        * "Антиценз" removed.
-        * "Оба_и_на_свитчах" renamed to "Антицензорити".
+        * Remove "Антиценз".
+        * Rename "Оба_и_на_свитчах" to "Антицензорити"
+        * Add provider.label and provider.desc.
       Version 0.0.0.10:
-        * Added this.version.
-        * PacProvider.proxyIps changed from {ip -> Boolean} to {ip -> hostname}.
+        * Add this.version.
+        * Change PacProvider.proxyIps from {ip -> Boolean} to {ip -> hostname}.
       Version 0.0.0.8-9:
-        * Changed storage.ifNotInstalled to storage.ifFirstInstall.
-        * Added storage.lastPacUpdateStamp.
+        * Change storage.ifNotInstalled to storage.ifFirstInstall.
+        * Add storage.lastPacUpdateStamp.
     **/
 
   });

@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "__MSG_extName__ 0.16",
+  "name": "__MSG_extName__ 0.17",
   "default_locale": "ru",
   "description": "__MSG_extDesc__",
   "version": "0.0.0.17",

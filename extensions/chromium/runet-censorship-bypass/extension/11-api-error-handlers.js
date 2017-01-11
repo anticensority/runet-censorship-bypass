@@ -78,11 +78,14 @@
 
   window.apis.errorHandlers = {
 
-    viewErrorVoid(err) {
+    viewErrorVoid(errId) {
 
-      const json = JSON.stringify(err, errorJsonReplacer, 0);
+      const errors = this.idToError;
+      const json = JSON.stringify(errors, errorJsonReplacer, 0);
       openAndFocus(
-        'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) + '&version=' + chrome.runtime.getManifest().version
+        'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
+          '&type=' + encodeURIComponent(errId) +
+          '&version=' + chrome.runtime.getManifest().version
       );
 
     },
@@ -194,7 +197,7 @@
 
   const handlers = window.apis.errorHandlers;
 
-  // INITIALIZATION
+  // Initialization
   // ==============
 
   chrome.proxy.settings.get(
@@ -210,8 +213,7 @@
         window.utils.messages.searchSettingsForUrl('proxy')
       );
     }
-    const errors = handlers.idToError;
-    handlers.viewErrorVoid(errors);
+    handlers.viewErrorVoid(notId);
 
   });
 
