@@ -1,6 +1,6 @@
 'use strict';
 
-const IF_DEBUG = true;
+const IF_DEBUG = false;
 
 if (!IF_DEBUG) {
   // I believe logging objects precludes them from being GCed.
@@ -8,12 +8,23 @@ if (!IF_DEBUG) {
   // (though no one sent me logs so far).
   ['log', 'warn', 'error'].forEach( (meth) => {
     const _meth = window.console[meth].bind(console);
-    window.console[meth] = function(...args) { _meth(...args.map((a) => '' + a)) }
+    window.console[meth] = function(...args) {
+
+      _meth(...args.map((a) => '' + a));
+
+    };
   });
 }
 
 
 window.utils = {
+
+  mandatory() {
+
+    throw new TypeError('Missing required argument. ' +
+      'Be explicit if you swallow errors.');
+
+  },
 
   areSettingsNotControlledFor(details) {
 

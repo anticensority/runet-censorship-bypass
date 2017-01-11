@@ -21,12 +21,7 @@
 
 { // Private namespace starts.
 
-  const mandatory = function mandatory() {
-
-    throw new TypeError('Missing required argument. ' +
-      'Be explicit if you swallow errors.');
-
-  };
+  const mandatory = window.utils.mandatory;
 
   const throwIfError = function throwIfError(err) {
 
@@ -99,7 +94,10 @@
 
   };
 
-  const clarify = function clarify(err = mandatory(), message = mandatory(), {data} = {}) {
+  const clarify = function clarify(
+    err = mandatory(),
+    message = mandatory(),
+    {data} = {}) {
 
     err.clarification = new Clarification(message, err.clarification);
     if (data) {
@@ -144,8 +142,7 @@
 
           console.warn('Failed, other extension is in control.');
           return cb(
-            null, null,
-            [new Warning( window.utils.messages.whichExtensionHtml() )]
+            new Warning( window.utils.messages.whichExtensionHtml() )
           );
 
         }
@@ -163,17 +160,22 @@
 
   };
 
-  const clarifyFetchErrorThen = (cb) => clarifyErrorThen('Что-то не так с сетью, проверьте соединение.', cb);
+  const clarifyFetchErrorThen = (cb) =>
+    clarifyErrorThen('Что-то не так с сетью, проверьте соединение.', cb);
 
-  const ifModifiedSince = function ifModifiedSince(url = mandatory(), lastModified = mandatory(), cb = mandatory()) {
+  const ifModifiedSince = function ifModifiedSince(
+    url = mandatory(),
+    lastModified = mandatory(),
+    cb = mandatory()
+  ) {
 
     const wasModified = new Date(0).toUTCString();
     const notModifiedCode = 304;
     fetch(url, {
       method: 'HEAD',
       headers: new Headers({
-        'If-Modified-Since': lastModified
-      })
+        'If-Modified-Since': lastModified,
+      }),
     }).then(
       (res) => {
         cb(
@@ -242,7 +244,10 @@
                   );
                 }
               } catch(e) {
-                err = clarify(e, 'Сервер (текст): ' + res, err ? {data: err} : null)
+                err = clarify(
+                  e,
+                  'Сервер (текст): ' + res, err ? {data: err} : null
+                );
               }
             }
             resolve([err, res]);
@@ -271,7 +276,10 @@
 
   };
 
-  const updatePacProxyIps = function updatePacProxyIps(provider, cb = throwIfError) {
+  const updatePacProxyIps = function updatePacProxyIps(
+    provider,
+    cb = throwIfError
+  ) {
 
     cb = asyncLogGroup(
       'Getting IP for '+ provider.proxyHosts.join(', ') + '...',
@@ -312,7 +320,7 @@
           );
           errorsCount === hostsProcessed
             ? cb(failure)
-            : cb(null, null, [failure])
+            : cb(null, null, [failure]);
         }
       )
     );
@@ -335,7 +343,10 @@
         return cb(
           null,
           {lastModified},
-          [new Warning('Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' + lastModified)]
+          [new Warning(
+            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
+              lastModified
+          )]
         );
       }
 
@@ -381,8 +392,6 @@
 
     version: chrome.runtime.getManifest().version,
 
-    throwAsync() { throw new Error('ABC') }, // TODO: delete
-
     pacProviders: {
       Антизапрет: {
         label: 'Антизапрет',
@@ -404,8 +413,9 @@
       Антицензорити: {
         label: 'Антицензорити',
         desc: 'Основной PAC-скрипт от автора расширения.' +
-        ' Блокировка определятся по доменному имени или IP адресу. Работает на switch-ах.' +
-        ' <br/><a href="https://rebrand.ly/ac-wiki">Страница проекта</a>.',
+        ' Блокировка определятся по доменному имени или IP адресу.' +
+        ' Работает на switch-ах. <br/>' +
+        ' <a href="https://rebrand.ly/anticensority">Страница проекта</a>.',
 
         /*
           Don't use in system configs! Because Windows does poor caching.
@@ -416,11 +426,11 @@
           // Official, Cloud Flare with caching:
           'https://anticensorship-russia.tk/generated-pac-scripts/anticensority.pac',
           // GitHub.io:
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63',
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63', // eslint-disable-line max-len
           // GitHub repo:
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63',
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63', // eslint-disable-line max-len
           // Google Drive (0.17):
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'],
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'], // eslint-disable-line max-len
         proxyHosts: ['proxy.antizapret.prostovpn.org'],
         proxyIps: {
           '195.123.209.38': 'proxy.antizapret.prostovpn.org',
@@ -479,7 +489,10 @@
       return this._currentPacProviderKey;
 
     },
-    setCurrentPacProviderKey(newKey = mandatory(), lastModified = new Date().toUTCString()) {
+    setCurrentPacProviderKey(
+      newKey = mandatory(),
+      lastModified = new Date().toUTCString()
+    ) {
 
       this.mustBeKey(newKey);
       this._currentPacProviderKey = newKey;
@@ -742,7 +755,7 @@
         key !== null &&
         !Object.keys(antiCensorRu.pacProviders).includes(key)
       ) {
-        antiCensorRu._currentPacProviderKey = 'Антицензорити'
+        antiCensorRu._currentPacProviderKey = 'Антицензорити';
       }
       console.log('Extension updated.');
 

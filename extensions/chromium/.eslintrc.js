@@ -1,5 +1,5 @@
 module.exports = {
-    "extends": ["eslint:recommended", "google"],
+    "extends": ["google"],
     "plugins": [
       //"hapi"
     ],

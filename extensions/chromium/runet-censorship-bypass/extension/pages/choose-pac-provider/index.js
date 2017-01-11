@@ -2,7 +2,7 @@
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOnAsync(
-    window, 'POPUP', () => {
+    window, 'PUP', () => {
 
       const getStatus = () => document.querySelector('#status');
 
@@ -72,7 +72,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         warns = warns || [];
         const warning = warns
-          .map( (w) => '✘ ' + (w.clarification && w.clarification.message || w.message || '') )
+          .map(
+            (w) => '✘ ' +
+              (w.clarification && w.clarification.message || w.message || '')
+          )
           .join('<br/>');
 
         let message = '';
@@ -81,7 +84,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           message = err.message || '';
 
           while( clarification ) {
-            message = (clarification && (clarification.message + ' ')) + message;
+            message = (clarification && (clarification.message + ' ')) +
+              message;
             clarification = clarification.prev;
           }
         }
@@ -100,7 +104,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         if (err) {
           getStatus().querySelector('.link-button').onclick = function() {
 
-            errorHandlers.viewErrorVoid(err);
+            errorHandlers.viewErrorVoid('pup-ext-err', err);
             return false;
 
           };
@@ -149,11 +153,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           <a href class="link-button checked-radio-panel"
             id="update-${providerKey}"> [обновить]</a>
           <div class="desc">
-            &nbsp;<i class="fa fa-question-circle" aria-hidden="true"></i>
+            <i class="fa fa-question-circle" aria-hidden="true"></i>
             <div class="tooltip">${provider.desc}</div>
-            <div class="xyz">${provider.desc}</div>
-          </div>
-          `
+          </div>`;
         li.querySelector('.link-button').onclick =
           () => {
             conduct(
@@ -173,7 +175,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         radio.onclick = function(event) {
 
           if (
-            event.target.id === (antiCensorRu.getCurrentPacProviderKey() || 'none')
+            event.target.id === (
+              antiCensorRu.getCurrentPacProviderKey() || 'none'
+            )
           ) {
             return false;
           }
