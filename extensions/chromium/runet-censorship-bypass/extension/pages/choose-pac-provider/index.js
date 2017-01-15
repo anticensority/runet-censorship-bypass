@@ -1,4 +1,12 @@
 'use strict';
+const START = Date.now();
+
+document.getElementById('pac-mods').onchange = function() {
+
+  this.classList.add('changed');
+  document.getElementById('apply-mods').disabled = false;
+
+};
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOnAsync(
@@ -8,7 +16,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const setStatusTo = (msg) => {
 
-        getStatus().innerHTML = msg;
+        getStatus().innerHTML = msg || 'Хорошего настроения вам!';
 
       };
 
@@ -58,7 +66,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       document.querySelector('.close-button').onclick = () => window.close();
 
-      // RADIOS
+      // RADIOS FOR PROVIDERS
 
       const currentProviderRadio = () => {
 
@@ -95,7 +103,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         }
         setStatusTo(
           `<span style="color:red">
-          ${err ? '🔥 Ошибка!' : 'Некритичная ошибка.'}
+          ${err ? '🔥&#xFE0E; Ошибка!' : 'Некритичная ошибка.'}
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred">${message}</span>
@@ -131,42 +139,44 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           } else {
             setStatusTo(afterStatus);
           }
+          enableDisableInputs();
           if (!err) {
             onSuccess && onSuccess();
           }
-          enableDisableInputs();
         });
 
       };
 
-      const ul = document.querySelector('#list-of-providers');
-      const _firstChild = ul.firstChild;
-      for(
-        const providerKey of Object.keys(antiCensorRu.pacProviders).sort()
-      ) {
-        const provider = antiCensorRu.getPacProvider(providerKey);
-        const li = document.createElement('li');
-        li.className = 'provider';
-        li.innerHTML = `
-          <input type="radio" name="pacProvider" id="${providerKey}">
-          <label for="${providerKey}"> ${provider.label}</label>
-          <a href class="link-button checked-radio-panel"
-            id="update-${providerKey}"> [обновить]</a>
-          <div class="desc">
-            <i class="fa fa-question-circle" aria-hidden="true"></i>
-            <div class="tooltip">${provider.desc}</div>
-          </div>`;
-        li.querySelector('.link-button').onclick =
-          () => {
-            conduct(
-              'Обновляем...', (cb) => antiCensorRu.syncWithPacProviderAsync(cb),
-              'Обновлено.'
-            );
-            return false;
-          };
-        ul.insertBefore( li, _firstChild );
+      {
+        const ul = document.querySelector('#list-of-providers');
+        const _firstChild = ul.firstChild;
+        for(
+          const providerKey of Object.keys(antiCensorRu.pacProviders).sort()
+        ) {
+          const provider = antiCensorRu.getPacProvider(providerKey);
+          const li = document.createElement('li');
+          li.className = 'info-row';
+          li.innerHTML = `
+            <input type="radio" name="pacProvider" id="${providerKey}">
+            <label for="${providerKey}"> ${provider.label}</label>
+            <a href class="link-button checked-radio-panel"
+              id="update-${providerKey}"> [обновить]</a>
+            <div class="desc">
+              <span class="info-sign">🛈</span>
+              <div class="tooltip">${provider.desc}</div>
+            </div>`;
+          li.querySelector('.link-button').onclick =
+            () => {
+              conduct(
+                'Обновляем...', (cb) => antiCensorRu.syncWithPacProviderAsync(cb),
+                'Обновлено.'
+              );
+              return false;
+            };
+          ul.insertBefore( li, _firstChild );
+        }
+        checkChosenProvider();
       }
-      checkChosenProvider();
 
       const radios = [].slice.apply(
         document.querySelectorAll('[name=pacProvider]')
@@ -201,7 +211,87 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         };
       }
 
-      const conpanel = document.getElementById('list-of-handlers');
+      // PAC MODS PANEL
+
+      {
+
+        const pacKitchen = backgroundPage.apis.pacKitchen;
+
+        const modPanel = document.getElementById('pac-mods');
+        const _firstChild = modPanel.firstChild;
+        const keyToLi = {};
+        const customProxyStringKey = 'customProxyStringRaw';
+        pacKitchen.getConfigs().forEach( (conf) => {
+
+          const key = conf.key;
+          const iddy = conf.key.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
+          const li = document.createElement('li');
+          li.className = 'info-row';
+          keyToLi[key] = li;
+          console.log(key, conf.value);
+          li.innerHTML = `
+            <input type="checkbox" id="${iddy}" ${ conf.value ? 'checked' : '' }/>
+            <label for="${iddy}"> ${ conf.label }</label>`;
+
+          if (key !== customProxyStringKey) {
+            li.innerHTML += `<div class="desc">
+              <span class="info-sign">🛈</span>
+              <div class="tooltip">${conf.desc}</div>
+            </div>`;
+          } else {
+            li.innerHTML += `<a href="${conf.url}" class="info-sign info-url">🛈</a><br/>
+<textarea
+  placeholder="SOCKS5 localhost:9050; # TOR Expert
+SOCKS5 localhost:9150; # TOR Browser
+HTTPS foobar.com:3143;
+HTTPS 11.22.33.44:8080;">${conf.value || ''}</textarea>`;
+            li.querySelector('textarea').onkeyup = function() {
+
+              this.dispatchEvent(new Event('change', { 'bubbles': true }));
+
+            };
+          }
+
+          modPanel.insertBefore( li, _firstChild );
+
+        });
+        document.getElementById('apply-mods').onclick = () => {
+
+          const configs = Object.keys(keyToLi).reduce( (configs, key) => {
+
+            if (key !== customProxyStringKey) {
+              configs[key] = keyToLi[key].querySelector('input').checked;
+            } else {
+              configs[key] = keyToLi[key].querySelector('input').checked
+                && keyToLi[key].querySelector('textarea').value.trim();
+            }
+            return configs;
+
+          }, {});
+          if (configs[customProxyStringKey]) {
+            configs[customProxyStringKey] = keyToLi[customProxyStringKey].querySelector('textarea').value;
+          }
+          conduct(
+            'Применяем настройки...',
+            (cb) => pacKitchen.keepCookedNow(configs, cb),
+            'Настройки применены.',
+            () => { document.getElementById('apply-mods').disabled = true; }
+          );
+
+        };
+
+        document.getElementById('reset-mods').onclick = () => {
+
+          pacKitchen.resetToDefaultsVoid();
+          window.close();
+
+        };
+
+      }
+
+      // NOTIFICATIONS PANEL
+
+      const conPanel = document.getElementById('list-of-handlers');
       errorHandlers.getEventsMap().forEach( (value, name) => {
 
         const li = document.createElement('li');
@@ -219,7 +309,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           );
 
         };
-        conpanel.appendChild(li);
+        conPanel.appendChild(li);
 
       });
 
@@ -239,6 +329,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         document.querySelector('#update-' + id).click();
       }
       document.documentElement.style.display = '';
+      console.log(Date.now() - START);
 
     })
 );

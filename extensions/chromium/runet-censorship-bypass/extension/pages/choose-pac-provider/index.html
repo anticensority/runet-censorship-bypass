@@ -1,8 +1,7 @@
 ﻿<!DOCTYPE html>
-<html style="display: none">
+<html style="display: none; will-change: contents, display">
   <head>
     <title>Выбор провайдера PAC</title>
-    <link rel="stylesheet" href="./vendor/font-awesome/css/font-awesome.min.css">
     <style>
       :root {
         --ribbon-color: #4169e1; /* #1a6cc8 */
@@ -25,7 +24,7 @@
         white-space: nowrap;
         word-break: keep-all;
       }
-      li > * {
+      li, li > * {
         vertical-align: middle;
       }
       input[type="radio"], label {
@@ -56,14 +55,22 @@
         display: none;
         color: red;
       }
-      li.provider {
+      li.info-row {
         display: table;
         width: 100%;
         position: relative;
       }
-      .desc i {
-        vertical-align: bottom;
-        font-size: 1.1em;
+      .info-sign {
+        font-size: 1.4em;
+        vertical-align: middle;
+        line-height: 100%;
+        margin-left: 0.1em;
+      }
+      .info-url {
+        float: right;
+        text-decoration: none;
+        line-height: initial;
+        vertical-align: bottom !important;
       }
       /* Source: https://jsfiddle.net/greypants/zgCb7/ */
       .desc {
@@ -109,13 +116,31 @@
         top: -1em;
         content: "";
         display: block;
-        height: 1.8em;
+        height: 1.6em;
         left: 75%;
         width: calc(25% + 0.6em);
       }
-
-      footer {
-        margin: 2em 0 1em 0;
+      #custom-proxy-string-raw ~ textarea {
+        width: 100%;
+        height: 7em;
+        margin-top: 0.3em;
+        font-size: 0.9em;
+      }
+      #custom-proxy-string-raw:not(:checked) ~ textarea {
+        display: none;
+      }
+      .control-row {
+        display: table;
+        width: 100%;
+        margin: 1em 0 1em 0;
+      }
+      .control-row > * {
+        display: table-cell;
+      }
+      .control-row a:nth-child(2) {
+        text-decoration: none;
+        margin-left: 1em;
+        text-align: right;
       }
     </style>
   </head>
@@ -130,16 +155,25 @@
     <div style="white-space: nowrap">
       Обновлялись: <span class="update-date">...</span>
     </div>
-    <span id="status">Загрузка...</span>
+    <span id="status" style="will-change: contents">Загрузка...</span>
+    <hr/>
+    <div>
+      <ul id="pac-mods">
+        <li class="control-row">
+          <input type="button" value="Применить" id="apply-mods" disabled/>
+          <a href id="reset-mods">К изначальным!</a>
+        </li>
+      </ul>
+    </div>
     <hr/>
     <div id="configs-panel">
       <header>Я ❤️ уведомления:</header>
       <ul id="list-of-handlers">
       </ul>
     </div>
-    <footer style="display: table; width: 100%;">
-      <input type="button" value="Готово" class="close-button" style="display: table-cell">
-      <a href="../troubleshoot/index.html" style="text-decoration: none; margin-left: 1em; display: table-cell; text-align: right;">
+    <footer class="control-row">
+      <input type="button" value="Готово" class="close-button">
+      <a href="../troubleshoot/index.html">
         Проблемы?
       </a>
     </footer>

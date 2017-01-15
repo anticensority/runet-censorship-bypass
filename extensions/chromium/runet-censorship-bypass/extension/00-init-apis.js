@@ -26,6 +26,23 @@ window.utils = {
 
   },
 
+  getProp(obj, path = this.mandatory()) {
+
+    const props = path.split('.');
+    if (!props.length) {
+      throw new TypeError('Property must be supplied.');
+    }
+    const lastProp = props.pop();
+    for( const prop of props ) {
+      if (!(prop in obj)) {
+        return undefined;
+      }
+      obj = obj[prop];
+    }
+    return obj[lastProp];
+
+  },
+
   areSettingsNotControlledFor(details) {
 
     return ['controlled_by_other', 'not_controllable']

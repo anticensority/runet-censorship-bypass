@@ -415,7 +415,7 @@
         desc: 'Основной PAC-скрипт от автора расширения.' +
         ' Блокировка определятся по доменному имени или IP адресу.' +
         ' Работает на switch-ах. <br/>' +
-        ' <a href="https://rebrand.ly/anticensority">Страница проекта</a>.',
+        ' <a href="https://rebrand.ly/ac-anticensority">Страница проекта</a>.',
 
         /*
           Don't use in system configs! Because Windows does poor caching.
