@@ -225,13 +225,13 @@
           return cb(v4err, v4res);
         }
         const ips = v4res;
-        let warns = null;
+        let warns = [];
         if (!v6err) {
           ips.push(...v6res);
         } else {
           warns = [v6err];
         }
-        cb(null, ips, warns);
+        cb(null, ips, ...warns);
 
       }
     );
@@ -254,7 +254,7 @@
     provider.proxyHosts.forEach(
       (proxyHost) => getIpsFor(
         proxyHost,
-        (err, ips, warns) => {
+        (err, ips, ...warns) => {
 
           if (!err) {
             provider.proxyIps = provider.proxyIps || {};
@@ -262,7 +262,7 @@
               (ip) => provider.proxyIps[ip] = proxyHost
             );
           }
-          if (err || warns) {
+          if (err || warns.length) {
             failure.errors[proxyHost] = err || warns;
           }
 
@@ -282,7 +282,7 @@
           );
           errorsCount === hostsProcessed
             ? cb(failure)
-            : cb(null, null, [failure]);
+            : cb(null, null, failure);
         }
       )
     );
@@ -305,10 +305,10 @@
         return cb(
           null,
           {lastModified},
-          [new Warning(
+          new Warning(
             'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
               lastModified
-          )]
+          )
         );
       }
 
@@ -519,7 +519,7 @@
         (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
           this.getLastModifiedForKey(key),
-          (err, res, warns) => {
+          (err, res, ...warns) => {
 
             if (!err) {
               this.setCurrentPacProviderKey(key, res.lastModified);
@@ -528,7 +528,7 @@
               this.setAlarms();
             }
 
-            resolve([err, null, warns]);
+            resolve([err, null, ...warns]);
 
           }
         )
@@ -542,17 +542,17 @@
       );
 
       Promise.all([pacSetPromise, ipsErrorPromise]).then(
-        ([[pacErr, pacRes, pacWarns], ipsErr]) => {
+        ([[pacErr, pacRes, ...pacWarns], ipsErr]) => {
 
           if (pacErr && ipsErr) {
             return cb(pacErr, pacRes);
           }
-          let warns = [...(pacWarns || []), ipsErr].filter( (_) => _ );
-          if (!warns.length) {
-            warns = null;
+          const warns = pacWarns;
+          if (ipsErr) {
+            warns.push(ipsErr)
           }
           this.pushToStorageAsync(
-            (pushErr) => cb(pacErr || pushErr, null, warns)
+            (pushErr) => cb(pacErr || pushErr, null, ...warns)
           );
 
         },

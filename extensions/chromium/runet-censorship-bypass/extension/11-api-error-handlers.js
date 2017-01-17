@@ -47,7 +47,7 @@
 
   }
 
-  const openAndFocus = (url) => {
+  const openAndFocus = function openAndFocus(url) {
 
     chrome.tabs.create(
       {url: url},
