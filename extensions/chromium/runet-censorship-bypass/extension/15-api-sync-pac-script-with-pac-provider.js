@@ -22,14 +22,9 @@
 { // Private namespace starts.
 
   const mandatory = window.utils.mandatory;
-
-  const throwIfError = function throwIfError(err) {
-
-    if(err) {
-      throw err;
-    }
-
-  };
+  const throwIfError = window.utils.throwIfError;
+  const chromified = window.utils.chromified;
+  const checkChromeError = window.utils.checkChromeError;
 
   const asyncLogGroup = function asyncLogGroup(...args) {
 
@@ -43,39 +38,6 @@
       console.groupEnd();
       console.log('Group finished.');
       cb(...cbArgs);
-
-    };
-
-  };
-
-  const checkChromeError = function checkChromeError(betterStack) {
-
-    // Chrome API calls your cb in a context different from the point of API
-    // method invokation.
-    const err = chrome.runtime.lastError || chrome.extension.lastError;
-    if (err) {
-      const args = ['API returned error:', err];
-      if (betterStack) {
-        args.push('\n' + betterStack);
-      }
-      console.warn(...args);
-    }
-    return err;
-
-  };
-
-  const chromified = function chromified(cb = mandatory(), ...replaceArgs) {
-
-    const stack = (new Error()).stack;
-    // Take error first callback and convert it to chrome api callback.
-    return function(...args) {
-
-      if (replaceArgs.length) {
-        args = replaceArgs;
-      }
-      const err = checkChromeError(stack);
-      // setTimeout fixes error context.
-      setTimeout( cb.bind(null, err, ...args), 0 );
 
     };
 

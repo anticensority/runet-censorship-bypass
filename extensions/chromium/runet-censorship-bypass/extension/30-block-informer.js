@@ -14,50 +14,38 @@
   Crazy parallel Chrome.
 **/
 
-const antiCensorRu = window.apis.antiCensorRu;
-
-window.chrome.browserAction.setBadgeBackgroundColor({
-  color: '#db4b2f',
-});
-
-window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
-
 {
+
+  window.chrome.browserAction.setBadgeBackgroundColor({
+    color: '#db4b2f',
+  });
 
   const _tabCallbacks = {};
 
-  function afterTabUpdated(tabId, cb) {
-    if (_tabCallbacks[tabId])
-      _tabCallbacks[tabId].push(cb);
-    else _tabCallbacks[tabId] = [cb];
-  }
+  const afterTabUpdated = function afterTabUpdated(tabId, cb) {
 
-  function onTabUpdate(tabId) {
+    if (_tabCallbacks[tabId]) {
+      _tabCallbacks[tabId].push(cb);
+    } else {
+      _tabCallbacks[tabId] = [cb];
+    }
+
+  };
+
+  const onTabUpdate = function onTabUpdate(tabId) {
+
     if (_tabCallbacks[tabId]) {
       _tabCallbacks[tabId].map( (f) => f() );
       delete _tabCallbacks[tabId];
     }
-  }
+
+  };
 
   chrome.tabs.onUpdated.addListener( onTabUpdate );
 
-  function isInsideTabWithIp(requestDetails) {
-    return requestDetails.tabId !== -1 && requestDetails.ip;
-  }
+  const antiCensorRu = window.apis.antiCensorRu;
 
-  chrome.webRequest.onErrorOccurred.addListener(
-    (requestDetails) =>
-      isInsideTabWithIp(requestDetails)
-        && isProxiedAndInformed(requestDetails),
-    {urls: ['<all_urls>']}
-  );
-
-  chrome.tabs.onRemoved.addListener( (tabId) => {
-    onTabUpdate(tabId);
-    delete window.tabWithError2ip[tabId];
-  });
-
-  function updateTitle(requestDetails, cb) {
+  const updateTitle = function updateTitle(requestDetails, cb) {
 
     chrome.browserAction.getTitle(
       {tabId: requestDetails.tabId},
@@ -74,6 +62,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
         const proxyTitle = 'Прокси:';
 
         if (!ifTitleSetAlready) {
+
           title = 'Разблокированы:\n' + indent + hostname + '\n'
             + proxyTitle + '\n' + indent + proxyHost;
           ifShouldUpdateTitle = true;
@@ -84,6 +73,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
           });
 
         } else {
+
           const hostsProxiesPair = title.split(proxyTitle);
 
           if (hostsProxiesPair[1].indexOf(proxyHost) === -1) {
@@ -95,6 +85,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
           }
 
           if (hostsProxiesPair[0].indexOf(hostname) === -1) {
+
             title = title.replace(
               proxyTitle,
               indent + hostname + '\n' + proxyTitle
@@ -119,6 +110,7 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
             );
 
           }
+
         }
 
         if (ifShouldUpdateTitle) {
@@ -132,11 +124,12 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
 
       }
     );
-  }
+
+  };
 
   let previousUpdateTitleFinished = Promise.resolve();
 
-  function isProxiedAndInformed(requestDetails) {
+  const isProxiedAndInformed = function isProxiedAndInformed(requestDetails) {
 
     if ( !(requestDetails.ip
              && antiCensorRu.isProxied( requestDetails.ip )) ) {
@@ -156,12 +149,26 @@ window.tabWithError2ip = {}; // For errors only: Error? -> Check this IP!
     );
 
     return true;
-  }
+
+  };
+
+  const isInsideTabWithIp = function isInsideTabWithIp(requestDetails) {
+
+    return requestDetails.tabId !== -1 && requestDetails.ip;
+
+  };
 
   chrome.webRequest.onResponseStarted.addListener(
     (requestDetails) => isInsideTabWithIp(requestDetails)
       && isProxiedAndInformed(requestDetails),
       {urls: ['<all_urls>']}
+  );
+
+  chrome.webRequest.onErrorOccurred.addListener(
+    (requestDetails) =>
+      isInsideTabWithIp(requestDetails)
+        && isProxiedAndInformed(requestDetails),
+    {urls: ['<all_urls>']}
   );
 
 }

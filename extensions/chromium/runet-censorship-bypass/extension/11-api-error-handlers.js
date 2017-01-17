@@ -47,23 +47,6 @@
 
   }
 
-  const handlersState = function(key, value) {
-
-    key = 'handlers-' + key;
-    if (value === null) {
-      return localStorage.removeItem(key);
-    }
-    if (value === undefined) {
-      const item = localStorage.getItem(key);
-      return item && JSON.parse(item);
-    }
-    if (value instanceof Date) {
-      throw new TypeError('Converting Date format to JSON is not supported.');
-    }
-    localStorage.setItem(key, JSON.stringify(value));
-
-  };
-
   const openAndFocus = (url) => {
 
     chrome.tabs.create(
@@ -77,6 +60,8 @@
   const extName = chrome.runtime.getManifest().name;
 
   window.apis.errorHandlers = {
+
+    state: window.utils.createStorage('handlers-'),
 
     viewErrorVoid(type = window.utils.mandatory(), err) {
 
@@ -113,14 +98,14 @@
       for(
         const name of (eventName ? [eventName] : this.getEventsMap().keys() )
       ) {
-        handlersState( ifPrefix + name, onOffStr === 'on' ? 'on' : null );
+        this.state( ifPrefix + name, onOffStr === 'on' ? 'on' : null );
       }
 
     },
 
     isOn(eventName) {
 
-      return handlersState( ifPrefix + eventName);
+      return this.state( ifPrefix + eventName );
 
     },
 
