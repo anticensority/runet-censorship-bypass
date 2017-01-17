@@ -76,15 +76,15 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       };
       const checkChosenProvider = () => currentProviderRadio().checked = true;
 
-      const showErrors = (err, warns) => {
+      const showErrors = (err, ...warns) => {
 
-        warns = warns || [];
-        backgroundPage.console.log('eeeEEEEE',warns)
         const warning = warns
           .map(
-            (w) => '✘ ' +
-              (w && w.clarification && w.clarification.message || w.message || '')
+            (w) =>
+              (w && (w.clarification && w.clarification.message || w.message) || '')
           )
+          .filter( (m) => m )
+          .map( (m) => '✘ ' + m )
           .join('<br/>');
 
         let message = '';
@@ -104,7 +104,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         }
         setStatusTo(
           `<span style="color:red">
-          ${err ? '🔥&#xFE0E; Ошибка!' : 'Некритичная ошибка.'}
+            ${err ? '🔥&#xFE0E; Ошибка!' : 'Некритичная ошибка.'}
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred">${message}</span>
@@ -134,15 +134,15 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         setStatusTo(beforeStatus);
         enableDisableInputs();
-        operation((err, res, warns) => {
-          if (err || warns) {
-            showErrors(err, warns);
+        operation((err, res, ...warns) => {
+          if (err || warns.length) {
+            showErrors(err, ...warns);
           } else {
             setStatusTo(afterStatus);
           }
           enableDisableInputs();
           if (!err) {
-            onSuccess && onSuccess();
+            onSuccess && onSuccess(res);
           }
         });
 
@@ -160,8 +160,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           li.innerHTML = `
             <input type="radio" name="pacProvider" id="${providerKey}">
             <label for="${providerKey}"> ${provider.label}</label>
-            <a href class="link-button checked-radio-panel"
-              id="update-${providerKey}"> [обновить]</a>
+            &nbsp;<a href class="link-button checked-radio-panel"
+              id="update-${providerKey}">[обновить]</a>
             <div class="desc">
               <span class="info-sign">🛈</span>
               <div class="tooltip">${provider.desc}</div>

@@ -30,6 +30,7 @@
       input[type="radio"], label {
         cursor: pointer;
       }
+
       .link-button, .link-button:visited {
         color: #0000EE;
         text-decoration: none;
@@ -37,6 +38,7 @@
       .link-button:hover {
         text-decoration: underline;
       }
+
       .checked-radio-panel {
         visibility: hidden;
       }
@@ -132,6 +134,7 @@
       #custom-proxy-string-raw:not(:checked) ~ textarea {
         display: none;
       }
+
       .control-row {
         display: table;
         width: 100%;
@@ -141,7 +144,6 @@
         display: table-cell;
       }
       .control-row a:nth-child(2) {
-        text-decoration: none;
         margin-left: 1em;
         text-align: right;
       }
@@ -164,7 +166,7 @@
       <ul id="pac-mods">
         <li class="control-row">
           <input type="button" value="Применить" id="apply-mods" disabled/>
-          <a href id="reset-mods">К изначальным!</a>
+          <a href id="reset-mods" class="link-button">К изначальным!</a>
         </li>
       </ul>
     </div>
@@ -176,7 +178,7 @@
     </div>
     <footer class="control-row">
       <input type="button" value="Готово" class="close-button">
-      <a href="../troubleshoot/index.html">
+      <a href="../troubleshoot/index.html" class="link-button">
         Проблемы?
       </a>
     </footer>
