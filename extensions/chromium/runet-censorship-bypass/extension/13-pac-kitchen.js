@@ -2,21 +2,26 @@
 
 { // Private namespace starts.
 
-  const kitchenStorageKey = 'pac-kitchen-kept-mods';
+  const mandatory = window.utils.mandatory;
+  const throwIfError = window.utils.throwIfError;
+  const chromified = window.utils.chromified;
+
   const kitchenStartsMark = '\n\n//%#@@@@@@ PAC_KITCHEN_STARTS @@@@@@#%';
+  const kitchenState = window.utils.createStorage('pac-kitchen-');
+  const ifIncontinence = 'if-incontinence';
 
   const configs = {
 
     ifProxyHttpsUrlsOnly: {
       dflt: false,
       label: 'проксировать только HTTP<span style="border-bottom: 1px solid black">S</span>-сайты',
-      desc: 'Проксировать только сайты, доступные по шифрованному протоколу HTTPS. Прокси и провайдер смогут видеть только адреса посещаемых вами ресурсов, но не их содержимое.',
+      desc: 'Проксировать только сайты, доступные по шифрованному протоколу HTTPS. Прокси и провайдер смогут видеть только адреса проксируемых ресурсов, но не их содержимое.',
       index: 0,
     },
     ifUseSecureProxiesOnly: {
       dflt: false,
       label: 'только шифрованная связь с прокси',
-      desc: 'Шифровать соединение до прокси от провайдера. Провайдер всё же сможет видеть адреса (но не содержимое) посещаемых вами ресурсов из протокола DNS.',
+      desc: 'Шифровать соединение до прокси от провайдера. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS.',
       index: 1,
     },
     ifUsePacScriptProxies: {
@@ -53,11 +58,11 @@
 
   const getCurrentConfigs = function getCurrentConfigs() {
 
-    const json = localStorage.getItem(kitchenStorageKey);
-    if (!json) {
+    const mods = kitchenState('mods');
+    if (!mods) {
       return null;
     }
-    return new PacModifiers(JSON.parse(json));
+    return new PacModifiers(mods);
 
   };
 
@@ -122,7 +127,7 @@
 
     getConfigs: getOrderedConfigsForUser,
 
-    cook(pacData, pacMods = window.utils.mandatory()) {
+    cook(pacData, pacMods = mandatory()) {
 
       return pacMods.ifNoMods ? pacData : pacData + `${ kitchenStartsMark }
 ;+function(global) {
@@ -183,23 +188,20 @@
 
     },
 
-    keepCookedNow(pacMods = window.utils.mandatory(), cb) {
+    _tryNowAsync(details, cb = throwIfError) {
 
-      if (typeof(pacMods) === 'function') {
-        cb = pacMods;
-        const pacMods = getCurrentConfigs();
-        if (!pacMods) {
-          return cb(TypeError('PAC mods were never initialized.'));
-        }
-      } else {
-        try {
-          pacMods = new PacModifiers(pacMods);
-        } catch(e) {
-          return cb(e);
-        }
-        localStorage.setItem(kitchenStorageKey, JSON.stringify(pacMods));
+      if (typeof(details) === 'function') {
+        cb = details;
+        details = undefined;
       }
-      chrome.proxy.settings.get({}, (details) => {
+
+      new Promise((resolve) =>
+
+        details
+          ? resolve(details)
+          : chrome.proxy.settings.get({}, resolve)
+
+      ).then( (details) => {
 
         if (
           details.levelOfControl === 'controlled_by_this_extension'
@@ -211,27 +213,59 @@
               new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
               ''
             );
-            return chrome.proxy.settings.set(details, cb);
+            return chrome.proxy.settings.set(details, chromified(cb));
           }
         }
-        return cb(
-          null,
-          null,
-          [new TypeError('PAC-скрипт не обнаружен, но настройки будут активированы при установке PAC-скрипта.')]
-        );
+
+        kitchenState(ifIncontinence, true);
+        cb(new TypeError(
+          'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
+        ));
 
       });
 
     },
 
+    checkIncontinence(details) {
+
+      if ( kitchenState(ifIncontinence) ) {
+        this._tryNowAsync(details, () => {/* Swallow. */});
+      }
+
+    },
+
+
+    keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
+
+      if (typeof(pacMods) === 'function') {
+        cb = pacMods;
+        const pacMods = getCurrentConfigs();
+        if (!pacMods) {
+          return cb(TypeError('PAC mods were never initialized and you haven\'t supplied any.'));
+        }
+      } else {
+        try {
+          pacMods = new PacModifiers(pacMods);
+        } catch(e) {
+          return cb(e);
+        }
+        kitchenState('mods', pacMods);
+      }
+      this._tryNowAsync( (err) => cb(null, null, err && [err]) );
+
+    },
+
     resetToDefaultsVoid() {
 
-      delete localStorage[kitchenStorageKey];
-      this.keepCookedNow({});
+      kitchenState('mods', null);
+      kitchenState(ifIncontinence, null);
+      this.keepCookedNowAsync({});
 
     },
 
   };
+
+  const pacKitchen = window.apis.pacKitchen;
 
   const originalSet = chrome.proxy.settings.set.bind( chrome.proxy.settings );
 
@@ -243,10 +277,18 @@
     }
     const pacMods = getCurrentConfigs();
     if (pacMods) {
-      pac.data = window.apis.pacKitchen.cook( pac.data, pacMods );
+      pac.data = pacKitchen.cook( pac.data, pacMods );
     }
-    originalSet({ value: details.value }, cb);
+    originalSet({ value: details.value }, (/* No args. */) => {
+
+      kitchenState(ifIncontinence, null);
+      cb && cb();
+
+    });
 
   };
+
+  pacKitchen.checkIncontinence();
+  chrome.proxy.settings.onChange.addListener( pacKitchen.checkIncontinence.bind(pacKitchen) );
 
 } // Private namespace ends.

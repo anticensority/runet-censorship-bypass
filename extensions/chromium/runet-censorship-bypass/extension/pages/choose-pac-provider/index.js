@@ -79,10 +79,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       const showErrors = (err, warns) => {
 
         warns = warns || [];
+        backgroundPage.console.log('eeeEEEEE',warns)
         const warning = warns
           .map(
             (w) => '✘ ' +
-              (w.clarification && w.clarification.message || w.message || '')
+              (w && w.clarification && w.clarification.message || w.message || '')
           )
           .join('<br/>');
 
@@ -241,6 +242,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           } else {
             li.innerHTML += `<a href="${conf.url}" class="info-sign info-url">🛈</a><br/>
 <textarea
+  spellcheck="false"
   placeholder="SOCKS5 localhost:9050; # TOR Expert
 SOCKS5 localhost:9150; # TOR Browser
 HTTPS foobar.com:3143;
