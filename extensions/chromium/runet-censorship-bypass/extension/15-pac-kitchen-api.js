@@ -99,7 +99,9 @@
       if (this.customProxyStringRaw) {
         customProxyArray = this.customProxyStringRaw
           .replace(/#.*$/mg, '') // Strip comments.
-          .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g ).filter( (p) => p.trim() );
+          .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
+          .map( (p) => p.trim() )
+          .filter( (p) => p && /\s+/g.test(p) );
         if (this.ifUseSecureProxiesOnly) {
           customProxyArray = customProxyArray.filter( (p) => !p.startsWith('HTTP ') );
         }
@@ -218,7 +220,7 @@
         }
 
         kitchenState(ifIncontinence, true);
-        cb(new TypeError(
+        cb(null, null, new TypeError(
           'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
         ));
 
@@ -226,7 +228,7 @@
 
     },
 
-    checkIncontinence(details) {
+    checkIncontinenceVoid(details) {
 
       if ( kitchenState(ifIncontinence) ) {
         this._tryNowAsync(details, () => {/* Swallow. */});
@@ -237,12 +239,10 @@
 
     keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
 
+      console.log('Keep cooked now...');
       if (typeof(pacMods) === 'function') {
         cb = pacMods;
-        const pacMods = getCurrentConfigs();
-        if (!pacMods) {
-          return cb(TypeError('PAC mods were never initialized and you haven\'t supplied any.'));
-        }
+        pacMods = this.getCurrentConfigs();
       } else {
         try {
           pacMods = new PacModifiers(pacMods);
@@ -251,7 +251,27 @@
         }
         kitchenState('mods', pacMods);
       }
-      this._tryNowAsync( (err) => cb(null, null, err && [err]) );
+      this._tryNowAsync(
+        (err, res, ...warns) => {
+
+          console.log('Try now cb...', err);
+          if (err) {
+            return cb(err, res, ...warns);
+          }
+
+          const par = pacMods.customProxyArray;
+          if (!(par && par.length)) {
+            return cb(null, res, ...warns);
+          }
+
+          const hosts = par.map( (ps) => ps.split(/\s+/)[1] )
+          window.apis.ipToHost.replaceAllAsync(
+            hosts,
+            (...args) => cb(...args, ...warns)
+          );
+
+        }
+      );
 
     },
 
@@ -288,7 +308,7 @@
 
   };
 
-  pacKitchen.checkIncontinence();
-  chrome.proxy.settings.onChange.addListener( pacKitchen.checkIncontinence.bind(pacKitchen) );
+  pacKitchen.checkIncontinenceVoid();
+  chrome.proxy.settings.onChange.addListener( pacKitchen.checkIncontinenceVoid.bind(pacKitchen) );
 
 } // Private namespace ends.

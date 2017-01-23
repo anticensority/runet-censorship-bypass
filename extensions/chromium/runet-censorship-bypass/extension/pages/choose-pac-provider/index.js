@@ -80,8 +80,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         const warning = warns
           .map(
-            (w) =>
-              (w && (w.clarification && w.clarification.message || w.message) || '')
+            (w) => w && w.message || ''
           )
           .filter( (m) => m )
           .map( (m) => '✘ ' + m )
@@ -89,18 +88,20 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         let message = '';
         if (err) {
-          let clarification = err.clarification;
+          let wrapped = err.wrapped;
           message = err.message || '';
 
-          while( clarification ) {
-            message = (clarification && (clarification.message + ' ')) +
-              message;
-            clarification = clarification.prev;
+          while( wrapped ) {
+            const deeperMsg = wrapped && wrapped.message;
+            if (deeperMsg) {
+              message = message + ' &gt; ' + deeperMsg;
+            }
+            wrapped = wrapped.wrapped;
           }
         }
         message = message.trim();
         if (warning) {
-          message += ' ' + warning;
+          message = message ? message + '<br/>' + warning : warning;
         }
         setStatusTo(
           `<span style="color:red">
@@ -121,11 +122,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       };
 
-      const enableDisableInputs = function() {
+      const switchInputs = function(val) {
 
         const inputs = document.querySelectorAll('input');
         for ( let i = 0; i < inputs.length; i++ ) {
-          inputs[i].disabled = !inputs[i].disabled;
+          inputs[i].disabled = val === 'on' ? false : true;
         }
 
       };
@@ -133,18 +134,30 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       const conduct = (beforeStatus, operation, afterStatus, onSuccess) => {
 
         setStatusTo(beforeStatus);
-        enableDisableInputs();
+        switchInputs('off');
         operation((err, res, ...warns) => {
+
+          warns = warns.filter( (w) => w );
           if (err || warns.length) {
+            backgroundPage.console.log('ERR', err, 'W', warns.length, 'w', warns);
             showErrors(err, ...warns);
           } else {
             setStatusTo(afterStatus);
           }
-          enableDisableInputs();
+          switchInputs('on');
           if (!err) {
             onSuccess && onSuccess(res);
           }
         });
+
+      };
+
+      const infoSign = function infoSign(tooltip) {
+
+        return `<div class="desc">
+          <span class="info-sign">🛈</span>
+          <div class="tooltip">${tooltip}</div>
+        </div>`;
 
       };
 
@@ -161,11 +174,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             <input type="radio" name="pacProvider" id="${providerKey}">
             <label for="${providerKey}"> ${provider.label}</label>
             &nbsp;<a href class="link-button checked-radio-panel"
-              id="update-${providerKey}">[обновить]</a>
-            <div class="desc">
-              <span class="info-sign">🛈</span>
-              <div class="tooltip">${provider.desc}</div>
-            </div>`;
+              id="update-${providerKey}">[обновить]</a> ` +
+            infoSign(provider.desc);
           li.querySelector('.link-button').onclick =
             () => {
               conduct(
@@ -212,6 +222,26 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         };
       }
 
+      // EXCEPTIONS PANEL
+
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+
+        /*
+        console.log(tab);
+        const opt = document.createElement('option');
+        opt.text = 
+        opt.selected = true;
+        opt.style.backgroundColor = 'green !important';
+        opt.style.background = 'green !important';
+
+        const sl = document.getElementById('exceptions-select');
+        sl.insertBefore( opt, sl.firstChild );
+        */
+
+        document.getElementById('except-editor').value = new URL(tab.url).hostname;
+
+      });
+
       // PAC MODS PANEL
 
       {
@@ -222,6 +252,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         const _firstChild = modPanel.firstChild;
         const keyToLi = {};
         const customProxyStringKey = 'customProxyStringRaw';
+        const uiRaw = 'ui-proxy-string-raw';
         pacKitchen.getConfigs().forEach( (conf) => {
 
           const key = conf.key;
@@ -229,16 +260,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           const li = document.createElement('li');
           li.className = 'info-row';
           keyToLi[key] = li;
-          console.log(key, conf.value);
           li.innerHTML = `
             <input type="checkbox" id="${iddy}" ${ conf.value ? 'checked' : '' }/>
             <label for="${iddy}"> ${ conf.label }</label>`;
 
           if (key !== customProxyStringKey) {
-            li.innerHTML += `<div class="desc">
-              <span class="info-sign">🛈</span>
-              <div class="tooltip">${conf.desc}</div>
-            </div>`;
+            li.innerHTML += infoSign(conf.desc);
           } else {
             li.innerHTML += `<a href="${conf.url}" class="info-sign info-url">🛈</a><br/>
 <textarea
@@ -246,7 +273,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
   placeholder="SOCKS5 localhost:9050; # TOR Expert
 SOCKS5 localhost:9150; # TOR Browser
 HTTPS foobar.com:3143;
-HTTPS 11.22.33.44:8080;">${conf.value || ''}</textarea>`;
+HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</textarea>`;
             li.querySelector('textarea').onkeyup = function() {
 
               this.dispatchEvent(new Event('change', { 'bubbles': true }));
@@ -270,12 +297,28 @@ HTTPS 11.22.33.44:8080;">${conf.value || ''}</textarea>`;
             return configs;
 
           }, {});
+          const taVal = keyToLi[customProxyStringKey].querySelector('textarea').value;
           if (configs[customProxyStringKey]) {
-            configs[customProxyStringKey] = keyToLi[customProxyStringKey].querySelector('textarea').value;
+            const ifValid = taVal
+              .replace(/#.*$/mg)
+              .split(/\s*[;\n\r]+\s*/g)
+              .every(
+              (str) =>
+                /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5))\s+\S+))$/g
+                  .test(str)
+              )
+            if (!ifValid) {
+              return showErrors(new TypeError(
+                'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
+              ))
+            }
+            configs[customProxyStringKey] = taVal;
+          } else {
+            localStorage.setItem(uiRaw, taVal);
           }
           conduct(
             'Применяем настройки...',
-            (cb) => pacKitchen.keepCookedNow(configs, cb),
+            (cb) => pacKitchen.keepCookedNowAsync(configs, cb),
             'Настройки применены.',
             () => { document.getElementById('apply-mods').disabled = true; }
           );
@@ -284,7 +327,12 @@ HTTPS 11.22.33.44:8080;">${conf.value || ''}</textarea>`;
 
         document.getElementById('reset-mods').onclick = () => {
 
+          const ifSure = backgroundPage.confirm('Сбросить все модификации PAC-скрипта?');
+          if (!ifSure) {
+            return;
+          }
           pacKitchen.resetToDefaultsVoid();
+          backgroundPage.apis.ipToHost.resetToDefaultsVoid();
           window.close();
 
         };

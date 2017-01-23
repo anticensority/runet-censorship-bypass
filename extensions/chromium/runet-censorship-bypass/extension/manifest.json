@@ -25,9 +25,12 @@
   "background": {
     "scripts": [
       "00-init-apis.js",
-      "11-api-error-handlers.js",
-      "13-pac-kitchen.js",
-      "15-api-sync-pac-script-with-pac-provider.js",
+      "11-error-handlers-api.js",
+      "12-errors-lib.js",
+      "13-http-lib.js",
+      "14-ip-to-host-api.js",
+      "15-pac-kitchen-api.js",
+      "17-sync-pac-script-with-pac-provider-api.js",
       "20-api-fixes.js",
       "30-block-informer.js",
       "40-context-menus.js"
