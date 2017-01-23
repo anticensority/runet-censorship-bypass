@@ -43,17 +43,13 @@
 
   chrome.tabs.onUpdated.addListener( onTabUpdate );
 
-  const antiCensorRu = window.apis.antiCensorRu;
-
-  const updateTitle = function updateTitle(requestDetails, cb) {
+  const updateTitle = function updateTitle(requestDetails, proxyHost, cb) {
 
     chrome.browserAction.getTitle(
       {tabId: requestDetails.tabId},
       (title) => {
 
         const ifTitleSetAlready = /\n/.test(title);
-        const proxyHost = antiCensorRu.getPacProvider()
-          .proxyIps[requestDetails.ip];
 
         const hostname = new URL( requestDetails.url ).hostname;
 
@@ -131,8 +127,8 @@
 
   const isProxiedAndInformed = function isProxiedAndInformed(requestDetails) {
 
-    if ( !(requestDetails.ip
-             && antiCensorRu.isProxied( requestDetails.ip )) ) {
+    const host = window.apis.ipToHost.get( requestDetails.ip );
+    if (!host) {
       return false;
     }
 
@@ -141,7 +137,7 @@
     previousUpdateTitleFinished = previousUpdateTitleFinished.then(
       () => new Promise(
         (resolve) => {
-          const cb = () => updateTitle( requestDetails, resolve );
+          const cb = () => updateTitle( requestDetails, host, resolve );
           return ifMainFrame
             ? afterTabUpdated(requestDetails.tabId, cb) : cb();
         }

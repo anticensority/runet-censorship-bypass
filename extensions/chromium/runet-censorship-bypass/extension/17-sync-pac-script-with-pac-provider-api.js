@@ -26,6 +26,12 @@
   const chromified = window.utils.chromified;
   const checkChromeError = window.utils.checkChromeError;
 
+  const clarify = window.apis.errorsLib.clarify;
+  const clarifyThen = window.apis.errorsLib.clarifyThen;
+  const Warning = window.apis.errorsLib.Warning;
+
+  const httpLib = window.apis.httpLib;
+
   const asyncLogGroup = function asyncLogGroup(...args) {
 
     const cb = args.pop();
@@ -42,43 +48,6 @@
     };
 
   };
-
-  class Clarification {
-
-    constructor(message = mandatory(), prevClarification) {
-
-      this.message = message;
-      if (prevClarification) {
-        this.prev = prevClarification;
-      }
-
-    }
-
-  };
-
-  const clarify = function clarify(
-    err = mandatory(),
-    message = mandatory(),
-    {data} = {}) {
-
-    err.clarification = new Clarification(message, err.clarification);
-    if (data) {
-      err.clarification.data = data;
-    }
-    return err;
-
-  };
-
-  class Warning {
-
-    constructor(message) {
-
-      clarify(this, message);
-
-    }
-
-  };
-
 
   const setPacAsync = function setPacAsync(
     pacData = mandatory(), cb = throwIfError
@@ -104,7 +73,7 @@
 
           console.warn('Failed, other extension is in control.');
           return cb(
-            new Warning( window.utils.messages.whichExtensionHtml() )
+            new Error( window.utils.messages.whichExtensionHtml() )
           );
 
         }
@@ -116,181 +85,20 @@
 
   };
 
-  const clarifyErrorThen = function clarifyFetchErrorThen(message, cb) {
-
-    return (err, ...args) => cb( clarify(err || {}, message), ...args );
-
-  };
-
-  const clarifyFetchErrorThen = (cb) =>
-    clarifyErrorThen('Что-то не так с сетью, проверьте соединение.', cb);
-
-  const ifModifiedSince = function ifModifiedSince(
-    url = mandatory(),
-    lastModified = mandatory(),
-    cb = mandatory()
-  ) {
-
-    const wasModified = new Date(0).toUTCString();
-    const notModifiedCode = 304;
-    fetch(url, {
-      method: 'HEAD',
-      headers: new Headers({
-        'If-Modified-Since': lastModified,
-      }),
-    }).then(
-      (res) => {
-        cb(
-          null,
-          res.status === notModifiedCode ?
-            false :
-            (res.headers.get('Last-Modified') || wasModified)
-        );
-      },
-      clarifyFetchErrorThen((err) => cb(err, wasModified))
-    );
-
-  };
-
-  const httpGet = function httpGet(url, cb = mandatory()) {
-
-    const start = Date.now();
-    fetch(url, {cache: 'no-store'}).then(
-      (res) => {
-
-        const textCb =
-          (err) => res.text().then( (text) => cb(err, text), cb );
-
-        const status = res.status;
-        if ( !( status >= 200 && status < 300 || status === 304 ) ) {
-          return textCb(
-            clarify(
-              res,
-              'Получен ответ с неудачным HTTP-кодом ' + status + '.'
-            )
-          );
-        }
-
-        console.log('GETed with success:', url, Date.now() - start);
-        textCb();
-
-      },
-      clarifyFetchErrorThen(cb)
-    );
-
-  };
-
-  const getIpsFor = function getIpsFor(host = mandatory(), cb = mandatory()) {
-
-    const types = [1, 28];
-    const promises = types.map(
-      (type) => new Promise((resolve) =>
-        httpGet(
-          'https://dns.google.com/resolve?type=' + type + '&name=' + host,
-          (err, res) => {
-
-            if (res) {
-              try {
-                res = JSON.parse(res);
-                console.log('Json parsed.');
-                if (err || res.Status) {
-                  const msg = ['Answer', 'Comment', 'Status']
-                    .filter( (prop) => res[prop] )
-                    .map( (prop) => prop + ': ' + JSON.stringify( res[prop] ) )
-                    .join(', \n');
-                  clarify(err, 'Сервер (json): ' + msg, {data: res});
-                } else {
-                  res = res.Answer || [];
-                  res = res.filter(
-                    (record) => types.includes(record.type)
-                  );
-                }
-              } catch(e) {
-                err = clarify(
-                  e,
-                  'Сервер (текст): ' + res, err ? {data: err} : null
-                );
-              }
-            }
-            resolve([err, res]);
-
-          }
-        )
-      )
-    );
-    Promise.all(promises).then(
-      ([[v4err, v4res], [v6err, v6res]]) => {
-
-        if(v4err) {
-          return cb(v4err, v4res);
-        }
-        const ips = v4res;
-        let warns = [];
-        if (!v6err) {
-          ips.push(...v6res);
-        } else {
-          warns = [v6err];
-        }
-        cb(null, ips, ...warns);
-
-      }
-    );
-
-  };
-
   const updatePacProxyIps = function updatePacProxyIps(
-    provider,
     cb = throwIfError
   ) {
 
     cb = asyncLogGroup(
-      'Getting IP for '+ provider.proxyHosts.join(', ') + '...',
+      'Getting IPs for PAC hosts...',
       cb
     );
-    let failure = {
-      errors: {},
-    };
-    let hostsProcessed = 0;
-    provider.proxyHosts.forEach(
-      (proxyHost) => getIpsFor(
-        proxyHost,
-        (err, ips, ...warns) => {
-
-          if (!err) {
-            provider.proxyIps = provider.proxyIps || {};
-            ips.forEach(
-              (ip) => provider.proxyIps[ip] = proxyHost
-            );
-          }
-          if (err || warns.length) {
-            failure.errors[proxyHost] = err || warns;
-          }
-
-          if ( ++hostsProcessed < provider.proxyHosts.length ) {
-            return;
-          }
-          // All hosts were processed.
-          const errorsCount = Object.keys(failure.errors).length;
-          if (!errorsCount) {
-            return cb();
-          }
-          clarify(
-            failure,
-            'Не удалось получить один или несколько IP адресов для' +
-            ' прокси-серверов. Иконка для уведомления об обходе' +
-            ' блокировок может не отображаться.'
-          );
-          errorsCount === hostsProcessed
-            ? cb(failure)
-            : cb(null, null, failure);
-        }
-      )
-    );
+    window.apis.ipToHost.updateAllAsync(cb);
 
   };
 
   const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
-    provider = mandatory(), lastModified = mandatory(), cb = throwIfError
+    provider, lastModified = mandatory(), cb = throwIfError
   ) {
 
     const pacUrl = provider.pacUrls[0];
@@ -299,7 +107,7 @@
       cb
     );
 
-    ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
+    httpLib.ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
 
       if (!newLastModified) {
         return cb(
@@ -318,7 +126,7 @@
 
         pacDataPromise = pacDataPromise.catch(
           (err) => new Promise(
-            (resolve, reject) => httpGet(
+            (resolve, reject) => httpLib.get(
               url,
               (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
             )
@@ -339,7 +147,7 @@
           );
 
         },
-        clarifyErrorThen(
+        clarifyThen(
           'Не удалось скачать PAC-скрипт с адресов: [ '
           + provider.pacUrls.join(' , ') + ' ].',
           cb
@@ -363,14 +171,6 @@
           ' <br/> <a href="https://antizapret.prostovpn.org">Страница проекта</a>.',
 
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
-        proxyHosts: ['proxy.antizapret.prostovpn.org'],
-        proxyIps: {
-          '195.123.209.38': 'proxy.antizapret.prostovpn.org',
-          '137.74.171.91': 'proxy.antizapret.prostovpn.org',
-          '51.15.39.201': 'proxy.antizapret.prostovpn.org',
-          '2001:bc8:4700:2300::1:d07': 'proxy.antizapret.prostovpn.org',
-          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
-        },
       },
       Антицензорити: {
         label: 'Антицензорити',
@@ -393,14 +193,6 @@
           '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63', // eslint-disable-line max-len
           // Google Drive (0.17):
           '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'], // eslint-disable-line max-len
-        proxyHosts: ['proxy.antizapret.prostovpn.org'],
-        proxyIps: {
-          '195.123.209.38': 'proxy.antizapret.prostovpn.org',
-          '137.74.171.91': 'proxy.antizapret.prostovpn.org',
-          '51.15.39.201': 'proxy.antizapret.prostovpn.org',
-          '2001:bc8:4700:2300::1:d07': 'proxy.antizapret.prostovpn.org',
-          '2a02:27ac::10': 'proxy.antizapret.prostovpn.org',
-        },
       },
     },
 
@@ -422,19 +214,10 @@
       return new Date(0).toUTCString();
 
     },
+
     setLastModified(newValue = mandatory()) {
 
       this._currentPacProviderLastModified = newValue;
-
-    },
-
-    isProxied(ip) {
-
-      // Executed on each request with ip. Make it as fast as possible.
-      // Property lookups are cheap (I tested).
-      return this._currentPacProviderKey
-        && this.pacProviders[this._currentPacProviderKey]
-          .proxyIps.hasOwnProperty(ip);
 
     },
 
@@ -451,6 +234,7 @@
       return this._currentPacProviderKey;
 
     },
+
     setCurrentPacProviderKey(
       newKey = mandatory(),
       lastModified = new Date().toUTCString()
@@ -510,7 +294,7 @@
 
       if (key === null) {
         // No pac provider set.
-        return clarifyErrorThen('Сперва выберите PAC-провайдера.', cb);
+        return clarifyThen('Сперва выберите PAC-провайдера.', cb);
       }
 
       const pacProvider = this.getPacProvider(key);
@@ -536,7 +320,6 @@
 
       const ipsErrorPromise = new Promise(
         (resolve, reject) => updatePacProxyIps(
-          pacProvider,
           resolve
         )
       );

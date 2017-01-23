@@ -6,14 +6,29 @@
       :root {
         --ribbon-color: #4169e1; /* #1a6cc8 */
       }
-      div {
+      div, section {
         margin: 0;
         padding: 0;
       }
+      header {
+        margin: 0 0 0.4em;
+      }
+
+      section header {
+        display: block;
+        border-bottom: 1px solid #558abb;
+        border-left: 5px solid #1048ac;
+        margin: 0;
+        position: relative;
+        height: 2em;
+        background-color: DodgerBlue;
+        color: white;
+      }
+
       label {
         user-select: none;
       }
-      ul {
+      ul, ol {
         list-style-type: none;
         padding: 0;
         margin: 0;
@@ -52,9 +67,6 @@
       }
       #none:checked + label {
         color: red;
-      }
-      #configs-panel > header {
-        margin: 0 0 0.4em;
       }
       .if-not-controlled {
         display: none;
@@ -147,6 +159,39 @@
         margin-left: 1em;
         text-align: right;
       }
+
+      select#exceptions-select {
+        color: black;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        text-shadow: none;
+        padding: 0;
+      }
+      #flex-right {
+        flex-grow: 99;
+      }
+      #flex-right > * {
+        width: 100%;
+      }
+      #except-editor {
+        border-radius: 0 !important;
+        border-bottom: 0;
+        height: 1.6em !important;
+        min-height: 1.6em !important;
+      }
+
+      #flex-container {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        display: flex;
+      }
+      #flex-container > * {
+        flex-grow: 1;
+        padding: 0;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -154,27 +199,61 @@
       <span id="which-extension"></span>
       <hr style="border-color: red; border-style: solid;"/>
     </span>
-    <ul id="list-of-providers">
-      <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
-    </ul>
-    <div style="white-space: nowrap">
-      Обновлялись: <span class="update-date">...</span>
-    </div>
-    <span id="status" style="will-change: contents">Загрузка...</span>
-    <hr/>
-    <div>
-      <ul id="pac-mods">
-        <li class="control-row">
-          <input type="button" value="Применить" id="apply-mods" disabled/>
-          <a href id="reset-mods" class="link-button">К изначальным!</a>
-        </li>
+    <section>
+      <header>PAC-скрипт</header>
+      <ul id="list-of-providers">
+        <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
       </ul>
+      <div style="white-space: nowrap">
+        Обновлялись: <span class="update-date">...</span>
+      </div>
+    </section>
+    <section id="status" style="will-change: contents">Загрузка...</section>
+    <hr/>
+    <div id="exceptions">
+      <header>Проксировать этот сайт?</header>
+      <div id="flex-container">
+        <ul style="padding-right: 1em">
+          <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
+          <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
+          <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
+          <li><a href>Весь список</a></li>
+        </ul>
+        <div id="flex-right">
+          <input type="text" value="google.com" id="except-editor"/>
+          <select multiple id="exceptions-select">
+            <option class="sel">google.com</option>
+            <option class="sel">yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+            <option>yandex.ru</option>
+         </select>
+       </div>
+      </div>
     </div>
+    <hr/>
+    <ul id="pac-mods">
+      <li class="control-row">
+        <input type="button" value="Применить" id="apply-mods" disabled/>
+        <a href id="reset-mods" class="link-button">К изначальным!</a>
+      </li>
+    </ul>
     <hr/>
     <div id="configs-panel">
       <header>Я ❤️ уведомления:</header>
-      <ul id="list-of-handlers">
-      </ul>
+      <ul id="list-of-handlers"></ul>
     </div>
     <footer class="control-row">
       <input type="button" value="Готово" class="close-button">
