@@ -125,11 +125,11 @@
 
   let previousUpdateTitleFinished = Promise.resolve();
 
-  const isProxiedAndInformed = function isProxiedAndInformed(requestDetails) {
+  const tryProxyAndInform = function tryProxyAndInform(requestDetails) {
 
     const host = window.apis.ipToHost.get( requestDetails.ip );
     if (!host) {
-      return false;
+      return;
     }
 
     const ifMainFrame = requestDetails.type === 'main_frame';
@@ -144,27 +144,27 @@
       )
     );
 
-    return true;
-
   };
 
   const isInsideTabWithIp = function isInsideTabWithIp(requestDetails) {
 
-    return requestDetails.tabId !== -1 && requestDetails.ip;
 
   };
 
-  chrome.webRequest.onResponseStarted.addListener(
-    (requestDetails) => isInsideTabWithIp(requestDetails)
-      && isProxiedAndInformed(requestDetails),
-      {urls: ['<all_urls>']}
-  );
+  const onRequest = function onRequest(requestDetails) {
 
-  chrome.webRequest.onErrorOccurred.addListener(
-    (requestDetails) =>
-      isInsideTabWithIp(requestDetails)
-        && isProxiedAndInformed(requestDetails),
-    {urls: ['<all_urls>']}
-  );
+    const ifInsideTabWithIp = requestDetails.tabId !== -1 && requestDetails.ip;
+    if (ifInsideTabWithIp) {
+      tryProxyAndInform(requestDetails);
+    }
+
+  };
+
+  for(const eventName of ['onResponseStarted', 'onErrorOccurred']) {
+    chrome.webRequest[eventName].addListener(
+      onRequest,
+      {urls: ['<all_urls>']}
+    );
+  }
 
 }

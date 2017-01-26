@@ -10,6 +10,7 @@
   const kitchenState = window.utils.createStorage('pac-kitchen-');
   const ifIncontinence = 'if-incontinence';
 
+  // Don't keep objects in defaults or at least freeze them!
   const configs = {
 
     ifProxyHttpsUrlsOnly: {
@@ -24,23 +25,35 @@
       desc: 'Шифровать соединение до прокси от провайдера. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS.',
       index: 1,
     },
+    ifProhibitDns: {
+      dflt: false,
+      label: 'запретить опредление по IP/DNS',
+      desc: 'Пытается запретить скрипту использовать DNS, без которого определение блокировки по IP работать не будет. Используйте, если вам кажется, что мы проксируем слишком много сайтов.',
+      index: 2,
+    },
     ifUsePacScriptProxies: {
       dflt: true,
       label: 'использовать прокси PAC-скрипта',
       desc: 'Использовать прокси от авторов PAC-скрипта.',
-      index: 2,
+      index: 3,
     },
     ifUseLocalTor: {
       dflt: false,
-      label: 'использовать свой локальный TOR',
-      desc: 'Установите TOR на свой компьютер и используйте его как прокси. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
-      index: 3,
+      label: 'использовать СВОЙ локальный TOR',
+      desc: 'Установите <a href="https://ru.wikipedia.org/wiki/Tor">TOR</a> на свой компьютер и используйте его как прокси. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
+      index: 4,
+    },
+    exceptions: {
+      dflt: null,
+      label: 'учитывать исключения',
+      desc: 'Учитывать сайты, добавленные вручную. Только для своих прокси! Без своих прокси работать не будет.',
+      index: 5,
     },
     customProxyStringRaw: {
       dflt: '',
-      label: 'использовать свои прокси',
+      label: 'использовать СВОИ прокси',
       url: 'https://rebrand.ly/ac-own-proxy',
-      index: 4,
+      index: 6,
     },
 
   };
@@ -59,21 +72,18 @@
   const getCurrentConfigs = function getCurrentConfigs() {
 
     const mods = kitchenState('mods');
-    if (!mods) {
-      return null;
-    }
-    return new PacModifiers(mods);
+    return new PacModifiers(mods || {});
 
   };
 
   const getOrderedConfigsForUser = function getOrderedConfigs() {
 
-    const pacMods = getCurrentConfigs() || {};
+    const pacMods = getCurrentConfigs();
     return Object.keys(configs).reduce((arr, key) => {
 
       const conf = configs[key]
       arr[conf.index] = conf;
-      conf.value = (key in pacMods) ? pacMods[key] : conf.dflt;
+      conf.value = pacMods[key];
       conf.key = key;
       return arr;
 
@@ -89,7 +99,8 @@
       const ifAllDefaults =
         Object.keys(defaults)
         .every(
-          (prop) => !(prop in mods) || Boolean(defaults[prop]) === Boolean(mods[prop])
+          (prop) => !(prop in mods)
+            || Boolean(defaults[prop]) === Boolean(mods[prop])
         );
 
       Object.assign(this, defaults, mods);
@@ -121,13 +132,31 @@
         this.filteredCustomsString = '';
       }
 
+      if (this.exceptions) {
+        this.included = [];
+        this.excluded = [];
+        for(const host of Object.keys(this.exceptions)) {
+          if (this.exceptions[host]) {
+            this.included.push(host)
+          } else {
+            this.excluded.push(host);
+          }
+        }
+        if (this.included && !this.filteredCustomsString) {
+          throw new TypeError(
+            'Проксировать свои сайты можно только через свои прокси. Нет ни одного своего прокси, удовлетворяющего вашим требованиям!'
+          );
+        }
+      }
+
     }
 
   };
 
   window.apis.pacKitchen = {
 
-    getConfigs: getOrderedConfigsForUser,
+    getPacMods: getCurrentConfigs,
+    getOrderedConfigs: getOrderedConfigsForUser,
 
     cook(pacData, pacMods = mandatory()) {
 
@@ -139,22 +168,42 @@
   global.FindProxyForURL = function(url, host) {
     ${function() {
 
-      let res = '';
+      let res = pacMods.ifProhibitDns ? `
+    global.dnsResolve = function(host) { return null; };
+` : '';
       if (pacMods.ifProxyHttpsUrlsOnly) {
 
-        res = `
+        res += `
     if (!url.startsWith("https")) {
       return "DIRECT";
     }
 `;
-        if(
-          !pacMods.ifUseSecureProxiesOnly &&
-          !pacMods.filteredCustomsString &&
-           pacMods.ifUsePacScriptProxies
-        ) {
-          return res + `
-    return originalFindProxyForURL(url, host);`;
-        }
+      }
+
+      if (pacMods.included && pacMods.included.length) {
+        res += `
+    if ( ${JSON.stringify(pacMods.included)}.some( (included) => host.endsWith(included) ) ) {
+      return "${pacMods.filteredCustomsString}; DIRECT";
+    }
+`;
+      }
+
+      if (pacMods.excluded && pacMods.excluded.length) {
+        res += `
+    if ( ${JSON.stringify(pacMods.excluded)}.some( (excluded) => host.endsWith(excluded) ) ) {
+      return "DIRECT";
+    }
+`;
+      }
+
+      if(
+        !pacMods.ifUseSecureProxiesOnly &&
+        !pacMods.filteredCustomsString &&
+         pacMods.ifUsePacScriptProxies
+      ) {
+        return res + `
+    return originalFindProxyForURL(url, host);
+`;
       }
 
       return res + `
@@ -296,9 +345,7 @@
       return originalSet(details, cb);
     }
     const pacMods = getCurrentConfigs();
-    if (pacMods) {
-      pac.data = pacKitchen.cook( pac.data, pacMods );
-    }
+    pac.data = pacKitchen.cook( pac.data, pacMods );
     originalSet({ value: details.value }, (/* No args. */) => {
 
       kitchenState(ifIncontinence, null);
