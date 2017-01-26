@@ -4,37 +4,19 @@
     <title>Выбор провайдера PAC</title>
     <style>
       :root {
-        --ribbon-color: #4169e1; /* #1a6cc8 */
+        --ribbon-color: #4169e1;
+        --default-grey: #bfbfbf;
       }
       body {
-        margin-left: 0;
-        margin-right: 0;
-      }
-      .main-padded {
-        margin: 0 17px;
-      }
-      div, section, header {
         margin: 0;
-        padding: 0;
       }
-
-      .valign-parent {
-        display: flex;
-        align-items: center;
-      }
-
-      section header h4 {
-        margin: 0 0 0 0.7em;
-      }
-
       label {
         user-select: none;
       }
-      ul, ol {
-        list-style-type: none;
-        padding: 0;
+      div, section, header, ul, ol {
         margin: 0;
-        margin-bottom: 1em;
+        padding: 0;
+        list-style-type: none;
       }
       li, footer {
         display: block;
@@ -47,39 +29,131 @@
       input[type="radio"], label {
         cursor: pointer;
       }
-
       hr {
         border-width: 1px 0 0 0;
         margin: 0 0 0.6em 0;
         padding: 0;
       }
 
-      /* COMMON */
-      
+      /* COMMON 1 */
+
+      .hor-padded {
+        padding-left: 1.4em;
+        padding-right: 1.4em;
+      }
+
+      /* NOT CONTROLLED */
+
+      .if-not-controlled {
+        display: none;
+        background-color: red;
+
+        color: white;
+        font-weight: bold;
+        text-align: center;
+
+        padding-top: 1em;
+        padding-bottom: 1em;
+
+        border-bottom: 1px solid var(--default-grey);
+      }
+      .if-not-controlled a {
+        color: white;
+      }
+
+      /* ACCORDION (OR TABBED STATEFUL UI) */
+
+      .off {
+        display: none;
+      }
+      .acc-padded {
+        padding: 0.6em 0 1em 0.5em;
+      }
+
+      /* HIDE */
+
+      #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"].hideable,
+      #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"].hideable,
+      #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"].hideable,
+      #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"].hideable
+      {
+        /* Hide, but preclude width resizes. */
+        height: 0px !important;
+        line-height: 0px !important;
+        padding: 0;
+        margin: 0;
+        display: block;
+        visibility: hidden;
+        transform: scaleY(0);
+      }
+      #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"].hideable *,
+      #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"].hideable *,
+      #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"].hideable *,
+      #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"].hideable *
+      {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+      }
+      .nav-labels {
+        text-align: center;
+        --blue-bg: DodgerBlue;
+      }
+      .nav-labels li {
+        display: inline-block;
+      }
+      .nav-labels li label {
+        display: inline-block;
+
+        border: 2px solid var(--blue-bg);
+        border-radius: 0.7em;
+
+        background-color: white;
+        color: var(--ribbon-color);
+
+        padding: 0.2em 0.65em 0.3em 0.4em;
+        line-height: 0.9em;
+        margin: 0.1em 0;
+      }
+      .nav-labels li label:hover {
+        background-color: var(--blue-bg);
+        color: white;
+
+        border-color: white;
+        border-style: dotted;
+      }
+      /* CHECKED LABELS */
+      #acc-pac:checked ~ .nav-labels label[for="acc-pac"]:not(:hover),
+      #acc-exc:checked ~ .nav-labels label[for="acc-exc"]:not(:hover),
+      #acc-mods:checked ~ .nav-labels label[for="acc-mods"]:not(:hover),
+      #acc-ntf:checked ~ .nav-labels label[for="acc-ntf"]:not(:hover)
+      {
+        background-color: var(--blue-bg);
+        color: white;
+
+        line-height: 0.8em;
+      }
+      /* ★★★★★ */
+      .nav-labels label:before {
+        content: '★ ';
+        visibility: hidden;
+      }
+      .nav-labels li label:hover:before,
+      #acc-pac:checked ~ .nav-labels label[for="acc-pac"]:before,
+      #acc-exc:checked ~ .nav-labels label[for="acc-exc"]:before,
+      #acc-mods:checked ~ .nav-labels label[for="acc-mods"]:before,
+      #acc-ntf:checked ~ .nav-labels label[for="acc-ntf"]:before
+      {
+        visibility: initial;
+      }
+
+      /* COMMON 2 */
+
       .link-button, .link-button:visited {
         color: #0000EE;
         text-decoration: none;
       }
       .link-button:hover {
         text-decoration: underline;
-      }
-
-      .if-not-controlled {
-        display: none;
-        color: red;
-      }
-      
-      /* PAC PROVIDER */
-
-      .update-button {
-        visibility: hidden;
-      }
-      input:checked ~ .update-button {
-        visibility: inherit;
-      }
-      
-      #none:checked + label {
-        color: red;
       }
 
       /* INFO SIGNS */
@@ -155,7 +229,23 @@
         width: calc(25% + 0.6em);
       }
 
-      /* PAC MODS & EXCEPTIONS */
+      /* TAB_1 PAC PROVIDER */
+
+      .update-button {
+        visibility: hidden;
+      }
+      input:checked ~ .update-button {
+        visibility: inherit;
+      }
+      #none:checked + label {
+        color: red;
+      }
+      #update-message {
+        white-space: nowrap;
+        margin-top: 0.5em;
+      }
+
+      /* TAB_2 PAC MODS */
 
       #mods-custom-proxy-string-raw ~ textarea {
         width: 100%;
@@ -167,17 +257,15 @@
         display: none;
       }
 
-      #this-yes:disabled + label {
-        color: grey;
-        text-decoration: line-through;
-      }
-      
-      /* EXCEPTIONS */
+      /* TAB_3 EXCEPTIONS */
 
       #right-flexed-editor {
         flex-grow: 99;
-
         max-height: 100%;
+
+        border: 1px solid var(--border-color);
+
+        width: 100%;
         display: flex;
         flex-direction: column;
       }
@@ -186,11 +274,13 @@
       }
       #except-editor {
         border-radius: 0 !important;
-        border-bottom: 0;
+        border: none;
+        border-bottom: 1px solid var(--border-color);
         max-height: 1.6em !important;
         min-height: 1.6em !important;
 
         flex-grow: 99;
+        width: 100% !important;
       }
       #bottom-flexed-editor {
         flex-grow: 99;
@@ -210,17 +300,24 @@
         bottom: 0;
         left: 0;
         width: 100%;
+
+        border: none !important;
       }
 
       #exc-flex-container {
         position: relative;
         display: flex;
+
+        /* Fixes multi-select bug
+           when its border is rendered below
+           its scrollbar. */
+        --border-color: var(--default-grey);
       }
       #exc-flex-container > * {
         flex-grow: 1;
         padding: 0;
         margin: 0;
-      }      
+      }
 
       /* CONTROL RAW = BUTTON + LINK */
 
@@ -237,174 +334,84 @@
         text-align: right;
       }
 
-      .main-nav {
-        display: flex;
-        flex-direction: column;
-        counter-reset: line;
-      }
-
-      /* ACCORDION */
-
-      .accordion-radio {
-        display: none;
-      }
-      .accordion-title {
-        position: relative;
-        height: 1.8em;
-        border-bottom: 1px solid #558abb;
-      }
-      .accordion-title label:before {
-        content: counter(line) '.';
-        counter-increment: line;
-        padding-left: 0.2em;
-      }
-      .accordion-title label {
-        background-color: transparent;
-        color: black;
-        padding-left: 5px;
-      }
-      .accordion-radio:checked + section {
-        order: 0;
-      }
+      /* STATUS */
 
       #status {
         padding: 0 0.3em 1em;
-      }
-      .status {
-        order: 2;
-        /*border-left: 5px solid DodgerBlue;*/
-        margin-bottom: 0.5em;
-      }
-
-      .accordion-radio:checked + section .accordion-title {
-        margin-top: 0.3em; /* Short gap. */
-      }
-      .accordion-radio:checked + section .accordion-title label,
-      .accordion-title:hover label
-      {
-        background-color: DodgerBlue;
-        color: white;
-        padding-left: 0;
-        border-left: 5px solid #1048ac;
-      }
-      .accordion-title label {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-      }
-      .accordion-radio:not(:checked) + section .accordion-content {
-        /* Hide, but preclude width resizes. */
-        height: 0px !important;
-        line-height: 0px !important;
-        padding: 0;
-        margin: 0;
-        display: block;
-        visibility: hidden;
-        transform:scaleY(0.5);
-      }
-
-      .accordion-radio:not(:checked) + section .accordion-content * {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-      }
-
-      .accordion-radio + section .accordion-content .acc-padded {
-        margin: 0.6em 0 1em 0.5em;
       }
     </style>
   </head>
   <body>
 
-    <section class="if-not-controlled">
-      <div id="which-extension" class="main-padded" style="margin-bottom: 1em"></div>
-      <hr style="border-color: red; border-style: solid;"/>
+    <section class="if-not-controlled hor-padded" id="which-extension"></section>
+
+    <input type="radio" name="accordion" class="off" id="acc-pac" checked/>
+    <input type="radio" name="accordion" class="off" id="acc-exc"/>
+    <input type="radio" name="accordion" class="off" id="acc-mods"/>
+    <input type="radio" name="accordion" class="off" id="acc-ntf"/>
+
+    <section class="nav-labels hidden-for-options-page">
+      <ul>
+        <li><label for="acc-pac" class="nav-label">PAC-скрипт</label></li>
+        <li><label for="acc-mods" class="nav-label">Модификаторы</label></li>
+        <li><label for="acc-exc" class="nav-label">Исключения</label></li>
+        <li><label for="acc-ntf" class="nav-label">Уведомления</label></li>
+      </ul>
+      <hr/>
     </section>
 
-    <nav class="main-padded main-nav">
+    <nav class="hor-padded main-nav">
 
-      <input type="radio" name="accordion" id="acc-pac-provider" class="accordion-radio" checked/>
+      <section data-for="acc-pac" class="hideable">
 
-      <section>
+        <div class="acc-padded">
+          <ul id="list-of-providers">
+            <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
+          </ul>
+          <div id="update-message">
+            Обновлялись: <span class="update-date">...</span>
+          </div>
+        </div>
 
-        <header class='accordion-title'>
-          <label for="acc-pac-provider" class="valign-parent"><h4>PAC-скрипт</h4></label>
-        </header>
+      </section>
 
-        <div class="accordion-content">
-          <div class="acc-padded">
-            <ul id="list-of-providers">
-              <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
-            </ul>
-            <div style="white-space: nowrap">
-              Обновлялись: <span class="update-date">...</span>
+      <section data-for="acc-exc" class="hideable">
+
+        <header>Проксировать этот сайт?</header>
+        <div class="acc-padded" id="exc-flex-container">
+          <ul style="padding-right: 1em">
+            <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
+            <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
+            <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
+            <li><a href>Весь список</a></li>
+          </ul>
+          <div id="right-flexed-editor">
+            <input type="text" placeholder="example.com" id="except-editor"/>
+            <div id="bottom-flexed-editor">
+              <select multiple id="exceptions-select"></select>
             </div>
           </div>
         </div>
 
       </section>
 
-      <input type="radio" name="accordion" id="acc-exceptions" class="accordion-radio"/>
+      <section data-for="acc-mods" class="hideable">
 
-      <section id="exceptions">
-
-        <header class='accordion-title'>
-          <label for="acc-exceptions" class="valign-parent"><h4>Проксировать этот сайт?</h4></label>
-        </header>
-
-        <div class="accordion-content">
-          <div class="acc-padded" id="exc-flex-container">
-            <ul style="padding-right: 1em">
-              <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
-              <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
-              <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
-              <li><a href>Весь список</a></li>
-            </ul>
-            <div id="right-flexed-editor">
-              <input type="text" value="google.com" id="except-editor"/>
-              <div id="bottom-flexed-editor">
-                &nbsp;
-                <select multiple id="exceptions-select"></select>
-             </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <input type="radio" name="accordion" id="acc-pac-mods" class="accordion-radio"/>
-
-      <section>
-
-        <header class='accordion-title'>
-          <label for="acc-pac-mods" class="valign-parent"><h4>Модификаторы PAC-скрипта</h4></label>
-        </header>
-
-        <div class="accordion-content">
-          <div class="acc-padded">
-            <ul id="pac-mods">
-              <li class="control-row">
-                <input type="button" value="Применить" id="apply-mods" disabled/>
-                <a href id="reset-mods" class="link-button">К изначальным!</a>
-              </li>
-            </ul>
-          </div>
+        <div class="acc-padded">
+          <ul id="pac-mods">
+            <li class="control-row">
+              <input type="button" value="Применить" id="apply-mods" disabled/>
+              <a href id="reset-mods" class="link-button">К изначальным!</a>
+            </li>
+          </ul>
         </div>
 
       </section>
 
-      <input type="radio" name="accordion" id="acc-notifications" class="accordion-radio"/>      
-
-      <section id="configs-panel">
-
-        <header class='accordion-title'>
-          <label for="acc-notifications" class="valign-parent"><h4>Уведомления</h4></label>
-        </header>
-
-        <div class="accordion-content">
-          <div class="acc-padded">
-            <ul id="list-of-handlers"></ul>
-          </div>
+      <section data-for="acc-ntf" class="hideable">
+        <header>Я ❤️ yведомления:</header>
+        <div class="acc-padded">
+          <ul id="list-of-handlers"></ul>
         </div>
 
       </section>
@@ -413,16 +420,15 @@
 
     <hr/>
 
-    <div class="main-padded">
+    <div class="hor-padded">
+      <div id="status" style="will-change: contents">Загрузка...</div>
 
-    <div id="status" style="will-change: contents">Загрузка...</div>
-
-    <footer class="control-row">
-      <input type="button" value="Готово" class="close-button">
-      <a href="../troubleshoot/index.html" class="link-button">
-        Проблемы?
-      </a>
-    </footer>
+      <footer class="control-row">
+        <input type="button" value="Готово" class="close-button">
+        <a href="../troubleshoot/index.html" class="link-button">
+          Проблемы?
+        </a>
+      </footer>
     </div>
 
     <script src="./index.js"></script>

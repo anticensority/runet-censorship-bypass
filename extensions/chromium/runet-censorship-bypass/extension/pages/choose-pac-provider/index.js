@@ -10,7 +10,24 @@ document.getElementById('pac-mods').onchange = function() {
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOnAsync(
-    window, 'PUP', () => {
+    window, 'PUP', async() => {
+
+      const currentTab = await new Promise(
+        (resolve) => chrome.tabs.query(
+          { active: true, currentWindow: true },
+          ([tab]) => resolve(tab)
+        )
+      );
+
+      if ( !currentTab || currentTab.url.startsWith('chrome://extensions/?options=') ) {
+        const hidClass = 'hideable';
+        for(const el of document.querySelectorAll('.' + hidClass)) {
+          el.classList.remove(hidClass);
+        }
+        for(const el of document.querySelectorAll('.hidden-for-options-page')) {
+          el.style.display = 'none';
+        }
+      }
 
       const getStatus = () => document.querySelector('#status');
 
@@ -226,13 +243,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       {
 
+        if (currentTab && !currentTab.url.startsWith('chrome')) {
+          document.getElementById('except-editor').value = new URL(currentTab.url).hostname;
+        }
+
         const pacKitchen = backgroundPage.apis.pacKitchen;
-
-        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-
-          document.getElementById('except-editor').value = new URL(tab.url).hostname;
-
-        });
 
         {
 
