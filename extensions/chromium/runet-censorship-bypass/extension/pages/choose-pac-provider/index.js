@@ -173,7 +173,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           li.innerHTML = `
             <input type="radio" name="pacProvider" id="${providerKey}">
             <label for="${providerKey}"> ${provider.label}</label>
-            &nbsp;<a href class="link-button checked-radio-panel"
+            &nbsp;<a href class="link-button update-button"
               id="update-${providerKey}">[обновить]</a> ` +
             infoSign(provider.desc);
           li.querySelector('.link-button').onclick =
@@ -224,39 +224,74 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       // EXCEPTIONS PANEL
 
-      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-
-        /*
-        console.log(tab);
-        const opt = document.createElement('option');
-        opt.text = 
-        opt.selected = true;
-        opt.style.backgroundColor = 'green !important';
-        opt.style.background = 'green !important';
-
-        const sl = document.getElementById('exceptions-select');
-        sl.insertBefore( opt, sl.firstChild );
-        */
-
-        document.getElementById('except-editor').value = new URL(tab.url).hostname;
-
-      });
-
-      // PAC MODS PANEL
-
       {
 
         const pacKitchen = backgroundPage.apis.pacKitchen;
+
+        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+
+          document.getElementById('except-editor').value = new URL(tab.url).hostname;
+
+        });
+
+        {
+
+          const pacMods = pacKitchen.getPacMods();
+          const exc = pacMods.exceptions || {};
+
+          const addOption = function addOption(host) {
+
+            const opt = document.createElement('option');
+            opt.text = host;
+            document.getElementById('exceptions-select').add(opt);
+
+          }
+
+          for(const host of Object.keys(exc).sort()) {
+            addOption(host);
+          }
+
+          document.getElementById('this-yes').onclick = function() {
+
+            const pacMods = pacKitchen.getPacMods();
+            if (!pacMods.filteredCustomsString) {
+              showErrors( new TypeError(
+                'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см.«Модификаторы»).'
+              ));
+              return false;
+            }
+            const host = document.getElementById('except-editor').value;
+            const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+            if(!ValidHostnameRegex.test(host)) {
+              showErrors(new TypeError('Должно быть только доменное имя, без протокола и пути. Попробуйте ещё раз.'));
+              return false;
+            }
+
+            pacMods.exceptions = pacMods.exceptions || {};
+            pacMods.exceptions[host] = true;
+            pacKitchen.keepCookedNowAsync(
+              pacMods,
+              (err) => err
+                ? showErrors(err)
+                : addOption(host)
+            );
+
+          }
+
+        }
+
+        // PAC MODS PANEL
 
         const modPanel = document.getElementById('pac-mods');
         const _firstChild = modPanel.firstChild;
         const keyToLi = {};
         const customProxyStringKey = 'customProxyStringRaw';
         const uiRaw = 'ui-proxy-string-raw';
-        pacKitchen.getConfigs().forEach( (conf) => {
+
+        for(const conf of pacKitchen.getOrderedConfigs()) {
 
           const key = conf.key;
-          const iddy = conf.key.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
+          const iddy = 'mods-' + conf.key.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
           const li = document.createElement('li');
           li.className = 'info-row';
           keyToLi[key] = li;
@@ -283,7 +318,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
           modPanel.insertBefore( li, _firstChild );
 
-        });
+        };
         document.getElementById('apply-mods').onclick = () => {
 
           const configs = Object.keys(keyToLi).reduce( (configs, key) => {
@@ -298,7 +333,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
           }, {});
           const taVal = keyToLi[customProxyStringKey].querySelector('textarea').value;
-          if (configs[customProxyStringKey]) {
+          if (configs[customProxyStringKey] !== false) {
             const ifValid = taVal
               .replace(/#.*$/mg)
               .split(/\s*[;\n\r]+\s*/g)
@@ -329,7 +364,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
           const ifSure = backgroundPage.confirm('Сбросить все модификации PAC-скрипта?');
           if (!ifSure) {
-            return;
+            return false;
           }
           pacKitchen.resetToDefaultsVoid();
           backgroundPage.apis.ipToHost.resetToDefaultsVoid();

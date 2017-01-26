@@ -6,23 +6,25 @@
       :root {
         --ribbon-color: #4169e1; /* #1a6cc8 */
       }
-      div, section {
+      body {
+        margin-left: 0;
+        margin-right: 0;
+      }
+      .main-padded {
+        margin: 0 17px;
+      }
+      div, section, header {
         margin: 0;
         padding: 0;
       }
-      header {
-        margin: 0 0 0.4em;
+
+      .valign-parent {
+        display: flex;
+        align-items: center;
       }
 
-      section header {
-        display: block;
-        border-bottom: 1px solid #558abb;
-        border-left: 5px solid #1048ac;
-        margin: 0;
-        position: relative;
-        height: 2em;
-        background-color: DodgerBlue;
-        color: white;
+      section header h4 {
+        margin: 0 0 0 0.7em;
       }
 
       label {
@@ -46,6 +48,14 @@
         cursor: pointer;
       }
 
+      hr {
+        border-width: 1px 0 0 0;
+        margin: 0 0 0.6em 0;
+        padding: 0;
+      }
+
+      /* COMMON */
+      
       .link-button, .link-button:visited {
         color: #0000EE;
         text-decoration: none;
@@ -54,27 +64,30 @@
         text-decoration: underline;
       }
 
-      .checked-radio-panel {
-        visibility: hidden;
-      }
-      input:checked ~ .checked-radio-panel {
-        visibility: visible;
-      }
-      hr {
-        border-width: 1px 0 0 0;
-        margin: 0.6em 0;
-        padding: 0;
-      }
-      #none:checked + label {
-        color: red;
-      }
       .if-not-controlled {
         display: none;
         color: red;
       }
-      li.info-row {
+      
+      /* PAC PROVIDER */
+
+      .update-button {
+        visibility: hidden;
+      }
+      input:checked ~ .update-button {
+        visibility: inherit;
+      }
+      
+      #none:checked + label {
+        color: red;
+      }
+
+      /* INFO SIGNS */
+
+      .info-row {
         display: table;
         width: 100%;
+
         position: relative;
       }
       .info-sign {
@@ -84,11 +97,15 @@
         margin-left: 0.1em;
       }
       .info-url {
-        float: right;
         text-decoration: none;
-        line-height: initial;
-        vertical-align: bottom !important;
+
+        float: right;
+        text-align: right;
+
+        line-height: normal !important;
+        vertical-align: top !important;
       }
+
       /* Source: https://jsfiddle.net/greypants/zgCb7/ */
       .desc {
         display: table-cell;
@@ -137,15 +154,75 @@
         left: 75%;
         width: calc(25% + 0.6em);
       }
-      #custom-proxy-string-raw ~ textarea {
+
+      /* PAC MODS & EXCEPTIONS */
+
+      #mods-custom-proxy-string-raw ~ textarea {
         width: 100%;
         height: 7em;
         margin-top: 0.3em;
         font-size: 0.9em;
       }
-      #custom-proxy-string-raw:not(:checked) ~ textarea {
+      #mods-custom-proxy-string-raw:not(:checked) ~ textarea {
         display: none;
       }
+
+      #this-yes:disabled + label {
+        color: grey;
+        text-decoration: line-through;
+      }
+      
+      /* EXCEPTIONS */
+
+      #right-flexed-editor {
+        flex-grow: 99;
+
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      #right-flexed-editor > * {
+        width: 100%;
+      }
+      #except-editor {
+        border-radius: 0 !important;
+        border-bottom: 0;
+        max-height: 1.6em !important;
+        min-height: 1.6em !important;
+
+        flex-grow: 99;
+      }
+      #bottom-flexed-editor {
+        flex-grow: 99;
+        position: relative;
+      }
+
+      select#exceptions-select {
+        color: black;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        text-shadow: none;
+        padding: 0;
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+      }
+
+      #exc-flex-container {
+        position: relative;
+        display: flex;
+      }
+      #exc-flex-container > * {
+        flex-grow: 1;
+        padding: 0;
+        margin: 0;
+      }      
+
+      /* CONTROL RAW = BUTTON + LINK */
 
       .control-row {
         display: table;
@@ -160,107 +237,194 @@
         text-align: right;
       }
 
-      select#exceptions-select {
-        color: black;
-        background: transparent;
-        border-radius: 0;
-        box-shadow: none;
-        text-shadow: none;
-        padding: 0;
-      }
-      #flex-right {
-        flex-grow: 99;
-      }
-      #flex-right > * {
-        width: 100%;
-      }
-      #except-editor {
-        border-radius: 0 !important;
-        border-bottom: 0;
-        height: 1.6em !important;
-        min-height: 1.6em !important;
+      .main-nav {
+        display: flex;
+        flex-direction: column;
+        counter-reset: line;
       }
 
-      #flex-container {
-        position: relative;
-        padding: 0;
-        margin: 0;
-        display: flex;
+      /* ACCORDION */
+
+      .accordion-radio {
+        display: none;
       }
-      #flex-container > * {
-        flex-grow: 1;
+      .accordion-title {
+        position: relative;
+        height: 1.8em;
+        border-bottom: 1px solid #558abb;
+      }
+      .accordion-title label:before {
+        content: counter(line) '.';
+        counter-increment: line;
+        padding-left: 0.2em;
+      }
+      .accordion-title label {
+        background-color: transparent;
+        color: black;
+        padding-left: 5px;
+      }
+      .accordion-radio:checked + section {
+        order: 0;
+      }
+
+      #status {
+        padding: 0 0.3em 1em;
+      }
+      .status {
+        order: 2;
+        /*border-left: 5px solid DodgerBlue;*/
+        margin-bottom: 0.5em;
+      }
+
+      .accordion-radio:checked + section .accordion-title {
+        margin-top: 0.3em; /* Short gap. */
+      }
+      .accordion-radio:checked + section .accordion-title label,
+      .accordion-title:hover label
+      {
+        background-color: DodgerBlue;
+        color: white;
+        padding-left: 0;
+        border-left: 5px solid #1048ac;
+      }
+      .accordion-title label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .accordion-radio:not(:checked) + section .accordion-content {
+        /* Hide, but preclude width resizes. */
+        height: 0px !important;
+        line-height: 0px !important;
         padding: 0;
         margin: 0;
+        display: block;
+        visibility: hidden;
+        transform:scaleY(0.5);
+      }
+
+      .accordion-radio:not(:checked) + section .accordion-content * {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+      }
+
+      .accordion-radio + section .accordion-content .acc-padded {
+        margin: 0.6em 0 1em 0.5em;
       }
     </style>
   </head>
   <body>
-    <span class="if-not-controlled">
-      <span id="which-extension"></span>
+
+    <section class="if-not-controlled">
+      <div id="which-extension" class="main-padded" style="margin-bottom: 1em"></div>
       <hr style="border-color: red; border-style: solid;"/>
-    </span>
-    <section>
-      <header>PAC-скрипт</header>
-      <ul id="list-of-providers">
-        <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
-      </ul>
-      <div style="white-space: nowrap">
-        Обновлялись: <span class="update-date">...</span>
-      </div>
     </section>
-    <section id="status" style="will-change: contents">Загрузка...</section>
+
+    <nav class="main-padded main-nav">
+
+      <input type="radio" name="accordion" id="acc-pac-provider" class="accordion-radio" checked/>
+
+      <section>
+
+        <header class='accordion-title'>
+          <label for="acc-pac-provider" class="valign-parent"><h4>PAC-скрипт</h4></label>
+        </header>
+
+        <div class="accordion-content">
+          <div class="acc-padded">
+            <ul id="list-of-providers">
+              <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
+            </ul>
+            <div style="white-space: nowrap">
+              Обновлялись: <span class="update-date">...</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <input type="radio" name="accordion" id="acc-exceptions" class="accordion-radio"/>
+
+      <section id="exceptions">
+
+        <header class='accordion-title'>
+          <label for="acc-exceptions" class="valign-parent"><h4>Проксировать этот сайт?</h4></label>
+        </header>
+
+        <div class="accordion-content">
+          <div class="acc-padded" id="exc-flex-container">
+            <ul style="padding-right: 1em">
+              <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
+              <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
+              <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
+              <li><a href>Весь список</a></li>
+            </ul>
+            <div id="right-flexed-editor">
+              <input type="text" value="google.com" id="except-editor"/>
+              <div id="bottom-flexed-editor">
+                &nbsp;
+                <select multiple id="exceptions-select"></select>
+             </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <input type="radio" name="accordion" id="acc-pac-mods" class="accordion-radio"/>
+
+      <section>
+
+        <header class='accordion-title'>
+          <label for="acc-pac-mods" class="valign-parent"><h4>Модификаторы PAC-скрипта</h4></label>
+        </header>
+
+        <div class="accordion-content">
+          <div class="acc-padded">
+            <ul id="pac-mods">
+              <li class="control-row">
+                <input type="button" value="Применить" id="apply-mods" disabled/>
+                <a href id="reset-mods" class="link-button">К изначальным!</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
+
+      <input type="radio" name="accordion" id="acc-notifications" class="accordion-radio"/>      
+
+      <section id="configs-panel">
+
+        <header class='accordion-title'>
+          <label for="acc-notifications" class="valign-parent"><h4>Уведомления</h4></label>
+        </header>
+
+        <div class="accordion-content">
+          <div class="acc-padded">
+            <ul id="list-of-handlers"></ul>
+          </div>
+        </div>
+
+      </section>
+
+    </nav>
+
     <hr/>
-    <div id="exceptions">
-      <header>Проксировать этот сайт?</header>
-      <div id="flex-container">
-        <ul style="padding-right: 1em">
-          <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
-          <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
-          <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
-          <li><a href>Весь список</a></li>
-        </ul>
-        <div id="flex-right">
-          <input type="text" value="google.com" id="except-editor"/>
-          <select multiple id="exceptions-select">
-            <option class="sel">google.com</option>
-            <option class="sel">yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-            <option>yandex.ru</option>
-         </select>
-       </div>
-      </div>
-    </div>
-    <hr/>
-    <ul id="pac-mods">
-      <li class="control-row">
-        <input type="button" value="Применить" id="apply-mods" disabled/>
-        <a href id="reset-mods" class="link-button">К изначальным!</a>
-      </li>
-    </ul>
-    <hr/>
-    <div id="configs-panel">
-      <header>Я ❤️ уведомления:</header>
-      <ul id="list-of-handlers"></ul>
-    </div>
+
+    <div class="main-padded">
+
+    <div id="status" style="will-change: contents">Загрузка...</div>
+
     <footer class="control-row">
       <input type="button" value="Готово" class="close-button">
       <a href="../troubleshoot/index.html" class="link-button">
         Проблемы?
       </a>
     </footer>
+    </div>
+
     <script src="./index.js"></script>
     <script src="../lib/keep-links-clickable.js"></script>
   </body>

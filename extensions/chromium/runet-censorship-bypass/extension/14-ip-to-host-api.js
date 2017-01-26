@@ -18,7 +18,7 @@
 
   const _match = function _match(ipRe, str) {
 
-    let m = (str.match(ipRe) || []).filter( (c) => c );
+    const m = (str.match(ipRe) || []).filter( (c) => c );
     const port = m.length > 1 ? m.pop() : false;
     return { ifMatched: m.length, port: port };
 
@@ -55,17 +55,19 @@
 
   const privates = {};
 
+  const _createHostObj = function _addHostObj(hostStr) {
+
+    return (privates._strToHostObj[hostStr] = { host: hostStr });
+
+  }
+
   const _getHostObj = function _getHostObj(hostStr) {
 
-    let hostObj = privates._strToHostObj[hostStr];
-    if (!hostObj) {
-      hostObj = privates._strToHostObj[hostStr] = { host: hostStr };
-    }
-    return hostObj;
+    return privates._strToHostObj[hostStr] || _createHostObj(hostStr);
 
   };
 
-  const init = function init() {
+  const reinit = function reinit() {
 
     // Defaults.
     const _antizapret = {
@@ -100,7 +102,7 @@
 
   };
 
-  init();
+  reinit();
 
   const getIpsFor = function getIpsFor(host, cb = mandatory()) {
 
@@ -200,7 +202,15 @@
     resetToDefaultsVoid() {
 
       _state(ip2host, null);
-      init();
+      reinit();
+
+    },
+
+    _purgeIpsForVoid(hostStr) {
+
+      for(const ip of Object.keys(privates._ipToHostObj)) {
+        delete privates._ipToHostObj[ip];
+      }
 
     },
 
@@ -210,6 +220,7 @@
 
         console.log('IPS', ips);
         if (!err) {
+          this._purgeIpsForVoid(hostStr);
           // Object may be shared, string can't.
           const hostObj = _getHostObj(hostStr);
           for(const ip of ips) {
@@ -222,14 +233,9 @@
 
     },
 
-    _replaceAllAsync(hostArr = mandatory(), cb) {
+    updateAllAsync(cb = mandatory()) {
 
-      if (typeof(hostArr) === 'function') {
-        cb = hostArr;
-        hostArr = Object.keys(privates._strToHostObj);
-      }
-
-      this.resetToDefaultsVoid();
+      const hostArr = Object.keys(privates._strToHostObj);
 
       const promises = hostArr.map(
         (hostStr) => new Promise( (resolve) => this._addAsync(hostStr, (...args) => resolve(args) ) )
@@ -261,6 +267,22 @@
 
     },
 
+    _replaceAllAsync(hostArr = mandatory(), cb) {
+
+      if (typeof(hostArr) === 'function') {
+        cb = hostArr;
+        hostArr = Object.keys(privates._strToHostObj);
+      }
+
+      this.resetToDefaultsVoid();
+      for(const hostStr of hostArr) {
+        _createHostObj(hostStr);
+      }
+
+      this.updateAllAsync(cb);
+
+    },
+
     replaceAllAsync(addrArr, cb = mandatory()) {
 
       console.log('Replacing...');
@@ -279,12 +301,6 @@
         cb(allErr, ...args);
 
       });
-
-    },
-
-    updateAllAsync(cb = mandatory()) {
-
-      this._replaceAllAsync(cb);
 
     },
 
