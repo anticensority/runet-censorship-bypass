@@ -46,8 +46,8 @@
 
       .if-not-controlled {
         display: none;
-        background-color: red;
 
+        background-color: red;
         color: white;
         font-weight: bold;
         text-align: center;
@@ -304,6 +304,13 @@
         border: none !important;
       }
 
+      option.if-proxied {
+        color: var(--ribbon-color);
+      }
+      option:not(.if-proxied) {
+        color: red;
+      }
+
       #exc-flex-container {
         position: relative;
         display: flex;
@@ -379,7 +386,7 @@
 
         <header>Проксировать этот сайт?</header>
         <div class="acc-padded" id="exc-flex-container">
-          <ul style="padding-right: 1em">
+          <ul style="padding-right: 1em" id="exc-radio">
             <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
             <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
             <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>

@@ -9,6 +9,7 @@
   const kitchenStartsMark = '\n\n//%#@@@@@@ PAC_KITCHEN_STARTS @@@@@@#%';
   const kitchenState = window.utils.createStorage('pac-kitchen-');
   const ifIncontinence = 'if-incontinence';
+  const modsKey = 'mods';
 
   // Don't keep objects in defaults or at least freeze them!
   const configs = {
@@ -45,6 +46,9 @@
     },
     exceptions: {
       dflt: null,
+    },
+    ifMindExceptions: {
+      dflt: true,
       label: 'учитывать исключения',
       desc: 'Учитывать сайты, добавленные вручную. Только для своих прокси! Без своих прокси работать не будет.',
       index: 5,
@@ -71,7 +75,7 @@
 
   const getCurrentConfigs = function getCurrentConfigs() {
 
-    const mods = kitchenState('mods');
+    const mods = kitchenState(modsKey);
     return new PacModifiers(mods || {});
 
   };
@@ -82,9 +86,11 @@
     return Object.keys(configs).reduce((arr, key) => {
 
       const conf = configs[key]
-      arr[conf.index] = conf;
-      conf.value = pacMods[key];
-      conf.key = key;
+      if(typeof(conf.index) === 'number') {
+        arr[conf.index] = conf;
+        conf.value = pacMods[key];
+        conf.key = key;
+      }
       return arr;
 
     }, []);
@@ -132,7 +138,9 @@
         this.filteredCustomsString = '';
       }
 
-      if (this.exceptions) {
+      this.included = this.excluded = undefined;
+      if (this.ifMindExceptions && this.exceptions) {
+        console.log('Exceptions:', this.exceptions);
         this.included = [];
         this.excluded = [];
         for(const host of Object.keys(this.exceptions)) {
@@ -298,7 +306,7 @@
         } catch(e) {
           return cb(e);
         }
-        kitchenState('mods', pacMods);
+        kitchenState(modsKey, pacMods);
       }
       this._tryNowAsync(
         (err, res, ...warns) => {
@@ -326,9 +334,11 @@
 
     resetToDefaultsVoid() {
 
-      kitchenState('mods', null);
+      // Pruge all but exceptions.
+      const exceptions = kitchenState(modsKey).exceptions;
+      kitchenState(modsKey, null);
       kitchenState(ifIncontinence, null);
-      this.keepCookedNowAsync({});
+      this.keepCookedNowAsync({exceptions: exceptions});
 
     },
 
