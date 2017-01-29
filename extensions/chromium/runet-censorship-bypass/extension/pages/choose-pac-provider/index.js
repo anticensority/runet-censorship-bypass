@@ -1,4 +1,5 @@
 'use strict';
+
 const START = Date.now();
 
 document.getElementById('pac-mods').onchange = function() {
@@ -11,23 +12,6 @@ document.getElementById('pac-mods').onchange = function() {
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOnAsync(
     window, 'PUP', async() => {
-
-      const currentTab = await new Promise(
-        (resolve) => chrome.tabs.query(
-          { active: true, currentWindow: true },
-          ([tab]) => resolve(tab)
-        )
-      );
-
-      if ( !currentTab || currentTab.url.startsWith('chrome://extensions/?options=') ) {
-        const hidClass = 'hideable';
-        for(const el of document.querySelectorAll('.' + hidClass)) {
-          el.classList.remove(hidClass);
-        }
-        for(const el of document.querySelectorAll('.hidden-for-options-page')) {
-          el.style.display = 'none';
-        }
-      }
 
       const getStatus = () => document.querySelector('#status');
 
@@ -239,59 +223,190 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         };
       }
 
+      // IF INSIDE OPTIONS
+
+      const currentTab = await new Promise(
+        (resolve) => chrome.tabs.query(
+          { active: true, currentWindow: true },
+          ([tab]) => resolve(tab)
+        )
+      );
+
+      const ifInsideOptions = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=');
+      if (ifInsideOptions) {
+        const hidClass = 'hideable';
+        for(const el of document.querySelectorAll('.' + hidClass)) {
+          el.classList.remove(hidClass);
+        }
+        for(const el of document.querySelectorAll('.hidden-for-options-page')) {
+          el.style.display = 'none';
+        }
+      }
+
       // EXCEPTIONS PANEL
+      /*
+        Iterating and modifying select.selectedOptions
+        at the same time is buggy, iterate this way instead:
+        [...select.selectedOptions]
+      */
 
       {
-
-        if (currentTab && !currentTab.url.startsWith('chrome')) {
-          document.getElementById('except-editor').value = new URL(currentTab.url).hostname;
-        }
 
         const pacKitchen = backgroundPage.apis.pacKitchen;
 
         {
 
-          const pacMods = pacKitchen.getPacMods();
-          const exc = pacMods.exceptions || {};
+          const excEditor = document.getElementById('except-editor');
 
-          const addOption = function addOption(host) {
+          if (currentTab && !currentTab.url.startsWith('chrome')) {
+            excEditor.value = new URL(currentTab.url).hostname;
+          }
+
+          const excSelect = document.getElementById('exceptions-select');
+
+          excEditor.onkeyup = function() {
+
+            this.value = this.value.trim();
+            for(const opt of excSelect.options) {
+              let commonChars = 0;
+              for( const i in this.value ) {
+                if (this.value.charAt(i) !== opt.value.charAt(i)) {
+                  break;
+                }
+                ++commonChars;
+              }
+              opt.style.order = commonChars;
+            }
+            return true;
+
+          };
+
+          const thisYes = document.getElementById('this-yes');
+          const thisNo = document.getElementById('this-no');
+          const ifProxiedClass = 'if-proxied';
+
+          excSelect.onclick = function(event) {
+
+            // Only one item may be selecte at a time.
+            // Spread op is used to fight weird bug with iterator.
+            for(const sopt of [...this.selectedOptions]) {
+              sopt.selected = false;
+            }
+            const opt = event.target;
+            opt.selected = true;
+            if (opt.classList.contains(ifProxiedClass)) {
+              thisYes.checked = true;
+            } else {
+              thisNo.checked = true;
+            }
+            excEditor.value = opt.value.trim();
+
+          };
+
+          const addOption = function addOption(host, ifProxy) {
 
             const opt = document.createElement('option');
             opt.text = host;
-            document.getElementById('exceptions-select').add(opt);
+            if(ifProxy) {
+              opt.classList.add(ifProxiedClass);
+            };
+            const editorHost = excEditor.value.trim();
+            if (host === editorHost) {
+              excSelect.insertBefore( opt, excSelect.firstChild );
+              opt.click();
+            } else {
+              excSelect.add(opt);
+            }
 
           }
 
-          for(const host of Object.keys(exc).sort()) {
-            addOption(host);
-          }
-
-          document.getElementById('this-yes').onclick = function() {
+          { // Populate select box.
 
             const pacMods = pacKitchen.getPacMods();
-            if (!pacMods.filteredCustomsString) {
-              showErrors( new TypeError(
-                'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см.«Модификаторы»).'
-              ));
-              return false;
+            for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
+              addOption(host, pacMods.exceptions[host]);
             }
-            const host = document.getElementById('except-editor').value;
-            const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
-            if(!ValidHostnameRegex.test(host)) {
-              showErrors(new TypeError('Должно быть только доменное имя, без протокола и пути. Попробуйте ещё раз.'));
-              return false;
-            }
-
-            pacMods.exceptions = pacMods.exceptions || {};
-            pacMods.exceptions[host] = true;
-            pacKitchen.keepCookedNowAsync(
-              pacMods,
-              (err) => err
-                ? showErrors(err)
-                : addOption(host)
-            );
 
           }
+
+          const validateHost = function validateHost(host) {
+
+            const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+            if(!ValidHostnameRegex.test(host)) {
+              showErrors(new TypeError('Должно быть только доменное имя, без протокола, порта и пути. Попробуйте ещё раз.'));
+              return false;
+            }
+            return true;
+
+          };
+
+          document.getElementById('exc-radio').onclick = function(event) {
+
+            if( !['LABEL', 'INPUT'].includes( event.target.tagName ) ) {
+              return true;
+            }
+
+            const _host = excEditor.value.trim();
+            const pacMods = pacKitchen.getPacMods();
+            pacMods.exceptions = pacMods.exceptions || {};
+
+            let fixSelectBox;
+
+            if (document.getElementById('this-auto').checked) {
+              delete pacMods.exceptions[_host];
+              fixSelectBox = () => {
+
+                for(const sopt of [...excSelect.selectedOptions]) {
+                  const shost = sopt.value.trim();
+                  delete pacMods.exceptions[shost];
+                  sopt.remove();
+                }
+                excEditor.value = '';
+
+              }
+            } else {
+              // YES or NO.
+              if (!validateHost(_host)) {
+                return false;
+              }
+              if (thisYes.checked && !pacMods.filteredCustomsString) {
+                showErrors( new TypeError(
+                  'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см.«Модификаторы»).'
+                ));
+                return false;
+              }
+              pacMods.exceptions[_host] = thisYes.checked;
+
+              if (excSelect.selectedIndex === -1) {
+                // Add new.
+                fixSelectBox = () => addOption(_host, thisYes.checked);
+              } else {
+                // Edit selected.
+                fixSelectBox = () => {
+
+                  for(const sopt of [...excSelect.selectedOptions]) {
+                    sopt.value = _host;
+                    if (thisYes.checked) {
+                      sopt.classList.add(ifProxiedClass);
+                    } else {
+                      sopt.classList.remove(ifProxiedClass);
+                    }
+                  }
+
+                }
+              }
+
+            }
+
+            conduct(
+              'Применяем исключения...',
+              (cb) => pacKitchen.keepCookedNowAsync(pacMods, cb),
+              'Исключения применены.',
+              fixSelectBox
+            );
+            return true;
+
+          };
 
         }
 
@@ -301,7 +416,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         const _firstChild = modPanel.firstChild;
         const keyToLi = {};
         const customProxyStringKey = 'customProxyStringRaw';
-        const uiRaw = 'ui-proxy-string-raw';
 
         for(const conf of pacKitchen.getOrderedConfigs()) {
 
@@ -317,6 +431,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           if (key !== customProxyStringKey) {
             li.innerHTML += infoSign(conf.desc);
           } else {
+            const uiRaw = 'ui-proxy-string-raw';
             li.innerHTML += `<a href="${conf.url}" class="info-sign info-url">🛈</a><br/>
 <textarea
   spellcheck="false"
@@ -336,39 +451,45 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
         };
         document.getElementById('apply-mods').onclick = () => {
 
-          const configs = Object.keys(keyToLi).reduce( (configs, key) => {
+          const oldMods = pacKitchen.getPacMods();
+          for(const key of Object.keys(keyToLi)) {
+            oldMods[key] = keyToLi[key].querySelector('input').checked;
+          };
 
-            if (key !== customProxyStringKey) {
-              configs[key] = keyToLi[key].querySelector('input').checked;
+          {
+            // OWN PROXY
+
+            const liPs = keyToLi[customProxyStringKey];
+            oldMods[customProxyStringKey]
+              = liPs.querySelector('input').checked
+                && liPs.querySelector('textarea').value.trim();
+
+            const taVal = liPs.querySelector('textarea').value;
+            if (oldMods[customProxyStringKey] !== false) {
+              const ifValid = taVal
+                .replace(/#.*$/mg)
+                .split(/\s*[;\n\r]+\s*/g)
+                .filter( (str) => str )
+                .every(
+                (str) =>
+                  /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5))\s+\S+))$/g
+                    .test(str)
+                )
+              if (!ifValid) {
+                return showErrors(new TypeError(
+                  'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
+                ))
+              }
+              oldMods[customProxyStringKey] = taVal;
             } else {
-              configs[key] = keyToLi[key].querySelector('input').checked
-                && keyToLi[key].querySelector('textarea').value.trim();
+              localStorage.setItem(uiRaw, taVal);
             }
-            return configs;
 
-          }, {});
-          const taVal = keyToLi[customProxyStringKey].querySelector('textarea').value;
-          if (configs[customProxyStringKey] !== false) {
-            const ifValid = taVal
-              .replace(/#.*$/mg)
-              .split(/\s*[;\n\r]+\s*/g)
-              .every(
-              (str) =>
-                /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5))\s+\S+))$/g
-                  .test(str)
-              )
-            if (!ifValid) {
-              return showErrors(new TypeError(
-                'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
-              ))
-            }
-            configs[customProxyStringKey] = taVal;
-          } else {
-            localStorage.setItem(uiRaw, taVal);
           }
+
           conduct(
             'Применяем настройки...',
-            (cb) => pacKitchen.keepCookedNowAsync(configs, cb),
+            (cb) => pacKitchen.keepCookedNowAsync(oldMods, cb),
             'Настройки применены.',
             () => { document.getElementById('apply-mods').disabled = true; }
           );
