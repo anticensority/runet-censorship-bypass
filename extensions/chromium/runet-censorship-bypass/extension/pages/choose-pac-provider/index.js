@@ -244,11 +244,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       }
 
       // EXCEPTIONS PANEL
-      /*
-        Iterating and modifying select.selectedOptions
-        at the same time is buggy, iterate this way instead:
-        [...select.selectedOptions]
-      */
 
       {
 
@@ -273,14 +268,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-          const excPrefix = '*.';
-          const prefRe = new RegExp('^(\\s*\\*\\.?)?');
           const ifProxyHtml = '✔';
 
           const addOption = function addOption(host, ifProxy) {
 
             const opt = document.createElement('option');
-            opt.value = excPrefix + host;
+            opt.value = host;
             opt.dataset.host = host;
             opt.innerHTML = ifProxy ? ifProxyHtml : '✘';
             const editorHost = excEditor.value.trim();
@@ -289,17 +282,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             } else {
               excList.appendChild(opt);
             }
-
-          };
-
-          const excList = document.getElementById('exc-list');
-          const getExactOpts = (_host) => {
-
-            const _nakedHost = _host.replace(prefRe, '');
-            return [].filter.call(
-              excList.childNodes,
-              (opt) => opt.dataset.host === _nakedHost
-            );
 
           };
 
@@ -319,88 +301,65 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           }
 
+          const hideOpt = (opt) => opt.value = '\n';
+          const unhideOpt = (opt) => opt.value = opt.dataset.host + ' ';
+
+          const excList = document.getElementById('exc-list');          
+
           excEditor.onkeydown = function(event) {
 
-            console.log('DOWN', event);
             moveCursorIfNeeded();
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            if (start < 2 && event.key.length === 1) {
-              this.setSelectionRange(2, end < 2 ? 2 : end);
-            }
             if(event.key === 'Enter') {
-              // Hide all non-exact matches.
-              alert(12);
+              // Hide all.
+              excList.childNodes.forEach( hideOpt );
             }
             return true;
 
           };
 
-          excEditor.oninput = function(event) {
+          excEditor.onclick = excEditor.oninput = function(event) {
 
-            console.log('INPUT')
-            const _host = this.value;
-            const prefixedHost = this.value.replace(prefRe, excPrefix);
             const setInputValue = (newValue) => {
 
+              if (event && event.type === 'click') {
+                return;
+              } 
+              // See bug in my comment to http://stackoverflow.com/a/32394157/521957
+              // The only shortcoming: first click on empty input may be still ignored.
               const nu = this.selectionStart + newValue.length - this.value.length;
               this.value = newValue;
               excEditor.dataset.moveCursorTo = nu;
               window.setTimeout(moveCursorIfNeeded, 0);
 
             }
-            setInputValue(prefixedHost);
-            const _nakedHost = _host.trim().replace(prefRe, '');
+            const host = this.value.trim() || ' ';
+
+            setInputValue(host);
 
             thisAuto.checked = true;
 
-            const toDefault = (opt) => opt.value = excPrefix + opt.dataset.host;;
-
-            const delim = ' | ';
-            let exactOpt = false;
-            const ifLineSelected = _host.includes(delim);
+            this.classList.remove(noClass, yesClass);
             excList.childNodes.forEach(
               (opt) => {
 
-                const ifExactMatch = opt.dataset.host === _nakedHost || opt.value === _host;
-                if (ifExactMatch) {
-                  exactOpt = opt;
-                  return;
+                const ifExactMatch = opt.dataset.host === host;
+                if (!ifExactMatch) {
+                  return unhideOpt(opt);
                 }
-                toDefault(opt);
-                const ifCommonPrefix = opt.dataset.host.startsWith(_nakedHost);
-                if (ifCommonPrefix) {
-                  opt.value = prefixedHost + delim + '^' + opt.dataset.host;
-                  return;
-                }
-                const ifCommonSuffix = opt.dataset.host.endsWith(_nakedHost);
-                if (ifCommonSuffix) {
-                  opt.value = this.value + delim + opt.dataset.host + '$';
+
+                const exactOpt = opt;
+
+                hideOpt(exactOpt);
+                if(exactOpt.innerHTML === ifProxyHtml) {
+                  thisYes.checked = true;
+                  this.classList.add(yesClass);
+                } else {
+                  thisNo.checked = true;
+                  this.classList.add(noClass);
                 }
 
               }
             );
-            this.classList.remove(noClass, yesClass);
-            if (exactOpt) {
-              console.log('EXACT', exactOpt);
-              //excList.childNodes.forEach( (opt) => opt.value = false );
-              setInputValue(toDefault(exactOpt));
-              if (ifLineSelected) {
-                // Hide all.
-                excList.childNodes.forEach( (opt) => opt.value = false );
-              } else {
-                // Hide exact.
-                exactOpt.value = false;
-              }
-
-              if(exactOpt.innerHTML === ifProxyHtml) {
-                thisYes.checked = true;
-                this.classList.add(yesClass);
-              } else {
-                thisNo.checked = true;
-                this.classList.add(noClass);
-              }
-            }
             return true;
 
           };
@@ -422,7 +381,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               return true;
             }
 
-            const _host = excEditor.value.trim().replace(prefRe, '');
+            const host = excEditor.value.trim();
 
             const pacMods = pacKitchen.getPacMods();
             pacMods.exceptions = pacMods.exceptions || {};
@@ -430,11 +389,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             let fixUi = () => {};
 
             if (thisAuto.checked) {
-              delete pacMods.exceptions[_host];
+              delete pacMods.exceptions[host];
               fixUi = () => excEditor.value = '';
             } else {
               // YES or NO.
-              if (!validateHost(_host)) {
+              if (!validateHost(host)) {
                 return false;
               }
               if (thisYes.checked && !pacMods.filteredCustomsString) {
@@ -443,8 +402,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
                 ));
                 return false;
               }
-              pacMods.exceptions[_host] = thisYes.checked;
-              fixUi = () => addOption(_host, thisYes.checked);
+              pacMods.exceptions[host] = thisYes.checked;
+              fixUi = () => addOption(host, thisYes.checked);
             }
 
             conduct(
@@ -453,7 +412,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               'Исключения применены.',
               () => {
 
-                getExactOpts(_host).forEach( (opt) => opt.remove() );
+                excList.childNodes.forEach(
+                  (opt) => opt.dataset.host === host && opt.remove()
+                );
                 fixUi();
                 excEditor.oninput();
 
@@ -557,8 +518,8 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
           if (!ifSure) {
             return false;
           }
-          pacKitchen.resetToDefaultsVoid();
-          backgroundPage.apis.ipToHost.resetToDefaultsVoid();
+          pacKitchen.resetToDefaults();
+          backgroundPage.apis.ipToHost.resetToDefaults();
           window.close();
 
         };
