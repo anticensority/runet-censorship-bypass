@@ -188,7 +188,7 @@
 
   const self = window.apis.ipToHost = {
 
-    persistVoid() {
+    persist() {
 
       console.log('Persisting ipToHost...', privates);
       const ipToHost = {};
@@ -199,15 +199,16 @@
 
     },
 
-    resetToDefaultsVoid() {
+    resetToDefaults() {
 
       _state(ip2host, null);
       reinit();
 
     },
 
-    _purgeIpsForVoid(hostStr) {
+    _purgeOldIpsForSync(hostStr) {
 
+      console.log('Purging old IPs...');
       for(const ip of Object.keys(privates._ipToHostObj)) {
         delete privates._ipToHostObj[ip];
       }
@@ -218,22 +219,25 @@
 
       getIpsFor(hostStr, (err, ips, ...warns) => {
 
-        console.log('IPS', ips);
+        console.log('IPS', ips, err);
         if (!err) {
-          this._purgeIpsForVoid(hostStr);
+          this._purgeOldIpsForSync(hostStr);
           // Object may be shared, string can't.
           const hostObj = _getHostObj(hostStr);
           for(const ip of ips) {
+            console.log('IP', ip);
             privates._ipToHostObj[ip] = hostObj;
+            console.log(privates._ipToHostObj[ip], privates);
           }
         }
+        console.log('PP', privates);
         return cb(err, null, ...warns);
 
       });
 
     },
 
-    updateAllAsync(cb = mandatory()) {
+    _updateAllAsync(cb = mandatory()) {
 
       const hostArr = Object.keys(privates._strToHostObj);
 
@@ -267,6 +271,20 @@
 
     },
 
+
+    updateAllAsync(cb = mandatory()) {
+
+      this._updateAllAsync((err, ...args) => {
+
+        if (!err) {
+          this.persist();
+        }
+        cb(err, ...args);
+
+      });
+
+    },
+
     _replaceAllAsync(hostArr = mandatory(), cb) {
 
       if (typeof(hostArr) === 'function') {
@@ -274,12 +292,12 @@
         hostArr = Object.keys(privates._strToHostObj);
       }
 
-      this.resetToDefaultsVoid();
+      this.resetToDefaults();
       for(const hostStr of hostArr) {
         _createHostObj(hostStr);
       }
 
-      this.updateAllAsync(cb);
+      this._updateAllAsync(cb);
 
     },
 
@@ -296,7 +314,7 @@
       this._replaceAllAsync(hostArr, (allErr, ...args) => {
 
         if (!allErr) {
-          this.persistVoid();
+          this.persist();
         }
         cb(allErr, ...args);
 

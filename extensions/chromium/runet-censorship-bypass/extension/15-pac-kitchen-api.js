@@ -332,7 +332,7 @@
 
     },
 
-    resetToDefaultsVoid() {
+    resetToDefaults() {
 
       // Pruge all but exceptions.
       const exceptions = kitchenState(modsKey).exceptions;
