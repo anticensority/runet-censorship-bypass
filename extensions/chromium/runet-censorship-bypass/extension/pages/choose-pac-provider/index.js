@@ -256,77 +256,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         {
 
-          const excEditor = document.getElementById('except-editor');
+          const excEditor = document.getElementById('exc-editor');
 
           if (currentTab && !currentTab.url.startsWith('chrome')) {
             excEditor.value = new URL(currentTab.url).hostname;
-          }
-
-          const excSelect = document.getElementById('exceptions-select');
-
-          excEditor.onkeyup = function() {
-
-            this.value = this.value.trim();
-            for(const opt of excSelect.options) {
-              let commonChars = 0;
-              for( const i in this.value ) {
-                if (this.value.charAt(i) !== opt.value.charAt(i)) {
-                  break;
-                }
-                ++commonChars;
-              }
-              opt.style.order = commonChars;
-            }
-            return true;
-
-          };
-
-          const thisYes = document.getElementById('this-yes');
-          const thisNo = document.getElementById('this-no');
-          const ifProxiedClass = 'if-proxied';
-
-          excSelect.onclick = function(event) {
-
-            // Only one item may be selecte at a time.
-            // Spread op is used to fight weird bug with iterator.
-            for(const sopt of [...this.selectedOptions]) {
-              sopt.selected = false;
-            }
-            const opt = event.target;
-            opt.selected = true;
-            if (opt.classList.contains(ifProxiedClass)) {
-              thisYes.checked = true;
-            } else {
-              thisNo.checked = true;
-            }
-            excEditor.value = opt.value.trim();
-
-          };
-
-          const addOption = function addOption(host, ifProxy) {
-
-            const opt = document.createElement('option');
-            opt.text = host;
-            if(ifProxy) {
-              opt.classList.add(ifProxiedClass);
-            };
-            const editorHost = excEditor.value.trim();
-            if (host === editorHost) {
-              excSelect.insertBefore( opt, excSelect.firstChild );
-              opt.click();
-            } else {
-              excSelect.add(opt);
-            }
-
-          }
-
-          { // Populate select box.
-
-            const pacMods = pacKitchen.getPacMods();
-            for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
-              addOption(host, pacMods.exceptions[host]);
-            }
-
           }
 
           const validateHost = function validateHost(host) {
@@ -340,30 +273,165 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
+          const excPrefix = '*.';
+          const prefRe = new RegExp('^(\\s*\\*\\.?)?');
+          const ifProxyHtml = '✔';
+
+          const addOption = function addOption(host, ifProxy) {
+
+            const opt = document.createElement('option');
+            opt.value = excPrefix + host;
+            opt.dataset.host = host;
+            opt.innerHTML = ifProxy ? ifProxyHtml : '✘';
+            const editorHost = excEditor.value.trim();
+            if (host === editorHost) {
+              excList.insertBefore( opt, excList.firstChild );
+            } else {
+              excList.appendChild(opt);
+            }
+
+          };
+
+          const excList = document.getElementById('exc-list');
+          const getExactOpts = (_host) => {
+
+            const _nakedHost = _host.replace(prefRe, '');
+            return [].filter.call(
+              excList.childNodes,
+              (opt) => opt.dataset.host === _nakedHost
+            );
+
+          };
+
+          const thisYes = document.getElementById('this-yes');
+          const thisNo = document.getElementById('this-no');
+          const thisAuto = document.getElementById('this-auto');
+          const yesClass = 'if-yes';
+          const noClass = 'if-no';
+
+          function moveCursorIfNeeded() {
+
+            const nu = excEditor.dataset.moveCursorTo;
+            if(nu !== undefined) {
+              excEditor.setSelectionRange(nu, nu);
+              delete excEditor.dataset.moveCursorTo;
+            }
+
+          }
+
+          excEditor.onkeydown = function(event) {
+
+            console.log('DOWN', event);
+            moveCursorIfNeeded();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            if (start < 2 && event.key.length === 1) {
+              this.setSelectionRange(2, end < 2 ? 2 : end);
+            }
+            if(event.key === 'Enter') {
+              // Hide all non-exact matches.
+              alert(12);
+            }
+            return true;
+
+          };
+
+          excEditor.oninput = function(event) {
+
+            console.log('INPUT')
+            const _host = this.value;
+            const prefixedHost = this.value.replace(prefRe, excPrefix);
+            const setInputValue = (newValue) => {
+
+              const nu = this.selectionStart + newValue.length - this.value.length;
+              this.value = newValue;
+              excEditor.dataset.moveCursorTo = nu;
+              window.setTimeout(moveCursorIfNeeded, 0);
+
+            }
+            setInputValue(prefixedHost);
+            const _nakedHost = _host.trim().replace(prefRe, '');
+
+            thisAuto.checked = true;
+
+            const toDefault = (opt) => opt.value = excPrefix + opt.dataset.host;;
+
+            const delim = ' | ';
+            let exactOpt = false;
+            const ifLineSelected = _host.includes(delim);
+            excList.childNodes.forEach(
+              (opt) => {
+
+                const ifExactMatch = opt.dataset.host === _nakedHost || opt.value === _host;
+                if (ifExactMatch) {
+                  exactOpt = opt;
+                  return;
+                }
+                toDefault(opt);
+                const ifCommonPrefix = opt.dataset.host.startsWith(_nakedHost);
+                if (ifCommonPrefix) {
+                  opt.value = prefixedHost + delim + '^' + opt.dataset.host;
+                  return;
+                }
+                const ifCommonSuffix = opt.dataset.host.endsWith(_nakedHost);
+                if (ifCommonSuffix) {
+                  opt.value = this.value + delim + opt.dataset.host + '$';
+                }
+
+              }
+            );
+            this.classList.remove(noClass, yesClass);
+            if (exactOpt) {
+              console.log('EXACT', exactOpt);
+              //excList.childNodes.forEach( (opt) => opt.value = false );
+              setInputValue(toDefault(exactOpt));
+              if (ifLineSelected) {
+                // Hide all.
+                excList.childNodes.forEach( (opt) => opt.value = false );
+              } else {
+                // Hide exact.
+                exactOpt.value = false;
+              }
+
+              if(exactOpt.innerHTML === ifProxyHtml) {
+                thisYes.checked = true;
+                this.classList.add(yesClass);
+              } else {
+                thisNo.checked = true;
+                this.classList.add(noClass);
+              }
+            }
+            return true;
+
+          };
+
+          { // Populate selector.
+
+            const pacMods = pacKitchen.getPacMods();
+            for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
+              addOption(host, pacMods.exceptions[host]);
+            }
+
+          }
+          excEditor.oninput();
+
           document.getElementById('exc-radio').onclick = function(event) {
 
-            if( !['LABEL', 'INPUT'].includes( event.target.tagName ) ) {
+            /* ON CLICK */
+            if(event.target.tagName !== 'INPUT') {
               return true;
             }
 
-            const _host = excEditor.value.trim();
+            const _host = excEditor.value.trim().replace(prefRe, '');
+
             const pacMods = pacKitchen.getPacMods();
             pacMods.exceptions = pacMods.exceptions || {};
 
-            let fixSelectBox;
+            let fixUi = () => {};
 
-            if (document.getElementById('this-auto').checked) {
+            if (thisAuto.checked) {
               delete pacMods.exceptions[_host];
-              fixSelectBox = () => {
-
-                for(const sopt of [...excSelect.selectedOptions]) {
-                  const shost = sopt.value.trim();
-                  delete pacMods.exceptions[shost];
-                  sopt.remove();
-                }
-                excEditor.value = '';
-
-              }
+              fixUi = () => excEditor.value = '';
             } else {
               // YES or NO.
               if (!validateHost(_host)) {
@@ -376,33 +444,20 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
                 return false;
               }
               pacMods.exceptions[_host] = thisYes.checked;
-
-              if (excSelect.selectedIndex === -1) {
-                // Add new.
-                fixSelectBox = () => addOption(_host, thisYes.checked);
-              } else {
-                // Edit selected.
-                fixSelectBox = () => {
-
-                  for(const sopt of [...excSelect.selectedOptions]) {
-                    sopt.value = _host;
-                    if (thisYes.checked) {
-                      sopt.classList.add(ifProxiedClass);
-                    } else {
-                      sopt.classList.remove(ifProxiedClass);
-                    }
-                  }
-
-                }
-              }
-
+              fixUi = () => addOption(_host, thisYes.checked);
             }
 
             conduct(
               'Применяем исключения...',
               (cb) => pacKitchen.keepCookedNowAsync(pacMods, cb),
               'Исключения применены.',
-              fixSelectBox
+              () => {
+
+                getExactOpts(_host).forEach( (opt) => opt.remove() );
+                fixUi();
+                excEditor.oninput();
+
+              }
             );
             return true;
 
@@ -550,6 +605,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
         document.querySelector('#update-' + id).click();
       }
       document.documentElement.style.display = '';
+
       console.log(Date.now() - START);
 
     })

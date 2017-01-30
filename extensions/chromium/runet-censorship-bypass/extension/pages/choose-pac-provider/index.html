@@ -41,6 +41,9 @@
         padding-left: 1.4em;
         padding-right: 1.4em;
       }
+      .horizontal-list li {
+        display: inline-block;
+      }
 
       /* NOT CONTROLLED */
 
@@ -67,7 +70,7 @@
         display: none;
       }
       .acc-padded {
-        padding: 0.6em 0 1em 0.5em;
+        padding: 0.6em 0.5em 1em;
       }
 
       /* HIDE */
@@ -96,10 +99,7 @@
       }
       .nav-labels {
         text-align: center;
-        --blue-bg: DodgerBlue;
-      }
-      .nav-labels li {
-        display: inline-block;
+        --blue-bg: dodgerblue;
       }
       .nav-labels li label {
         display: inline-block;
@@ -259,49 +259,27 @@
 
       /* TAB_3 EXCEPTIONS */
 
-      #right-flexed-editor {
-        flex-grow: 99;
-        max-height: 100%;
-
-        border: 1px solid var(--border-color);
-
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-      #right-flexed-editor > * {
-        width: 100%;
-      }
-      #except-editor {
+      #exc-editor {
         border-radius: 0 !important;
-        border: none;
-        border-bottom: 1px solid var(--border-color);
+        border: none !important;
+        border-bottom: 1px solid var(--ribbon-color) !important;
+        // I don't understand this three, but they have effect.
         max-height: 1.6em !important;
         min-height: 1.6em !important;
-
-        flex-grow: 99;
-        width: 100% !important;
+        height: 1em !important;
       }
-      #bottom-flexed-editor {
-        flex-grow: 99;
-        position: relative;
+      #exc-radio {
+        display: flex;
+        justify-content: space-around;
       }
-
-      select#exceptions-select {
-        color: black;
-        background: transparent;
-        border-radius: 0;
-        box-shadow: none;
-        text-shadow: none;
-        padding: 0;
-
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-
-        border: none !important;
+      [name="if-proxy-this-site"]:checked + label {
+        font-weight: bold;
+      }
+      #exc-editor.if-yes {
+        background-color: lightgreen;
+      }
+      #exc-editor.if-no {
+        background-color: pink;
       }
 
       option.if-proxied {
@@ -309,21 +287,6 @@
       }
       option:not(.if-proxied) {
         color: red;
-      }
-
-      #exc-flex-container {
-        position: relative;
-        display: flex;
-
-        /* Fixes multi-select bug
-           when its border is rendered below
-           its scrollbar. */
-        --border-color: var(--default-grey);
-      }
-      #exc-flex-container > * {
-        flex-grow: 1;
-        padding: 0;
-        margin: 0;
       }
 
       /* CONTROL RAW = BUTTON + LINK */
@@ -357,7 +320,7 @@
     <input type="radio" name="accordion" class="off" id="acc-mods"/>
     <input type="radio" name="accordion" class="off" id="acc-ntf"/>
 
-    <section class="nav-labels hidden-for-options-page">
+    <section class="nav-labels horizontal-list hidden-for-options-page">
       <ul>
         <li><label for="acc-pac" class="nav-label">PAC-скрипт</label></li>
         <li><label for="acc-mods" class="nav-label">Модификаторы</label></li>
@@ -384,22 +347,18 @@
 
       <section data-for="acc-exc" class="hideable">
 
-        <header>Проксировать этот сайт?</header>
-        <div class="acc-padded" id="exc-flex-container">
-          <ul style="padding-right: 1em" id="exc-radio">
-            <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
-            <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
-            <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
-            <li><a href>Весь список</a></li>
-          </ul>
-          <div id="right-flexed-editor">
-            <input type="text" placeholder="example.com" id="except-editor"/>
-            <div id="bottom-flexed-editor">
-              <select multiple id="exceptions-select"></select>
-            </div>
-          </div>
-        </div>
 
+
+        <div style="display: flex; justify-content: space-around;">
+          <span>Проксировать</span>
+          <input placeholder="*.example.com" list="exc-list" name="browser" id="exc-editor"/>?
+          <datalist id="exc-list"></datalist>
+        </div>
+        <ol class="acc-padded horizontal-list" id="exc-radio">
+          <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
+          <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
+          <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
+        </ol>
       </section>
 
       <section data-for="acc-mods" class="hideable">
