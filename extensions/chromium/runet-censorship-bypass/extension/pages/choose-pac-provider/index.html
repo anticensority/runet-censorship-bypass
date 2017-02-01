@@ -6,6 +6,7 @@
       :root {
         --ribbon-color: #4169e1;
         --default-grey: #bfbfbf;
+        max-width: 27em;
       }
       body {
         margin: 0;
@@ -64,35 +65,52 @@
         color: white;
       }
 
+      :root:not(.if-options-page) .only-for-options-page {
+        display: none;
+      }
+      :root.if-options-page .hidden-for-options-page {
+        display: none;
+      }
+
       /* ACCORDION (OR TABBED STATEFUL UI) */
 
       .off {
         display: none;
       }
-      .acc-padded {
+
+      section[data-for] {
         padding: 0.6em 0.5em 1em;
+      }
+      :root.if-options-page section[data-for] {
+        padding-bottom: 0.6em;
+      }
+      :root.if-options-page section[data-for]:not(:last-child) {
+        border-bottom: 1px solid var(--default-grey);
       }
 
       /* HIDE */
 
-      #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"].hideable,
-      #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"].hideable,
-      #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"].hideable,
-      #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"].hideable
+      :root:not(.if-options-page) #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"],
+      :root:not(.if-options-page) #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"],
+      :root:not(.if-options-page) #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"],
+      :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"]
       {
         /* Hide, but preclude width resizes. */
         height: 0px !important;
         line-height: 0px !important;
-        padding: 0;
-        margin: 0;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        border: none !important;
         display: block;
         visibility: hidden;
-        transform: scaleY(0);
+        transform: scaleY(0) !important;
       }
-      #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"].hideable *,
-      #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"].hideable *,
-      #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"].hideable *,
-      #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"].hideable *
+      :root:not(.if-options-page) #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"] *,
+      :root:not(.if-options-page) #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"] *,
+      :root:not(.if-options-page) #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"] *,
+      :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"] *
       {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
@@ -258,27 +276,34 @@
       }
 
       /* TAB_3 EXCEPTIONS */
-
-      #exc-editor {
-        border-radius: 0 !important;
-        border: none !important;
+      #exc-address {
+        display: flex;
+        align-items: baseline;
+        width: 100%;
+        --exc-hieght: 1.6em;
         border-bottom: 1px solid var(--ribbon-color) !important;
-        // I don't understand this three, but they have effect.
-        max-height: 1.6em !important;
-        min-height: 1.6em !important;
-        height: 1em !important;
+        font-size: 1em;
+      }
+      input#exc-editor {
+        border: none;
+        width: 100%;
+        background: inherit;
+        // The two below align '.' (dot) vertically.
+        max-height: var(--exc-hieght) !important;
+        min-height: var(--exc-hieght) !important;
       }
       #exc-radio {
         display: flex;
         justify-content: space-around;
+        margin-top: 0.5em;
       }
       [name="if-proxy-this-site"]:checked + label {
         font-weight: bold;
       }
-      #exc-editor.if-yes {
+      #exc-address.if-yes {
         background-color: lightgreen;
       }
-      #exc-editor.if-no {
+      #exc-address.if-no {
         background-color: pink;
       }
 
@@ -332,53 +357,51 @@
 
     <nav class="hor-padded main-nav">
 
-      <section data-for="acc-pac" class="hideable">
+      <section data-for="acc-pac">
 
-        <div class="acc-padded">
-          <ul id="list-of-providers">
-            <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
-          </ul>
-          <div id="update-message">
-            Обновлялись: <span class="update-date">...</span>
-          </div>
+        <ul id="list-of-providers">
+          <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
+        </ul>
+        <div id="update-message">
+          Обновлялись: <span class="update-date">...</span>
         </div>
 
       </section>
 
-      <section data-for="acc-exc" class="hideable">
+      <section data-for="acc-exc" class="only-for-options-page">
+        Редактор исключений доступен толко для <a href="chrome://newtab">вкладок</a>.
+      </section>
+      <section data-for="acc-exc" class="hidden-for-options-page">
 
 
-
-        <div style="display: flex; justify-content: space-around;">
-          <span>Проксировать</span>
-          <input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor"/>?
-          <datalist id="exc-list"></datalist>
+        <div>Проксировать указанный сайт?</div>
+        <div id="exc-address">
+          <span>*.</span><input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor" style=""/>
         </div>
-        <ol class="acc-padded horizontal-list" id="exc-radio">
+        <datalist id="exc-list"></datalist>
+        <ol class="horizontal-list" id="exc-radio">
           <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
           <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
           <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
         </ol>
-      </section>
-
-      <section data-for="acc-mods" class="hideable">
-
-        <div class="acc-padded">
-          <ul id="pac-mods">
-            <li class="control-row">
-              <input type="button" value="Применить" id="apply-mods" disabled/>
-              <a href id="reset-mods" class="link-button">К изначальным!</a>
-            </li>
-          </ul>
-        </div>
 
       </section>
 
-      <section data-for="acc-ntf" class="hideable">
+      <section data-for="acc-mods">
+
+        <ul id="pac-mods">
+          <li class="control-row">
+            <input type="button" value="Применить" id="apply-mods" disabled/>
+            <a href id="reset-mods" class="link-button">К изначальным!</a>
+          </li>
+        </ul>
+
+      </section>
+
+      <section data-for="acc-ntf">
+
         <header>Я ❤️ yведомления:</header>
-        <div class="acc-padded">
-          <ul id="list-of-handlers"></ul>
-        </div>
+        <ul id="list-of-handlers" style="margin-left: 0.4em; margin-top: 0.4em;"></ul>
 
       </section>
 

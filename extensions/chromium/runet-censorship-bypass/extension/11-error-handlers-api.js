@@ -109,19 +109,28 @@
 
     },
 
-    ifNotControlled: null,
+    ifControlled: null,
+    ifControllable: null,
 
-    isNotControlled(details) {
+    isControllable(details) {
 
-      this.ifNotControlled = window.utils.areSettingsNotControlledFor(details);
-      if (this.ifNotControlled) {
+      this.ifControllable = window.utils.areSettingsControllableFor(details);
+
+      if (this.ifControllable) {
+        this.ifControlled = window.utils.areSettingsControlledFor(details);
+      } else {
+        this.ifControlled = false;
+      }
+
+      if (this.ifControlled) {
+        chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
+      } else {
         chrome.browserAction.setIcon({
           path: './icons/default-grayscale-128.png',
         });
-      } else {
-        chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
       }
-      return this.ifNotControlled;
+
+      return this.ifControllable;
 
     },
 
@@ -192,7 +201,7 @@
 
   chrome.proxy.settings.get(
     {},
-    (details) => handlers.isNotControlled(details)
+    (details) => handlers.isControllable(details)
   );
 
   chrome.notifications.onClicked.addListener( function(notId) {
@@ -211,7 +220,7 @@
 
   chrome.proxy.onProxyError.addListener((details) => {
 
-    if (handlers.ifNotControlled) {
+    if (!handlers.ifControlled) {
       return;
     }
     /*
@@ -233,7 +242,7 @@
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
-    if ( handlers.isNotControlled(details) ) {
+    if ( !handlers.isControllable(details) ) {
       handlers.mayNotifyVoid(
         noCon,
         chrome.i18n.getMessage('noControl'),

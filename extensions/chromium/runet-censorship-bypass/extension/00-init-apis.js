@@ -106,10 +106,27 @@
 
     },
 
-    areSettingsNotControlledFor(details) {
+    /*
+    * Possible values for levelOfControl:
+    *
+    * 1. "not_controllable"
+    * 2. "controlled_by_other_extensions"
+    * 3. "controllable_by_this_extension"
+    * 4. "controlled_by_this_extension"
+    *
+    * See: https://developer.chrome.com/extensions/proxy
+    * */
 
-      return ['controlled_by_other', 'not_controllable']
-        .some( (prefix) => details.levelOfControl.startsWith(prefix) );
+
+    areSettingsControllableFor(details) {
+
+      return details.levelOfControl.endsWith('this_extension');
+
+    },
+
+    areSettingsControlledFor(details) {
+
+      return details.levelOfControl.startsWith('controlled_by_this');
 
     },
 
