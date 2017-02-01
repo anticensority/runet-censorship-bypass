@@ -69,7 +69,7 @@
       }
       chrome.proxy.settings.get({}, (details) => {
 
-        if ( window.utils.areSettingsNotControlledFor( details ) ) {
+        if ( !window.utils.areSettingsControlledFor( details ) ) {
 
           console.warn('Failed, other extension is in control.');
           return cb(

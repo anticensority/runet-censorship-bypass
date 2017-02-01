@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
 
-  "name": "__MSG_extName__ 0.18",
+  "name": "__MSG_extName__ 0.19",
   "default_locale": "ru",
   "description": "__MSG_extDesc__",
-  "version": "0.0.0.18",
+  "version": "0.0.0.19",
   "icons": {
     "128": "/icons/default-128.png"
 	},
@@ -37,7 +37,7 @@
     ]
   },
   "browser_action": {
-    "default_title": "Этот сайт благословлён 0.18",
+    "default_title": "Этот сайт благословлён 0.19",
     "default_popup": "/pages/choose-pac-provider/index.html"
   },
   "options_ui": {

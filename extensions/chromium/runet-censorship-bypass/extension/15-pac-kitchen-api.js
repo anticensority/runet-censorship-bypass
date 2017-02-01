@@ -296,7 +296,7 @@
 
     keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
 
-      console.log('Keep cooked now...');
+      console.log('Keep cooked now...', cb);
       if (typeof(pacMods) === 'function') {
         cb = pacMods;
         pacMods = this.getCurrentConfigs();

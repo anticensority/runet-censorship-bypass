@@ -234,13 +234,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const ifInsideOptions = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=');
       if (ifInsideOptions) {
-        const hidClass = 'hideable';
-        for(const el of document.querySelectorAll('.' + hidClass)) {
-          el.classList.remove(hidClass);
-        }
-        for(const el of document.querySelectorAll('.hidden-for-options-page')) {
-          el.style.display = 'none';
-        }
+        document.documentElement.classList.add('if-options-page')
       }
 
       // EXCEPTIONS PANEL
@@ -252,10 +246,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         {
 
           const excEditor = document.getElementById('exc-editor');
-
-          if (currentTab && !currentTab.url.startsWith('chrome')) {
-            excEditor.value = new URL(currentTab.url).hostname;
-          }
 
           const validateHost = function validateHost(host) {
 
@@ -269,13 +259,24 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           };
 
           const ifProxyHtml = '✔';
+          const ifNotProxyHtml = '✘';
+          const ifAutoHtml = '🔄';
 
-          const addOption = function addOption(host, ifProxy) {
+          const addOption = function addOption(host, yesNoUndefined) {
 
             const opt = document.createElement('option');
             opt.value = host;
             opt.dataset.host = host;
-            opt.innerHTML = ifProxy ? ifProxyHtml : '✘';
+            switch(yesNoUndefined) {
+              case true:
+                opt.innerHTML = ifProxyHtml;
+                break;
+              case false:
+                opt.innerHTML = ifNotProxyHtml;
+                break;
+              default:
+                opt.innerHTML = ifAutoHtml;
+            }
             const editorHost = excEditor.value.trim();
             if (host === editorHost) {
               excList.insertBefore( opt, excList.firstChild );
@@ -304,7 +305,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           const hideOpt = (opt) => opt.value = '\n';
           const unhideOpt = (opt) => opt.value = opt.dataset.host + ' ';
 
-          const excList = document.getElementById('exc-list');          
+          const excList = document.getElementById('exc-list');
 
           excEditor.onkeydown = function(event) {
 
@@ -319,50 +320,83 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           excEditor.onclick = excEditor.oninput = function(event) {
 
+            // If triangle button on right of datalist input clicked.
+
+            let ifTriangleClicked = false;
+            const ifClick = event && event.type === 'click';
+
+            {
+              const minIndentFromRightInPx = 15;
+              if( ifClick
+                    && !this.selectionStart && !this.selectionStart
+                    && event.x > this.getBoundingClientRect().right - minIndentFromRightInPx
+              ) {
+                  ifTriangleClicked = true;
+              }
+            }
+
             const setInputValue = (newValue) => {
 
-              if (event && event.type === 'click') {
+              if (ifClick && !ifTriangleClicked) {
+                // Don't jerk cursor on simple clicks.
                 return;
-              } 
+              }
               // See bug in my comment to http://stackoverflow.com/a/32394157/521957
-              // The only shortcoming: first click on empty input may be still ignored.
+              // First click on empty input may be still ignored.
               const nu = this.selectionStart + newValue.length - this.value.length;
               this.value = newValue;
               excEditor.dataset.moveCursorTo = nu;
               window.setTimeout(moveCursorIfNeeded, 0);
 
             }
-            const host = this.value.trim() || ' ';
 
-            setInputValue(host);
-
+            const host = this.value.trim();
+            setInputValue(ifTriangleClicked ? '' : (host || ' '));
             thisAuto.checked = true;
 
-            this.classList.remove(noClass, yesClass);
+            let exactOpt = false;
             excList.childNodes.forEach(
               (opt) => {
 
+                if(opt.innerHTML === ifAutoHtml) {
+                  return opt.remove();
+                }
                 const ifExactMatch = opt.dataset.host === host;
                 if (!ifExactMatch) {
                   return unhideOpt(opt);
                 }
-
-                const exactOpt = opt;
-
-                hideOpt(exactOpt);
-                if(exactOpt.innerHTML === ifProxyHtml) {
-                  thisYes.checked = true;
-                  this.classList.add(yesClass);
-                } else {
-                  thisNo.checked = true;
-                  this.classList.add(noClass);
-                }
+                exactOpt = opt;
 
               }
             );
+
+            this.parentNode.classList.remove(noClass, yesClass);
+            if(exactOpt) {
+              if(ifTriangleClicked) {
+                unhideOpt(exactOpt);
+              } else {
+                hideOpt(exactOpt);
+                if(exactOpt.innerHTML === ifProxyHtml) {
+                  thisYes.checked = true;
+                  this.parentNode.classList.add(yesClass);
+                } else {
+                  thisNo.checked = true;
+                  this.parentNode.classList.add(noClass);
+                }
+              }
+            } else if (ifTriangleClicked && host) {
+              addOption(host, undefined);
+            }
             return true;
 
           };
+
+          if (currentTab && !currentTab.url.startsWith('chrome')) {
+            excEditor.value = new URL(currentTab.url).hostname;
+          } else {
+            // Show placeholder.
+            excEditor.value = '';
+          }
 
           { // Populate selector.
 
@@ -370,14 +404,15 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
               addOption(host, pacMods.exceptions[host]);
             }
+            //excEditor.oninput();
 
           }
-          excEditor.oninput();
 
           document.getElementById('exc-radio').onclick = function(event) {
 
             /* ON CLICK */
             if(event.target.tagName !== 'INPUT') {
+              // Only label on checkbox.
               return true;
             }
 
@@ -398,7 +433,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               }
               if (thisYes.checked && !pacMods.filteredCustomsString) {
                 showErrors( new TypeError(
-                  'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см.«Модификаторы»).'
+                  'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ).'
                 ));
                 return false;
               }
@@ -416,6 +451,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
                   (opt) => opt.dataset.host === host && opt.remove()
                 );
                 fixUi();
+                console.log(excEditor, excEditor.oninput);
                 excEditor.oninput();
 
               }
@@ -550,7 +586,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
       });
 
-      if( errorHandlers.ifNotControlled ) {
+      if( !errorHandlers.ifControllable ) {
         document.getElementById('which-extension').innerHTML
           = backgroundPage.utils.messages.whichExtensionHtml();
         document.querySelectorAll('.if-not-controlled').forEach( (node) => {
@@ -565,7 +601,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
         const id = antiCensorRu.getCurrentPacProviderKey() || 'none';
         document.querySelector('#update-' + id).click();
       }
-      document.documentElement.style.display = '';
+      document.documentElement.style.display = 'initial';
 
       console.log(Date.now() - START);
 
