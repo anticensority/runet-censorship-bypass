@@ -351,7 +351,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             }
 
             const host = this.value.trim();
-            setInputValue(ifTriangleClicked ? '' : (host || ' '));
+            const ifInit = !event;
+            setInputValue(ifTriangleClicked ? '' : (host || (ifInit ? '' : ' ')));
             thisAuto.checked = true;
 
             let exactOpt = false;
@@ -404,7 +405,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
               addOption(host, pacMods.exceptions[host]);
             }
-            //excEditor.oninput();
+            excEditor.oninput(); // Colorize input.
 
           }
 
@@ -524,7 +525,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
                 .filter( (str) => str )
                 .every(
                 (str) =>
-                  /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5))\s+\S+))$/g
+                  /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
                     .test(str)
                 )
               if (!ifValid) {

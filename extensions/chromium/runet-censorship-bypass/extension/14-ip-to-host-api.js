@@ -208,9 +208,12 @@
 
     _purgeOldIpsForSync(hostStr) {
 
-      console.log('Purging old IPs...');
+      console.log('Purging old IPs for', hostStr);
       for(const ip of Object.keys(privates._ipToHostObj)) {
-        delete privates._ipToHostObj[ip];
+        if (hostStr === privates._ipToHostObj[ip].host) {
+          console.log('del', ip);
+          delete privates._ipToHostObj[ip];
+        }
       }
 
     },
@@ -227,10 +230,10 @@
           for(const ip of ips) {
             console.log('IP', ip);
             privates._ipToHostObj[ip] = hostObj;
-            console.log(privates._ipToHostObj[ip], privates);
+            console.log(privates._ipToHostObj[ip], privates._ipToHostObj);
           }
         }
-        console.log('PP', privates);
+        console.log('PP', privates._ipToHostObj);
         return cb(err, null, ...warns);
 
       });
@@ -240,6 +243,7 @@
     _updateAllAsync(cb = mandatory()) {
 
       const hostArr = Object.keys(privates._strToHostObj);
+      console.log('Update all:', hostArr);
 
       const promises = hostArr.map(
         (hostStr) => new Promise( (resolve) => this._addAsync(hostStr, (...args) => resolve(args) ) )
