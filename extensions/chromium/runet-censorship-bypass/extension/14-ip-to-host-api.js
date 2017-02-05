@@ -213,7 +213,6 @@
       console.log('Purging old IPs for', hostStr);
       for(const ip of Object.keys(privates._ipToHostObj)) {
         if (hostStr === privates._ipToHostObj[ip].host) {
-          console.log('del', ip);
           delete privates._ipToHostObj[ip];
         }
       }
@@ -230,9 +229,7 @@
           // Object may be shared, string can't.
           const hostObj = _getHostObj(hostStr);
           for(const ip of ips) {
-            console.log('IP', ip);
             privates._ipToHostObj[ip] = hostObj;
-            console.log(privates._ipToHostObj[ip], privates._ipToHostObj);
           }
         }
         return cb(err, null, ...warns);

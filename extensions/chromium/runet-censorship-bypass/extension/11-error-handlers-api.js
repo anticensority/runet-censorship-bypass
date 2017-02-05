@@ -2,6 +2,8 @@
 
 { // Private namespace
 
+  const chromified = window.utils.chromified;
+
   function errorJsonReplacer(key, value) {
 
     // fooWindow.ErrorEvent !== barWindow.ErrorEvent
@@ -63,7 +65,7 @@
 
     state: window.utils.createStorage('handlers-'),
 
-    viewErrorVoid(type = window.utils.mandatory(), err) {
+    viewError(type = window.utils.mandatory(), err) {
 
       let errors = {};
       if (err) {
@@ -90,7 +92,7 @@
 
     },
 
-    switchVoid(onOffStr, eventName) {
+    switch(onOffStr, eventName) {
 
       if (!['on', 'off'].includes(onOffStr)) {
         throw new TypeError('First argument bust be "on" or "off".');
@@ -136,7 +138,7 @@
 
     idToError: {},
 
-    mayNotifyVoid(
+    mayNotify(
       id, title, errOrMessage,
       {
         icon = 'default-128.png',
@@ -166,12 +168,12 @@
 
     },
 
-    installListenersOnAsync(win, name, cb) {
+    installListenersOn(win, name, cb) {
 
       win.addEventListener('error', (errEvent) => {
 
         console.warn(name + ':GLOBAL ERROR', errEvent);
-        this.mayNotifyVoid('ext-error', 'Ошибка расширения', errEvent,
+        this.mayNotify('ext-error', 'Ошибка расширения', errEvent,
           {icon: 'ext-error-128.png'});
 
       });
@@ -186,7 +188,8 @@
       });
 
       if (cb) {
-        // setTimeout changes error context.
+        // In most cases getBackgroundPage( (bg) => installListenersOn
+        // Without setTimeout errors are swallowed, bug #357568
         setTimeout(cb, 0);
       }
 
@@ -201,10 +204,10 @@
 
   chrome.proxy.settings.get(
     {},
-    (details) => handlers.isControllable(details)
+    chromified((err, details) => handlers.isControllable(details))
   );
 
-  chrome.notifications.onClicked.addListener( function(notId) {
+  chrome.notifications.onClicked.addListener( chromified( (_, notId) => {
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
@@ -212,13 +215,13 @@
         window.utils.messages.searchSettingsForUrl('proxy')
       );
     }
-    handlers.viewErrorVoid(notId);
+    handlers.viewError(notId);
 
-  });
+  }));
 
-  handlers.installListenersOnAsync(window, 'BG');
+  handlers.installListenersOn(window, 'BG');
 
-  chrome.proxy.onProxyError.addListener((details) => {
+  chrome.proxy.onProxyError.addListener( chromified( (_, details) => {
 
     if (!handlers.ifControlled) {
       return;
@@ -231,19 +234,19 @@
     */
     console.warn('PAC ERROR', details);
     // TOOD: add "view pac script at this line" button.
-    handlers.mayNotifyVoid('pac-error', 'Ошибка PAC!',
+    handlers.mayNotify('pac-error', 'Ошибка PAC!',
       details.error + '\n' + details.details,
       {icon: 'pac-error-128.png'}
     );
 
-  });
+  }));
 
-  chrome.proxy.settings.onChange.addListener((details) => {
+  chrome.proxy.settings.onChange.addListener( chromified((_, details) => {
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
     if ( !handlers.isControllable(details) ) {
-      handlers.mayNotifyVoid(
+      handlers.mayNotify(
         noCon,
         chrome.i18n.getMessage('noControl'),
         chrome.i18n.getMessage('which'),
@@ -253,6 +256,6 @@
       chrome.notifications.clear( noCon );
     }
 
-  });
+  }));
 
 }

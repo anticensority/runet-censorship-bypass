@@ -10,7 +10,7 @@ document.getElementById('pac-mods').onchange = function() {
 };
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
-  backgroundPage.apis.errorHandlers.installListenersOnAsync(
+  backgroundPage.apis.errorHandlers.installListenersOn(
     window, 'PUP', async() => {
 
       const getStatus = () => document.querySelector('#status');
@@ -119,7 +119,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         if (err) {
           getStatus().querySelector('.link-button').onclick = function() {
 
-            errorHandlers.viewErrorVoid('pup-ext-err', err);
+            errorHandlers.viewError('pup-ext-err', err);
             return false;
 
           };
@@ -144,7 +144,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           warns = warns.filter( (w) => w );
           if (err || warns.length) {
-            backgroundPage.console.log('ERR', err, 'W', warns.length, 'w', warns);
             showErrors(err, ...warns);
           } else {
             setStatusTo(afterStatus);
@@ -479,7 +478,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             conduct(
               'Применяем исключения...',
               (cb) => pacKitchen.keepCookedNowAsync(pacMods, cb),
-              'Исключения применены.',
+              'Исключения применены. Не забывайте о кэше!',
               () => {
 
                 excList.childNodes.forEach(
@@ -616,7 +615,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
         box.onclick = function() {
 
           const id = this.id.replace('if-on-', '');
-          return backgroundPage.apis.errorHandlers.switchVoid(
+          return backgroundPage.apis.errorHandlers.switch(
             this.checked ? 'on' : 'off',
             id
           );
