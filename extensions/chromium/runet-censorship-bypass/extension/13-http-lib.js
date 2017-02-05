@@ -43,7 +43,18 @@
         (res) => {
 
           const textCb =
-            (err) => res.text().then( (text) => cb(err, text), cb );
+            (err) => {
+
+              console.log('Reading response as text...');
+              res.text().then(
+                (text) => {
+                  console.log('Calling CB...');
+                  cb(err, text);
+                },
+                cb
+              );
+
+            };
 
           const status = res.status;
           if ( !( status >= 200 && status < 300 || status === 304 ) ) {

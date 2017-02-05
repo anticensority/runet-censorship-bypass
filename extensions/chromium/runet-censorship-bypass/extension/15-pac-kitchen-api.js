@@ -17,7 +17,7 @@
     ifProxyHttpsUrlsOnly: {
       dflt: false,
       label: 'проксировать только HTTP<em>S</em>-сайты',
-      desc: 'Проксировать только сайты, доступные по шифрованному протоколу httpS. Прокси и провайдер смогут видеть только адреса проксируемых HTTP<em>S</em>-сайтов, но не их содержимое. Используйте, если вы не доверяете прокси-серверам ваш HTTP-трафик. Разумеется, что с этой опцией разблокировка HTTP-сайтов работать не будет.',
+      desc: 'Проксировать только сайты, доступные по шифрованному протоколу HTTP<em>S</em>. Прокси и провайдер смогут видеть только адреса проксируемых HTTP<em>S</em>-сайтов, но не их содержимое. Используйте, если вы не доверяете прокси-серверам ваш HTTP-трафик. Разумеется, что с этой опцией разблокировка HTTP-сайтов работать не будет.',
       index: 0,
     },
     ifUseSecureProxiesOnly: {
@@ -140,7 +140,6 @@
 
       this.included = this.excluded = undefined;
       if (this.ifMindExceptions && this.exceptions) {
-        console.log('Exceptions:', this.exceptions);
         this.included = [];
         this.excluded = [];
         for(const host of Object.keys(this.exceptions)) {
