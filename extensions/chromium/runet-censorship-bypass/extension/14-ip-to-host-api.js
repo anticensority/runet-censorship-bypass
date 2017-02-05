@@ -116,10 +116,12 @@
           'https://dns.google.com/resolve?type=' + type + '&name=' + host,
           (err, res) => {
 
+            console.log('After GET...');
             if (res) {
               try {
+                console.log('Parsing JSON...');
                 res = JSON.parse(res);
-                console.log('Json parsed.');
+                console.log('JSON parsed.');
                 if (err || res.Status) {
                   const msg = ['Answer', 'Comment', 'Status']
                     .filter( (prop) => res[prop] )
@@ -222,7 +224,7 @@
 
       getIpsFor(hostStr, (err, ips, ...warns) => {
 
-        console.log('IPS', ips, err);
+        console.log('Got IPs + err?:', ips, err);
         if (!err) {
           this._purgeOldIpsForSync(hostStr);
           // Object may be shared, string can't.
@@ -233,7 +235,6 @@
             console.log(privates._ipToHostObj[ip], privates._ipToHostObj);
           }
         }
-        console.log('PP', privates._ipToHostObj);
         return cb(err, null, ...warns);
 
       });

@@ -1,8 +1,5 @@
 module.exports = {
-    "extends": ["google"],
-    "plugins": [
-      //"hapi"
-    ],
+    "extends": ["airbnb"],
     "env": {
       "browser": true,
       "webextensions": true,
@@ -23,6 +20,5 @@ module.exports = {
       "no-console": "off",
       "padded-blocks": "off",
       "require-jsdoc": "off"
-      //"hapi/hapi-scope-start": ["warn"]
     }
 };

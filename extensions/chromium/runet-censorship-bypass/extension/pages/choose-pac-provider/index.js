@@ -258,24 +258,25 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-          const ifProxyHtml = '✔';
-          const ifNotProxyHtml = '✘';
-          const ifAutoHtml = '🔄';
+          const ifProxyLabel = '✔';
+          const ifNotProxyLabel = '✘';
+          const ifAutoLabel = '🔄';
 
           const addOption = function addOption(host, yesNoUndefined) {
 
             const opt = document.createElement('option');
+            // `value` may be changed for hiding line in the tooltip.
             opt.value = host;
             opt.dataset.host = host;
             switch(yesNoUndefined) {
               case true:
-                opt.innerHTML = ifProxyHtml;
+                opt.label = ifProxyLabel;
                 break;
               case false:
-                opt.innerHTML = ifNotProxyHtml;
+                opt.label = ifNotProxyLabel;
                 break;
               default:
-                opt.innerHTML = ifAutoHtml;
+                opt.label = ifAutoLabel;
             }
             const editorHost = excEditor.value.trim();
             if (host === editorHost) {
@@ -283,6 +284,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             } else {
               excList.appendChild(opt);
             }
+            return opt;
 
           };
 
@@ -318,7 +320,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-          excEditor.onclick = excEditor.oninput = function(event) {
+          const renderExceptions = function renderExceptions(event) {
 
             // If triangle button on right of datalist input clicked.
 
@@ -326,13 +328,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             const ifClick = event && event.type === 'click';
 
             {
-              const minIndentFromRightInPx = 15;
-              if( ifClick
-                    && !this.selectionStart && !this.selectionStart
-                    && event.x > this.getBoundingClientRect().right - minIndentFromRightInPx
-              ) {
-                  ifTriangleClicked = true;
-              }
+              const maxIndentFromRightInPx = 15;
+              ifTriangleClicked = ifClick
+                && !excEditor.selectionStart && !excEditor.selectionStart
+                && event.x > excEditor.getBoundingClientRect().right - maxIndentFromRightInPx;
             }
 
             const setInputValue = (newValue) => {
@@ -343,54 +342,85 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               }
               // See bug in my comment to http://stackoverflow.com/a/32394157/521957
               // First click on empty input may be still ignored.
-              const nu = this.selectionStart + newValue.length - this.value.length;
-              this.value = newValue;
+              const nu = excEditor.selectionStart + newValue.length - excEditor.value.length;
+              excEditor.value = newValue;
               excEditor.dataset.moveCursorTo = nu;
               window.setTimeout(moveCursorIfNeeded, 0);
 
             }
 
-            const host = this.value.trim();
+            const originalHost = excEditor.value.trim();
             const ifInit = !event;
-            setInputValue(ifTriangleClicked ? '' : (host || (ifInit ? '' : ' ')));
-            thisAuto.checked = true;
+            const currentHost = ifTriangleClicked ? '' : (originalHost || (ifInit ? '' : ' '));
+            setInputValue(currentHost);
 
             let exactOpt = false;
+            let editedOpt = false;
             excList.childNodes.forEach(
               (opt) => {
 
-                if(opt.innerHTML === ifAutoHtml) {
-                  return opt.remove();
+                unhideOpt(opt);
+
+                if(opt.label === ifAutoLabel) {
+                  editedOpt = opt;
+                  return;
                 }
-                const ifExactMatch = opt.dataset.host === host;
-                if (!ifExactMatch) {
-                  return unhideOpt(opt);
+                if (opt.dataset.host === originalHost) {
+                  exactOpt = opt;
                 }
-                exactOpt = opt;
 
               }
             );
 
-            this.parentNode.classList.remove(noClass, yesClass);
-            if(exactOpt) {
-              if(ifTriangleClicked) {
-                unhideOpt(exactOpt);
-              } else {
-                hideOpt(exactOpt);
-                if(exactOpt.innerHTML === ifProxyHtml) {
-                  thisYes.checked = true;
-                  this.parentNode.classList.add(yesClass);
-                } else {
-                  thisNo.checked = true;
-                  this.parentNode.classList.add(noClass);
+            thisAuto.checked = true;
+            excEditor.parentNode.classList.remove(noClass, yesClass);
+
+            if (ifTriangleClicked || !originalHost) {
+              // Show all opts.
+              if (editedOpt) {
+                const ifBackspaced = !originalHost && editedOpt.value.length < 3;
+                if (ifBackspaced) {
+                  editedOpt.remove();
                 }
               }
-            } else if (ifTriangleClicked && host) {
-              addOption(host, undefined);
+              return true;
+            }
+
+            if (editedOpt) {
+              hideOpt(editedOpt);
+            }
+
+            if (!exactOpt) {
+              if(editedOpt) {
+                const ifExact = editedOpt.dataset.host === originalHost;
+                if(ifExact) {
+                  return true;
+                }
+                // Not exact! Update!
+                editedOpt.remove();
+              }
+              editedOpt = addOption(originalHost, undefined);
+              if (!ifClick) {
+                // New value was typed -- don't show tooltip.
+                hideOpt(editedOpt);
+              }
+              return true;
+            }
+
+            // Exact found!
+            hideOpt(exactOpt);
+            if(exactOpt.label === ifProxyLabel) {
+              thisYes.checked = true;
+              excEditor.parentNode.classList.add(yesClass);
+            } else {
+              thisNo.checked = true;
+              excEditor.parentNode.classList.add(noClass);
             }
             return true;
 
           };
+
+          excEditor.onclick = excEditor.oninput = renderExceptions;
 
           if (currentTab && !currentTab.url.startsWith('chrome')) {
             excEditor.value = new URL(currentTab.url).hostname;
@@ -405,7 +435,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
               addOption(host, pacMods.exceptions[host]);
             }
-            excEditor.oninput(); // Colorize input.
+            renderExceptions(); // Colorize input.
 
           }
 
@@ -452,8 +482,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
                   (opt) => opt.dataset.host === host && opt.remove()
                 );
                 fixUi();
+                // Window may be closed before this line executes.
                 console.log(excEditor, excEditor.oninput);
-                excEditor.oninput();
+                renderExceptions();
 
               }
             );

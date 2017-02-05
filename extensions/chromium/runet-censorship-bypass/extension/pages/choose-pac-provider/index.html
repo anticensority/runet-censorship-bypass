@@ -37,7 +37,7 @@
       }
       em {
         font-style: normal;
-        border-bottom: 1px solid black;
+        text-decoration: underline;
       }
 
       /* COMMON 1 */
@@ -227,7 +227,8 @@
       .desc:hover .tooltip {
         display: block;
       }
-      .tooltip a {
+      .tooltip a,
+      .tooltip em {
         color: white;
       }
       .desc .tooltip:after {
@@ -376,7 +377,6 @@
         Редактор исключений доступен толко для <a href="chrome://newtab">вкладок</a>.
       </section>
       <section data-for="acc-exc" class="hidden-for-options-page">
-
 
         <div>Проксировать указанный сайт?</div>
         <div id="exc-address">
