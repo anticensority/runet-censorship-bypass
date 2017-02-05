@@ -48,7 +48,7 @@
 
     clarifyThen: function(message, cb = mandatory()) {
 
-      return (err, ...args) => cb( clarify(err, message), ...args );
+      return (err, ...args) => cb( self.clarify(err, message), ...args );
 
     },
 

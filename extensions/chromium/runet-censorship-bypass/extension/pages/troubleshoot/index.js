@@ -1,7 +1,7 @@
 'use strict';
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
-  backgroundPage.apis.errorHandlers.installListenersOnAsync(
+  backgroundPage.apis.errorHandlers.installListenersOn(
     window, 'TRBL', () => {
 
       document.getElementById('reset-settings').onclick = () => {
@@ -12,7 +12,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       };
 
       document.getElementById('view-errors').onclick = () =>
-        backgroundPage.apis.errorHandlers.viewErrorVoid('all');
+        backgroundPage.apis.errorHandlers.viewError('all');
 
     })
 );

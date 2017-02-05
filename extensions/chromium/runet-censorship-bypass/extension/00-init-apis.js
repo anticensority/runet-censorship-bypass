@@ -35,17 +35,14 @@
 
     },
 
-    checkChromeError(betterStack) {
+    checkChromeError() {
 
       // Chrome API calls your cb in a context different from the point of API
       // method invokation.
-      const err = chrome.runtime.lastError || chrome.extension.lastError;
+      let err = chrome.runtime.lastError || chrome.extension.lastError;
       if (err) {
-        const args = ['API returned error:', err];
-        if (betterStack) {
-          args.push('\n' + betterStack);
-        }
-        console.warn(...args);
+        err = new Error(err.message); // Add stack.
+        console.warn('API returned error:', err);
       }
       return err;
 
@@ -53,14 +50,13 @@
 
     chromified(cb = self.mandatory(), ...replaceArgs) {
 
-      const stack = (new Error()).stack;
-      // Take error first callback and convert it to chrome api callback.
+      // Take error first callback and convert it to chrome API callback.
       return function(...args) {
 
         if (replaceArgs.length) {
           args = replaceArgs;
         }
-        const err = self.checkChromeError(stack);
+        const err = self.checkChromeError();
         // setTimeout fixes error context.
         setTimeout( cb.bind(null, err, ...args), 0 );
 

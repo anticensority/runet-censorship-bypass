@@ -24,7 +24,6 @@
   const mandatory = window.utils.mandatory;
   const throwIfError = window.utils.throwIfError;
   const chromified = window.utils.chromified;
-  const checkChromeError = window.utils.checkChromeError;
 
   const clarifyThen = window.apis.errorsLib.clarifyThen;
   const Warning = window.apis.errorsLib.Warning;
@@ -60,13 +59,12 @@
       },
     };
     console.log('Setting chrome proxy settings...');
-    chrome.proxy.settings.set( {value: config}, () => {
+    chrome.proxy.settings.set( {value: config}, chromified((err) => {
 
-      const err = checkChromeError();
       if (err) {
         return cb(err);
       }
-      chrome.proxy.settings.get({}, (details) => {
+      chrome.proxy.settings.get({}, chromified((_, details) => {
 
         if ( !window.utils.areSettingsControlledFor( details ) ) {
 
@@ -78,9 +76,9 @@
         }
         console.log('Successfuly set PAC in proxy settings..');
         cb();
-      });
+      }));
 
-    });
+    }));
 
   };
 
@@ -397,16 +395,15 @@
       chrome.alarms.clearAll(
         () => chrome.proxy.settings.clear(
           {},
-          () => {
+          chromified((err) => {
 
-            const err = checkChromeError();
             if (err) {
               return cb(err);
             }
             this.setCurrentPacProviderKey(null);
             this.pushToStorageAsync(cb);
 
-          }
+          })
         )
       );
 
@@ -415,9 +412,8 @@
   };
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
-  chrome.storage.local.get(null, (oldStorage) => {
+  chrome.storage.local.get(null, chromified( (err, oldStorage) => {
 
-    const err = checkChromeError();
     if (err) {
       throw err;
     }
@@ -431,7 +427,7 @@
     const antiCensorRu = window.apis.antiCensorRu;
 
     chrome.alarms.onAlarm.addListener(
-      (alarm) => {
+      chromified((_, alarm) => {
 
         if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
           console.log(
@@ -441,7 +437,7 @@
           antiCensorRu.syncWithPacProviderAsync(() => {/* swallow */});
         }
 
-      }
+      })
     );
     console.log('Alarm listener installed. We won\'t miss any PAC update.');
 
@@ -533,6 +529,6 @@
         * Add storage.lastPacUpdateStamp.
     **/
 
-  });
+  }));
 
 }

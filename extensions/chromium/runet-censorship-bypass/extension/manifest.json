@@ -31,7 +31,6 @@
       "14-ip-to-host-api.js",
       "15-pac-kitchen-api.js",
       "17-sync-pac-script-with-pac-provider-api.js",
-      "20-api-fixes.js",
       "30-block-informer.js",
       "40-context-menus.js"
     ]

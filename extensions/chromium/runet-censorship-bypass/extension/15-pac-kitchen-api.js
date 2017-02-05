@@ -102,8 +102,7 @@
     constructor(mods = {}) {
 
       const defaults = getDefaults();
-      const ifAllDefaults =
-        Object.keys(defaults)
+      const ifAllDefaults = Object.keys(defaults)
         .every(
           (prop) => !(prop in mods)
             || Boolean(defaults[prop]) === Boolean(mods[prop])
@@ -257,7 +256,7 @@
 
         details
           ? resolve(details)
-          : chrome.proxy.settings.get({}, resolve)
+          : chrome.proxy.settings.get({}, chromified( (_, res) => resolve(res)))
 
       ).then( (details) => {
 
@@ -284,7 +283,7 @@
 
     },
 
-    checkIncontinenceVoid(details) {
+    checkIncontinence(details) {
 
       if ( kitchenState(ifIncontinence) ) {
         this._tryNowAsync(details, () => {/* Swallow. */});
@@ -295,7 +294,7 @@
 
     keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
 
-      console.log('Keep cooked now...', cb);
+      console.log('Keep cooked now...', pacMods);
       if (typeof(pacMods) === 'function') {
         cb = pacMods;
         pacMods = this.getCurrentConfigs();
@@ -364,7 +363,11 @@
 
   };
 
-  pacKitchen.checkIncontinenceVoid();
-  chrome.proxy.settings.onChange.addListener( pacKitchen.checkIncontinenceVoid.bind(pacKitchen) );
+  pacKitchen.checkIncontinence();
+  chrome.proxy.settings.onChange.addListener(
+    chromified(
+      (_, details) => pacKitchen.checkIncontinence(details)
+    )
+  );
 
 } // Private namespace ends.
