@@ -5,7 +5,7 @@
     in bg error handlers.
     More: https://bugs.chromium.org/p/chromium/issues/detail?id=357568
     setTimeout is applied to Async/Void methods
-    only (name ends with Async/Void) 
+    only (name ends with Async/Void)
 */
 // Fix error context of methods of all APIs.
 

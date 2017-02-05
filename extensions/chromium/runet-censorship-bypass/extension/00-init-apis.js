@@ -102,7 +102,7 @@
         }
         localStorage.setItem(key, JSON.stringify(value));
 
-      }
+      };
 
     },
 

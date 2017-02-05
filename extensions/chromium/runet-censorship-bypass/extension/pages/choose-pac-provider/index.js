@@ -75,7 +75,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         return document.getElementById(id);
 
       };
-      const checkChosenProvider = () => currentProviderRadio().checked = true;
+      const checkChosenProvider = () => {
+
+        currentProviderRadio().checked = true;
+
+      };
 
       const showErrors = (err, ...warns) => {
 
@@ -227,14 +231,14 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const currentTab = await new Promise(
         (resolve) => chrome.tabs.query(
-          { active: true, currentWindow: true },
+          {active: true, currentWindow: true},
           ([tab]) => resolve(tab)
         )
       );
 
       const ifInsideOptions = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=');
       if (ifInsideOptions) {
-        document.documentElement.classList.add('if-options-page')
+        document.documentElement.classList.add('if-options-page');
       }
 
       // EXCEPTIONS PANEL
@@ -347,7 +351,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               excEditor.dataset.moveCursorTo = nu;
               window.setTimeout(moveCursorIfNeeded, 0);
 
-            }
+            };
 
             const originalHost = excEditor.value.trim();
             const ifInit = !event;
@@ -525,7 +529,7 @@ HTTPS foobar.com:3143;
 HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</textarea>`;
             li.querySelector('textarea').onkeyup = function() {
 
-              this.dispatchEvent(new Event('change', { 'bubbles': true }));
+              this.dispatchEvent( new Event('change', {'bubbles': true}) );
 
             };
           }
@@ -555,14 +559,14 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
                 .split(/\s*[;\n\r]+\s*/g)
                 .filter( (str) => str )
                 .every(
-                (str) =>
-                  /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
-                    .test(str)
-                )
+                  (str) =>
+                    /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
+                      .test(str)
+                );
               if (!ifValid) {
                 return showErrors(new TypeError(
                   'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
-                ))
+                ));
               }
               oldMods[customProxyStringKey] = taVal;
             } else {
@@ -575,7 +579,11 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
             'Применяем настройки...',
             (cb) => pacKitchen.keepCookedNowAsync(oldMods, cb),
             'Настройки применены.',
-            () => { document.getElementById('apply-mods').disabled = true; }
+            () => {
+
+              document.getElementById('apply-mods').disabled = true;
+
+            }
           );
 
         };

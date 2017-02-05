@@ -20,7 +20,7 @@
 
     const m = (str.match(ipRe) || []).filter( (c) => c );
     const port = m.length > 1 ? m.pop() : false;
-    return { ifMatched: m.length, port: port };
+    return {ifMatched: m.length, port: port};
 
   };
 
@@ -57,9 +57,9 @@
 
   const _createHostObj = function _addHostObj(hostStr) {
 
-    return (privates._strToHostObj[hostStr] = { host: hostStr });
+    return (privates._strToHostObj[hostStr] = {host: hostStr});
 
-  }
+  };
 
   const _getHostObj = function _getHostObj(hostStr) {
 
@@ -186,16 +186,16 @@
     console.log('Canonized hosts/ips:', hostSet.size + '/' + ipSet.size);
     return [ipSet, hostSet];
 
-  }
+  };
 
-  const self = window.apis.ipToHost = {
+  window.apis.ipToHost = {
 
     persist() {
 
       console.log('Persisting ipToHost...', privates);
       const ipToHost = {};
       for( const ip of Object.keys(privates._ipToHostObj) ) {
-        ipToHost[ ip ] = privates._ipToHostObj[ ip ].host;
+        ipToHost[ip] = privates._ipToHostObj[ip].host;
       }
       _state(ip2host, ipToHost);
 
@@ -247,7 +247,12 @@
       console.log('Update all:', hostArr);
 
       const promises = hostArr.map(
-        (hostStr) => new Promise( (resolve) => this._addAsync(hostStr, (...args) => resolve(args) ) )
+        (hostStr) => new Promise(
+          (resolve) => this._addAsync(
+            hostStr,
+            (...args) => resolve(args)
+          )
+        )
       );
       Promise.all( promises ).then( (cbsRes) => {
 

@@ -146,11 +146,6 @@
 
   };
 
-  const isInsideTabWithIp = function isInsideTabWithIp(requestDetails) {
-
-
-  };
-
   const onRequest = function onRequest(requestDetails) {
 
     const ifInsideTabWithIp = requestDetails.tabId !== -1 && requestDetails.ip;
