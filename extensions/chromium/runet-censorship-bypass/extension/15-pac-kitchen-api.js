@@ -85,7 +85,7 @@
     const pacMods = getCurrentConfigs();
     return Object.keys(configs).reduce((arr, key) => {
 
-      const conf = configs[key]
+      const conf = configs[key];
       if(typeof(conf.index) === 'number') {
         arr[conf.index] = conf;
         conf.value = pacMods[key];
@@ -144,7 +144,7 @@
         this.excluded = [];
         for(const host of Object.keys(this.exceptions)) {
           if (this.exceptions[host]) {
-            this.included.push(host)
+            this.included.push(host);
           } else {
             this.excluded.push(host);
           }
@@ -320,7 +320,7 @@
             return cb(null, res, ...warns);
           }
 
-          const hosts = par.map( (ps) => ps.split(/\s+/)[1] )
+          const hosts = par.map( (ps) => ps.split(/\s+/)[1] );
           window.apis.ipToHost.replaceAllAsync(
             hosts,
             (...args) => cb(...args, ...warns)
@@ -355,7 +355,7 @@
     }
     const pacMods = getCurrentConfigs();
     pac.data = pacKitchen.cook( pac.data, pacMods );
-    originalSet({ value: details.value }, (/* No args. */) => {
+    originalSet({value: details.value}, (/* No args. */) => {
 
       kitchenState(ifIncontinence, null);
       cb && cb();

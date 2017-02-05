@@ -26,7 +26,6 @@
   const chromified = window.utils.chromified;
   const checkChromeError = window.utils.checkChromeError;
 
-  const clarify = window.apis.errorsLib.clarify;
   const clarifyThen = window.apis.errorsLib.clarifyThen;
   const Warning = window.apis.errorsLib.Warning;
 
@@ -332,7 +331,7 @@
           }
           const warns = pacWarns;
           if (ipsErr) {
-            warns.push(ipsErr)
+            warns.push(ipsErr);
           }
           this.pushToStorageAsync(
             (pushErr) => cb(pacErr || pushErr, null, ...warns)
