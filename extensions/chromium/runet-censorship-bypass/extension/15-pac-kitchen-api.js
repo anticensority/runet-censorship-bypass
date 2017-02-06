@@ -5,6 +5,7 @@
   const mandatory = window.utils.mandatory;
   const throwIfError = window.utils.throwIfError;
   const chromified = window.utils.chromified;
+  const timeouted = window.utils.timeouted;
 
   const kitchenStartsMark = '\n\n//%#@@@@@@ PAC_KITCHEN_STARTS @@@@@@#%';
   const kitchenState = window.utils.createStorage('pac-kitchen-');
@@ -256,7 +257,7 @@
 
         details
           ? resolve(details)
-          : chrome.proxy.settings.get({}, chromified( (_, res) => resolve(res)))
+          : chrome.proxy.settings.get({}, timeouted(resolve) )
 
       ).then( (details) => {
 
@@ -365,8 +366,8 @@
 
   pacKitchen.checkIncontinence();
   chrome.proxy.settings.onChange.addListener(
-    chromified(
-      (_, details) => pacKitchen.checkIncontinence(details)
+    timeouted(
+      pacKitchen.checkIncontinence.bind(pacKitchen)
     )
   );
 
