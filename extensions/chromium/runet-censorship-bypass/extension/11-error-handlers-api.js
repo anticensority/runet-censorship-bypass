@@ -2,7 +2,7 @@
 
 { // Private namespace
 
-  const chromified = window.utils.chromified;
+  const timeouted = window.utils.timeouted;
 
   function errorJsonReplacer(key, value) {
 
@@ -204,10 +204,10 @@
 
   chrome.proxy.settings.get(
     {},
-    chromified((err, details) => handlers.isControllable(details))
+    timeouted( handlers.isControllable.bind(handlers) )
   );
 
-  chrome.notifications.onClicked.addListener( chromified( (_, notId) => {
+  chrome.notifications.onClicked.addListener( timeouted( (notId) => {
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
@@ -221,7 +221,7 @@
 
   handlers.installListenersOn(window, 'BG');
 
-  chrome.proxy.onProxyError.addListener( chromified( (_, details) => {
+  chrome.proxy.onProxyError.addListener( timeouted( (details) => {
 
     if (!handlers.ifControlled) {
       return;
@@ -241,7 +241,7 @@
 
   }));
 
-  chrome.proxy.settings.onChange.addListener( chromified((_, details) => {
+  chrome.proxy.settings.onChange.addListener( timeouted( (details) => {
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';

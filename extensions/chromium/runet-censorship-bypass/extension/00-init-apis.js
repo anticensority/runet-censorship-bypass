@@ -48,6 +48,12 @@
 
     },
 
+    timeouted(cb = self.mandatory) {
+
+      return (...args) => setTimeout(cb.bind(null, ...args), 0)
+
+    },
+
     chromified(cb = self.mandatory(), ...replaceArgs) {
 
       // Take error first callback and convert it to chrome API callback.

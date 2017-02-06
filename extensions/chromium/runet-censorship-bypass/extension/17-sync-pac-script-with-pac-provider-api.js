@@ -24,6 +24,7 @@
   const mandatory = window.utils.mandatory;
   const throwIfError = window.utils.throwIfError;
   const chromified = window.utils.chromified;
+  const timeouted = window.utils.timeouted;
 
   const clarifyThen = window.apis.errorsLib.clarifyThen;
   const Warning = window.apis.errorsLib.Warning;
@@ -64,7 +65,7 @@
       if (err) {
         return cb(err);
       }
-      chrome.proxy.settings.get({}, chromified((_, details) => {
+      chrome.proxy.settings.get({}, timeouted( (details) => {
 
         if ( !window.utils.areSettingsControlledFor( details ) ) {
 
@@ -118,21 +119,20 @@
       }
 
       // Employ all urls, the latter are fallbacks for the former.
-      let pacDataPromise = Promise.reject();
-      for(const url of provider.pacUrls) {
-
-        pacDataPromise = pacDataPromise.catch(
-          (err) => new Promise(
+      const pacDataPromise = provider.pacUrls.reduce(
+        (promise, url) => promise.catch(
+          () => new Promise(
             (resolve, reject) => httpLib.get(
               url,
               (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
             )
           )
-        );
-
-      }
+        ),
+        Promise.reject()
+      );
 
       pacDataPromise.then(
+
         (pacData) => {
 
           setPacAsync(
@@ -144,11 +144,13 @@
           );
 
         },
+
         clarifyThen(
           'Не удалось скачать PAC-скрипт с адресов: [ '
           + provider.pacUrls.join(' , ') + ' ].',
           cb
         )
+
       );
 
     });
@@ -274,7 +276,7 @@
       chrome.storage.local.clear(
         () => chrome.storage.local.set(
           onlySettable,
-          chromified(cb, onlySettable)
+          chromified(cb)
         )
       );
 
@@ -427,7 +429,7 @@
     const antiCensorRu = window.apis.antiCensorRu;
 
     chrome.alarms.onAlarm.addListener(
-      chromified((_, alarm) => {
+      timeouted( (alarm) => {
 
         if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
           console.log(
