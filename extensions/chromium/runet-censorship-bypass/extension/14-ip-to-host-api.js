@@ -116,10 +116,8 @@
           'https://dns.google.com/resolve?type=' + type + '&name=' + host,
           (err, res) => {
 
-            console.log('After GET...');
             if (res) {
               try {
-                console.log('Parsing JSON...');
                 res = JSON.parse(res);
                 console.log('JSON parsed.');
                 if (err || res.Status) {
