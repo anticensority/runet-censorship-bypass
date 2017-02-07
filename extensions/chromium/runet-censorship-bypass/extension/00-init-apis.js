@@ -39,32 +39,29 @@
 
       // Chrome API calls your cb in a context different from the point of API
       // method invokation.
-      let err = chrome.runtime.lastError || chrome.extension.lastError;
-      if (err) {
-        err = new Error(err.message); // Add stack.
-        console.warn('API returned error:', err);
+      const err = chrome.runtime.lastError || chrome.extension.lastError;
+      if (!err) {
+        return;
       }
-      return err;
+      console.warn('API returned error:', err);
+      return new Error(err.message); // Add stack.
 
     },
 
     timeouted(cb = self.mandatory) {
 
-      return (...args) => setTimeout(cb.bind(null, ...args), 0)
+      // setTimeout fixes error context, see bug #357568.
+      return (...args) => setTimeout(() => cb(...args), 0);
 
     },
 
-    chromified(cb = self.mandatory(), ...replaceArgs) {
+    chromified(cb = self.mandatory()) {
 
       // Take error first callback and convert it to chrome API callback.
       return function(...args) {
 
-        if (replaceArgs.length) {
-          args = replaceArgs;
-        }
         const err = self.checkChromeError();
-        // setTimeout fixes error context.
-        setTimeout( cb.bind(null, err, ...args), 0 );
+        self.timeouted(cb)(err, ...args);
 
       };
 

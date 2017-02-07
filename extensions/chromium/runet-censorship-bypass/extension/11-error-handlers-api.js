@@ -67,13 +67,9 @@
 
     viewError(type = window.utils.mandatory(), err) {
 
-      let errors = {};
-      if (err) {
-        errors[type] = err;
-      } else {
-        errors = this.idToError;
-      }
+      const errors = err ? { [type]: err } : this.idToError;
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
+
       openAndFocus(
         'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
@@ -144,7 +140,7 @@
         icon = 'default-128.png',
         context = extName,
         ifSticky = true,
-      }
+      } = {}
     ) {
 
       if ( !this.isOn(id) ) {
@@ -245,7 +241,8 @@
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
-    if ( !handlers.isControllable(details) ) {
+    const ifWasControllable = handler.ifControllable;
+    if ( !handlers.isControllable(details) && ifWasControllable ) {
       handlers.mayNotify(
         noCon,
         chrome.i18n.getMessage('noControl'),
