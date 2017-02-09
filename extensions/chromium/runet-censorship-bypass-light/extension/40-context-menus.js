@@ -2,13 +2,38 @@
 
 {
 
-  const createMenuLinkEntry = (title, tab2url) => chrome.contextMenus.create({
-    title: title,
-    contexts: ['browser_action'],
-    onclick:
-      (menuInfo, tab) => Promise.resolve( tab2url( tab ) )
-        .then( (url) => chrome.tabs.create({url: url}) ),
-  });
+  let seqId = 0;
+
+  const createMenuLinkEntry = (title, tab2url) => {
+
+    const id = (++seqId).toString();
+
+    chrome.runtime.onInstalled.addListener(
+      () => chrome.contextMenus.create({
+        id: id,
+        title: title,
+        contexts: ['browser_action']
+      }, timeouted(() => {
+
+        const err = chrome.runtime.lastError;
+        if(err) {
+          console.warn('CTX MENU ERR', err);
+          throw err;
+        }
+
+      }))
+    );
+
+    chrome.contextMenus.onClicked.addListener((info, tab) => {
+
+      if(info.menuItemId === id) {
+        Promise.resolve( tab2url( tab ) )
+          .then( (url) => chrome.tabs.create({url: url}) );
+      }
+
+    });
+
+  };
 
   createMenuLinkEntry(
     'Сайт доступен из-за границы? Is up?',
