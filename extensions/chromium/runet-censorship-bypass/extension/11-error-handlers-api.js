@@ -4,7 +4,7 @@
 
   const timeouted = window.utils.timeouted;
 
-  function errorJsonReplacer(key, value) {
+  const errorJsonReplacer = function errorJsonReplacer(key, value) {
 
     // fooWindow.ErrorEvent !== barWindow.ErrorEvent
     if (!( value && value.constructor
@@ -47,7 +47,7 @@
 
     return alt;
 
-  }
+  };
 
   const openAndFocus = function openAndFocus(url) {
 
@@ -60,6 +60,7 @@
 
   const ifPrefix = 'if-on-';
   const extName = chrome.runtime.getManifest().name;
+  const extVersion = chrome.runtime.getManifest().version.replace(/\d+\.\d+\./g, '');
 
   window.apis.errorHandlers = {
 
@@ -112,6 +113,7 @@
 
     isControllable(details) {
 
+      console.log('IS',details);
       this.ifControllable = window.utils.areSettingsControllableFor(details);
 
       if (this.ifControllable) {
@@ -132,13 +134,36 @@
 
     },
 
+    isControlled(details) {
+
+      this.isControllable(details);
+      return this.ifControlled;
+
+    },
+
+    updateControlState(cb = throwIfError) {
+
+      chrome.proxy.settings.get(
+        {},
+        timeouted(
+          (details) => {
+
+            this.isControllable(details);
+            cb();
+
+          }
+        )
+      );
+
+    },
+
     idToError: {},
 
     mayNotify(
       id, title, errOrMessage,
       {
         icon = 'default-128.png',
-        context = extName,
+        context = extName + ' ' + extVersion,
         ifSticky = true,
       } = {}
     ) {
@@ -241,7 +266,7 @@
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
-    const ifWasControllable = handler.ifControllable;
+    const ifWasControllable = handlers.ifControllable;
     if ( !handlers.isControllable(details) && ifWasControllable ) {
       handlers.mayNotify(
         noCon,
