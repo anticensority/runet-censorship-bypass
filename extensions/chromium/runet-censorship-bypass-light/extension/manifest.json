@@ -13,8 +13,6 @@
 
   "permissions": [
     "proxy",
-    "alarms",
-    "storage",
     "<all_urls>",
     "tabs",
     "contextMenus",
@@ -22,10 +20,10 @@
   ],
 
   "background": {
-    "persistent": true,
+    "persistent": false,
     "scripts": [
-      "00-init-apis.js",
-      "12-set-pac-url.js"
+      "00-set-pac.js",
+      "40-context-menus.js"
     ]
   },
   "browser_action": {
