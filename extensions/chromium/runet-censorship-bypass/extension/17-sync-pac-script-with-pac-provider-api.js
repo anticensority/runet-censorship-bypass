@@ -30,6 +30,7 @@
   const Warning = window.apis.errorsLib.Warning;
 
   const httpLib = window.apis.httpLib;
+  const handlers = window.apis.errorHandlers;
 
   const asyncLogGroup = function asyncLogGroup(...args) {
 
@@ -65,9 +66,9 @@
       if (err) {
         return cb(err);
       }
-      chrome.proxy.settings.get({}, timeouted( (details) => {
+      handlers.updateControlState( () => {
 
-        if ( !window.utils.areSettingsControlledFor( details ) ) {
+        if ( !handlers.ifControlled ) {
 
           console.warn('Failed, other extension is in control.');
           return cb(
@@ -77,7 +78,8 @@
         }
         console.log('Successfuly set PAC in proxy settings..');
         cb();
-      }));
+
+      });
 
     }));
 
@@ -403,7 +405,9 @@
               return cb(err);
             }
             this.setCurrentPacProviderKey(null);
-            this.pushToStorageAsync(cb);
+            this.pushToStorageAsync(
+              () => handlers.updateControlState(cb)
+            );
 
           })
         )
