@@ -186,7 +186,7 @@
 
   };
 
-  window.apis.ipToHost = {
+  const self = window.apis.ipToHost = {
 
     persist() {
 
@@ -276,20 +276,6 @@
 
     },
 
-
-    updateAllAsync(cb = mandatory()) {
-
-      this._updateAllAsync((err, ...args) => {
-
-        if (!err) {
-          this.persist();
-        }
-        cb(err, ...args);
-
-      });
-
-    },
-
     _replaceAllAsync(hostArr = mandatory(), cb) {
 
       if (typeof(hostArr) === 'function') {
@@ -303,6 +289,21 @@
       }
 
       this._updateAllAsync(cb);
+
+    },
+
+    // PUBLIC
+
+    updateAllAsync(cb = mandatory()) {
+
+      this._updateAllAsync((err, ...args) => {
+
+        if (!err) {
+          this.persist();
+        }
+        cb(err, ...args);
+
+      });
 
     },
 
@@ -335,5 +336,8 @@
     },
 
   };
+
+  window.utils.addEventHandler('ip-to-host-update-all', (...args) => self.updateAllAsync(...args) );
+  window.utils.addEventHandler('ip-to-host-replace-all', (...args) => self.replaceAllAsync(...args) );
 
 }

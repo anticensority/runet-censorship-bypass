@@ -2,6 +2,8 @@
 
 {
 
+  const timeouted = window.utils.timeouted;
+
   let seqId = 0;
 
   const createMenuLinkEntry = (title, tab2url) => {
@@ -17,7 +19,7 @@
 
         const err = chrome.runtime.lastError;
         if(err) {
-          console.warn('CTX MENU ERR', err);
+          console.warn('Context menu error:', err);
           throw err;
         }
 

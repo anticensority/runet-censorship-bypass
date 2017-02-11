@@ -321,10 +321,12 @@
           }
 
           const hosts = par.map( (ps) => ps.split(/\s+/)[1] );
-          window.apis.ipToHost.replaceAllAsync(
+          window.utils.fireEvent('ip-to-host-replace-all', hosts, throwIfError);
+          cb(null, null, ...warns);
+          /*window.apis.ipToHost.replaceAllAsync(
             hosts,
             (...args) => cb(...args, ...warns)
-          );
+          );*/
 
         }
       );

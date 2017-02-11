@@ -226,7 +226,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         };
       }
 
-      // IF INSIDE OPTIONS
+      // IF INSIDE OPTIONS TAB
 
       const currentTab = await new Promise(
         (resolve) => chrome.tabs.query(
@@ -503,6 +503,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         const _firstChild = modPanel.firstChild;
         const keyToLi = {};
         const customProxyStringKey = 'customProxyStringRaw';
+        const uiRaw = 'ui-proxy-string-raw';
 
         for(const conf of pacKitchen.getOrderedConfigs()) {
 
@@ -518,7 +519,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           if (key !== customProxyStringKey) {
             li.innerHTML += infoSign(conf.desc);
           } else {
-            const uiRaw = 'ui-proxy-string-raw';
             li.innerHTML += `<a href="${conf.url}" class="info-sign info-url">🛈</a><br/>
 <textarea
   spellcheck="false"

@@ -1,10 +1,8 @@
 {
-  "name": "russian-censorship-bypass",
-  "version": "0.0.15",
+  "name": "runet-censorship-bypass",
+  "version": "0.0.19",
   "description": "Development tools for chromium extension",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "./node_modules/.bin/eslint ./runet-censorship-bypass/extension/**/*.js --ignore-pattern vendor"
   },
   "author": "Ilya Ig. Petrov",
@@ -12,5 +10,10 @@
   "devDependencies": {
     "eslint": "^3.15.0",
     "eslint-config-google": "^0.7.1"
+  },
+  "dependencies": {
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "through2": "^2.0.3"
   }
 }

@@ -93,7 +93,9 @@
       'Getting IPs for PAC hosts...',
       cb
     );
-    window.apis.ipToHost.updateAllAsync(cb);
+    window.utils.fireEvent('ip-to-host-update-all', throwIfError);
+    cb();
+    //window.apis.ipToHost.updateAllAsync(cb);
 
   };
 
@@ -197,7 +199,7 @@
       },
     },
 
-    _currentPacProviderKey: 'Антицензорити',
+    _currentPacProviderKey: 'Антизапрет',
 
     /* Is it the first time extension installed?
        Do something, e.g. initiate PAC sync.

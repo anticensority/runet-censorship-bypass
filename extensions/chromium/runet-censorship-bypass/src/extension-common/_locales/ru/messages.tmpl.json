@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Облегчённый обход блокировок Рунета"
+    "message": "Обход блокировок Рунета${ctx.nameSuffixRu}"
   },
   "extDesc": {
     "message": "Обход интернет-цензуры в России: https://rebrand.ly/ac-wiki"
