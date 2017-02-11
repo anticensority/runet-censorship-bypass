@@ -1,9 +1,9 @@
 {
   "extName": {
-    "message": "Runet Censorship Bypass"
+    "message": "Runet Censorship Bypass${ctx.nameSuffixEn}"
   },
   "extDesc": {
-      "message": "Circumvent Russian Internet Censorship: https://rebrand.ly/ac-wiki"
+    "message": "Circumvent Russian Internet Censorship: https://rebrand.ly/ac-wiki"
   },
   "proxy": {
     "message": "proxy"

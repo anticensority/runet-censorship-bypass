@@ -113,7 +113,6 @@
 
     isControllable(details) {
 
-      console.log('IS',details);
       this.ifControllable = window.utils.areSettingsControllableFor(details);
 
       if (this.ifControllable) {

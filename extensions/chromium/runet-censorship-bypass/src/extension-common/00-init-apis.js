@@ -84,6 +84,18 @@
 
     },
 
+    addEventHandler(type, handler) {
+
+      document.addEventListener(type, (event) => handler(...event.detail));
+
+    },
+
+    fireEvent(type, ...args) {
+
+      document.dispatchEvent( new CustomEvent(type, { detail: args }) );
+
+    },
+
     createStorage(prefix) {
 
       return function state(key, value) {

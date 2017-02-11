@@ -1,0 +1,1 @@
+Files of this directory must be copied into final build without modifications.
