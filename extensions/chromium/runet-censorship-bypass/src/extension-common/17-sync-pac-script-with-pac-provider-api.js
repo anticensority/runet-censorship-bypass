@@ -175,7 +175,7 @@
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
-        label: 'Антицензорити (тормозит)',
+        label: 'Антицензорити (<a href="https://github.com/anticensorship-russia/chromium-extension/issues/6" style="color: red">тормозит</a>)',
         desc: 'Основной PAC-скрипт от автора расширения.' +
         ' Блокировка определятся по доменному имени или IP адресу.' +
         ' Работает на switch-ах. <br/>' +
@@ -187,7 +187,9 @@
           Version: 0.17
         */
         pacUrls: [
-          // Official, Cloud Flare with caching:
+          // First official, shortened:
+          'https://rebrand.ly/ac-chrome-anticensority-pac',
+          // Second official, Cloud Flare with caching:
           'https://anticensorship-russia.tk/generated-pac-scripts/anticensority.pac',
           // GitHub.io:
           '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63', // eslint-disable-line max-len

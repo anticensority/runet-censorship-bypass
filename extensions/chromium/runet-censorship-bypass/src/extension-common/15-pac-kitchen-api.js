@@ -298,7 +298,7 @@
       console.log('Keep cooked now...', pacMods);
       if (typeof(pacMods) === 'function') {
         cb = pacMods;
-        pacMods = this.getCurrentConfigs();
+        pacMods = getCurrentConfigs();
       } else {
         try {
           pacMods = new PacModifiers(pacMods);
@@ -331,11 +331,9 @@
 
     resetToDefaults() {
 
-      // Pruge all but exceptions.
-      const exceptions = kitchenState(modsKey).exceptions;
       kitchenState(modsKey, null);
       kitchenState(ifIncontinence, null);
-      this.keepCookedNowAsync({exceptions: exceptions});
+      this.keepCookedNowAsync(throwIfError);
 
     },
 

@@ -12,6 +12,13 @@
       body {
         margin: 0;
       }
+      a, a:visited {
+        color: var(--ribbon-color);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
       label {
         user-select: none;
       }
@@ -195,14 +202,6 @@
 
       /* COMMON 2 */
 
-      .link-button, .link-button:visited {
-        color: #0000EE;
-        text-decoration: none;
-      }
-      .link-button:hover {
-        text-decoration: underline;
-      }
-
       /* INFO SIGNS */
 
       .info-row {
@@ -367,6 +366,7 @@
       .other-version {
         font-size: 1.7em;
         color: var(--ribbon-color);
+        margin-left: 0.1em;
       }
       .other-version:hover {
         text-decoration: none;
@@ -428,7 +428,7 @@
         <ul id="pac-mods">
           <li class="control-row hor-flex">
             <input type="button" value="Применить" id="apply-mods" disabled/>
-            <a href id="reset-mods" class="link-button">К изначальным!</a>
+            <a href id="reset-mods">К изначальным!</a>
           </li>
         </ul>
 
@@ -447,13 +447,13 @@
     <div class="hor-padded">
       <section class="hor-flex" id="status-row">
         <div id="status" style="will-change: contents">Загрузка...</div>
-        <a class="only-for-mini-version other-version link-button" title="Полная версия" href="https://rebrand.ly/ac-versions">🏋&#xFE0E;</a>
-        <a class="only-for-full-version other-version link-button" title="Версия для слабых машин" href="https://rebrand.ly/ac-versions">🐌&#xFE0E;</a>
+        <a class="only-for-mini-version other-version" title="Полная версия" href="https://rebrand.ly/ac-versions">🏋&#xFE0E;</a>
+        <a class="only-for-full-version other-version" title="Версия для слабых машин" href="https://rebrand.ly/ac-versions">🐌&#xFE0E;</a>
       </section>
 
       <footer class="control-row hor-flex">
         <input type="button" value="Готово" class="close-button">
-        <a href="../troubleshoot/index.html" class="link-button">
+        <a href="../troubleshoot/index.html">
           Проблемы?
         </a>
       </footer>
