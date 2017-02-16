@@ -17,7 +17,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const setStatusTo = (msg) => {
 
-        getStatus().innerHTML = msg || 'Поддержи <a href="https://2018.navalny.com" class="link-button">Навального</a> и <a href="https://fbk.info" class="link-button">ФБК</a>!';
+        getStatus().innerHTML = msg || 'Хорошего настроения Вам!';
 
       };
 
@@ -595,12 +595,12 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
         document.getElementById('reset-mods').onclick = () => {
 
-          const ifSure = backgroundPage.confirm('Сбросить все модификации PAC-скрипта?');
+          const ifSure = backgroundPage.confirm('Сбросить все модификаторы и ИСКЛЮЧЕНИЯ?');
           if (!ifSure) {
             return false;
           }
           pacKitchen.resetToDefaults();
-          backgroundPage.apis.ipToHost.resetToDefaults();
+          backgroundPage.utils.fireEvent('ip-to-host-reset-to-defaults');
           window.close();
 
         };

@@ -337,7 +337,14 @@
 
   };
 
-  window.utils.addEventHandler('ip-to-host-update-all', (...args) => self.updateAllAsync(...args) );
-  window.utils.addEventHandler('ip-to-host-replace-all', (...args) => self.replaceAllAsync(...args) );
+  window.utils.addEventHandler(
+    'ip-to-host-update-all', (...args) => self.updateAllAsync(...args)
+  );
+  window.utils.addEventHandler(
+    'ip-to-host-replace-all', (...args) => self.replaceAllAsync(...args)
+  );
+  window.utils.addEventHandler(
+    'ip-to-host-reset-to-defaults', () => self.resetToDefaults()
+  );
 
 }

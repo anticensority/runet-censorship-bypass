@@ -35,7 +35,7 @@
     ]
   },
   "browser_action": {
-    "default_title": "Этот сайт одобрен РПЦ | Версия ${version}-mini",
+    "default_title": "Этот сайт благословлён | Версия ${version}-mini",
     "default_popup": "/pages/choose-pac-provider/index.html"
   },
   "options_ui": {
