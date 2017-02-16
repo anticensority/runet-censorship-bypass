@@ -14,7 +14,7 @@
       () => chrome.contextMenus.create({
         id: id,
         title: title,
-        contexts: ['browser_action']
+        contexts: ['browser_action'],
       }, timeouted(() => {
 
         const err = chrome.runtime.lastError;

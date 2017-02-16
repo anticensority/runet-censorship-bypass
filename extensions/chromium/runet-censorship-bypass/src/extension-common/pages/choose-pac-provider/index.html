@@ -5,6 +5,7 @@
     <style>
       :root {
         --ribbon-color: #4169e1;
+        --blue-bg: dodgerblue;
         --default-grey: #bfbfbf;
         max-width: 27em;
       }
@@ -17,7 +18,17 @@
       div, section, header, ul, ol {
         margin: 0;
         padding: 0;
+      }
+      header {
+        margin-bottom: 0.3em
+      }
+      ul, ol {
         list-style-type: none;
+      }
+      :root.if-options-page ul,
+      :root.if-options-page ol,
+      #list-of-handlers {
+        margin-left: 0.4em;
       }
       li, footer {
         display: block;
@@ -65,9 +76,24 @@
 
         border-bottom: 1px solid var(--default-grey);
       }
+      :root.if-options-page .if-not-controlled {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
       .if-not-controlled a {
         color: white;
       }
+
+      /* MINI VS FULL */
+
+      :root:not(.if-version-mini) .only-for-mini-version {
+        display: none;
+      }
+      :root.if-version-mini .only-for-full-version {
+        display: none;
+      }
+
+      /* OPTIONS PAGE */
 
       :root:not(.if-options-page) .only-for-options-page {
         display: none;
@@ -83,7 +109,7 @@
       }
 
       section[data-for] {
-        padding: 0.6em 0.5em 1em;
+        padding: 0.6em 0 1em;
       }
       :root.if-options-page section[data-for] {
         padding-bottom: 0.6em;
@@ -121,7 +147,6 @@
       }
       .nav-labels {
         text-align: center;
-        --blue-bg: dodgerblue;
       }
       .nav-labels li label {
         display: inline-block;
@@ -293,7 +318,7 @@
         border: none;
         width: 100%;
         background: inherit;
-        // The two below align '.' (dot) vertically.
+        /* The two below align '.' (dot) vertically. */
         max-height: var(--exc-hieght) !important;
         min-height: var(--exc-hieght) !important;
       }
@@ -321,28 +346,34 @@
 
       /* CONTROL RAW = BUTTON + LINK */
 
-      .control-row {
-        display: table;
+      .hor-flex {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
         width: 100%;
+      }
+      .control-row {
         margin: 1em 0 1em 0;
-      }
-      .control-row > * {
-        display: table-cell;
-      }
-      .control-row a:nth-child(2) {
-        margin-left: 1em;
-        text-align: right;
       }
 
       /* STATUS */
 
-      #status {
+      #status-row {
         padding: 0 0.3em 1em;
+      }
+      #status {
+        display: inline-block;
+      }
+      .other-version {
+        font-size: 1.7em;
+        color: var(--ribbon-color);
+      }
+      .other-version:hover {
+        text-decoration: none;
       }
     </style>
   </head>
   <body>
-
     <section class="if-not-controlled hor-padded" id="which-extension"></section>
 
     <input type="radio" name="accordion" class="off" id="acc-pac" checked/>
@@ -350,7 +381,7 @@
     <input type="radio" name="accordion" class="off" id="acc-mods"/>
     <input type="radio" name="accordion" class="off" id="acc-ntf"/>
 
-    <section class="nav-labels horizontal-list hidden-for-options-page">
+    <nav class="nav-labels horizontal-list hidden-for-options-page">
       <ul>
         <li><label for="acc-pac" class="nav-label">PAC-скрипт</label></li>
         <li><label for="acc-mods" class="nav-label">Модификаторы</label></li>
@@ -358,12 +389,13 @@
         <li><label for="acc-ntf" class="nav-label">Уведомления</label></li>
       </ul>
       <hr/>
-    </section>
+    </nav>
 
     <nav class="hor-padded main-nav">
 
       <section data-for="acc-pac">
 
+        <header class="only-for-options-page">PAC-скрипт:</header>
         <ul id="list-of-providers">
           <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
         </ul>
@@ -394,7 +426,7 @@
       <section data-for="acc-mods">
 
         <ul id="pac-mods">
-          <li class="control-row">
+          <li class="control-row hor-flex">
             <input type="button" value="Применить" id="apply-mods" disabled/>
             <a href id="reset-mods" class="link-button">К изначальным!</a>
           </li>
@@ -403,9 +435,8 @@
       </section>
 
       <section data-for="acc-ntf">
-
         <header>Я ❤️ yведомления:</header>
-        <ul id="list-of-handlers" style="margin-left: 0.4em; margin-top: 0.4em;"></ul>
+        <ul id="list-of-handlers"></ul>
 
       </section>
 
@@ -414,9 +445,13 @@
     <hr/>
 
     <div class="hor-padded">
-      <div id="status" style="will-change: contents">Загрузка...</div>
+      <section class="hor-flex" id="status-row">
+        <div id="status" style="will-change: contents">Загрузка...</div>
+        <a class="only-for-mini-version other-version link-button" title="Полная версия" href="https://rebrand.ly/ac-versions">🏋&#xFE0E;</a>
+        <a class="only-for-full-version other-version link-button" title="Версия для слабых машин" href="https://rebrand.ly/ac-versions">🐌&#xFE0E;</a>
+      </section>
 
-      <footer class="control-row">
+      <footer class="control-row hor-flex">
         <input type="button" value="Готово" class="close-button">
         <a href="../troubleshoot/index.html" class="link-button">
           Проблемы?

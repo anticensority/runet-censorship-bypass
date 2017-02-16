@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Runet Censorship Bypass${ctx.nameSuffixEn}"
+    "message": "Runet Censorship Bypass${nameSuffixEn}"
   },
   "extDesc": {
     "message": "Circumvent Russian Internet Censorship: https://rebrand.ly/ac-wiki"
