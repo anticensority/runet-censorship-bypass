@@ -95,7 +95,6 @@
     );
     window.utils.fireEvent('ip-to-host-update-all', throwIfError);
     cb();
-    //window.apis.ipToHost.updateAllAsync(cb);
 
   };
 
@@ -176,7 +175,7 @@
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
-        label: 'Антицензорити',
+        label: 'Антицензорити (тормозит)',
         desc: 'Основной PAC-скрипт от автора расширения.' +
         ' Блокировка определятся по доменному имени или IP адресу.' +
         ' Работает на switch-ах. <br/>' +

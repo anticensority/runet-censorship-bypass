@@ -12,6 +12,7 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
   const tjson = '.tmpl.json';
   if (file.path.endsWith(tjson)) {
 
+    const originalPath = file.path;
     file.path = file.path.replace(new RegExp(`${tjson}$`), '.json');
 
     if (file.isStream()) {
@@ -24,11 +25,19 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
         },
       });
 
+      const {keys, values} = Object.entries(context).reduce( (acc, [key, value]) => {
+
+        acc.keys.push(key);
+        acc.values.push(value);
+        return acc;
+
+      }, { keys: [], values: [] });
       try {
         file.contents = new Buffer(
-          (new Function('ctx', 'return `' + String(file.contents) + '`;'))(stringsContext)
+          (new Function(...keys, 'return `' + String(file.contents) + '`;'))(...values)
         );
       } catch(e) {
+        e.message += '\nIN FILE: ' + originalPath;
         return cb(new PluginError(PluginName, e));
       }
     }
@@ -46,23 +55,25 @@ gulp.task('clean', function() {
 
 });
 
-const commonContext = {
+const fullContext = {
   version: '0.19',
+  nameSuffixEn: '',
+  nameSuffixRu: '',
 };
 
-const contextMini = Object.assign({
+const miniContext = Object.assign({}, fullContext, {
   nameSuffixEn: ' MINI',
   nameSuffixRu: ' МИНИ',
-}, commonContext);
+});
 
 gulp.task('_cp-common', ['clean'], function() {
 
   gulp.src(['./src/extension-common/**/*'])
-    .pipe(templatePlugin(contextMini))
+    .pipe(templatePlugin(miniContext))
     .pipe(gulp.dest('./build/extension-mini'))
 
   gulp.src(['./src/extension-common/**/*'])
-    .pipe(templatePlugin(commonContext))
+    .pipe(templatePlugin(fullContext))
     .pipe(gulp.dest('./build/extension-full'));
 
 });
@@ -70,7 +81,7 @@ gulp.task('_cp-common', ['clean'], function() {
 gulp.task('_cp-mini', ['_cp-common'], function() {
 
   gulp.src(['./src/extension-mini/**/*'])
-    .pipe(templatePlugin(contextMini))
+    .pipe(templatePlugin(miniContext))
     .pipe(gulp.dest('./build/extension-mini'));
 
 });
@@ -78,7 +89,7 @@ gulp.task('_cp-mini', ['_cp-common'], function() {
 gulp.task('_cp-full', ['_cp-common'], function() {
 
   gulp.src(['./src/extension-full/**/*'])
-    .pipe(templatePlugin(commonContext))
+    .pipe(templatePlugin(fullContext))
     .pipe(gulp.dest('./build/extension-full'));
 
 });

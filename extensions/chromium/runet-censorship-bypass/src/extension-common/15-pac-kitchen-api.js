@@ -24,7 +24,7 @@
     ifUseSecureProxiesOnly: {
       dflt: false,
       label: 'только шифрованная связь с прокси',
-      desc: 'Шифровать соединение до прокси от провайдера. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS. Опция вряд ли может быть вам полезна, т.к. шифруется не весь трафик, а лишь малая его часть.',
+      desc: 'Шифровать соединение до прокси от провайдера. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS. Опция вряд ли может быть вам полезна, т.к. шифруется не весь трафик, а лишь разблокируемые ресурсы.',
       index: 1,
     },
     ifProhibitDns: {
@@ -42,7 +42,7 @@
     ifUseLocalTor: {
       dflt: false,
       label: 'использовать СВОЙ локальный TOR',
-      desc: 'Установите <a href="https://ru.wikipedia.org/wiki/Tor">TOR</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
+      desc: 'Установите <a href="https://rebrand.ly/ac-tor">TOR</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
       index: 4,
     },
     exceptions: {
@@ -323,10 +323,6 @@
           const hosts = par.map( (ps) => ps.split(/\s+/)[1] );
           window.utils.fireEvent('ip-to-host-replace-all', hosts, throwIfError);
           cb(null, null, ...warns);
-          /*window.apis.ipToHost.replaceAllAsync(
-            hosts,
-            (...args) => cb(...args, ...warns)
-          );*/
 
         }
       );

@@ -68,7 +68,7 @@
 
     viewError(type = window.utils.mandatory(), err) {
 
-      const errors = err ? { [type]: err } : this.idToError;
+      const errors = err ? {[type]: err} : this.idToError;
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
       openAndFocus(

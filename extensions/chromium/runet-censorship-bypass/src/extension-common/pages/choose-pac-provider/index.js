@@ -17,7 +17,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const setStatusTo = (msg) => {
 
-        getStatus().innerHTML = msg || 'Хорошего настроения вам!';
+        getStatus().innerHTML = msg || 'Поддержи <a href="https://2018.navalny.com" class="link-button">Навального</a> и <a href="https://fbk.info" class="link-button">ФБК</a>!';
 
       };
 
@@ -224,6 +224,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           }
           return false;
         };
+      }
+
+      // IF MINI
+
+      if (backgroundPage.apis.version.ifMini) {
+        document.documentElement.classList.add('if-version-mini');
       }
 
       // IF INSIDE OPTIONS TAB
