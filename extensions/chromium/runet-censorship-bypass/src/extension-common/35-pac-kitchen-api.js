@@ -158,7 +158,7 @@
 
     }
 
-  };
+  }
 
   window.apis.pacKitchen = {
 
