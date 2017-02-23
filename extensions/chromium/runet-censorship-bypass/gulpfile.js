@@ -19,12 +19,6 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
       return cb(new PluginError(PluginName, 'Streams not supported!'));
     } else if (file.isBuffer()) {
 
-      const stringsContext = new Proxy(context, {
-        get: function(target, prop) {
-          return target[prop] || '';
-        },
-      });
-
       const {keys, values} = Object.entries(context).reduce( (acc, [key, value]) => {
 
         acc.keys.push(key);
@@ -56,7 +50,7 @@ gulp.task('clean', function() {
 });
 
 const fullContext = {
-  version: '0.20',
+  version: '0.21',
   nameSuffixEn: '',
   nameSuffixRu: '',
 };
