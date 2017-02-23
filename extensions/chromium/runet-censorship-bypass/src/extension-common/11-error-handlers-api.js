@@ -3,6 +3,7 @@
 { // Private namespace
 
   const timeouted = window.utils.timeouted;
+  const throwIfError = window.utils.throwIfError;
 
   const errorJsonReplacer = function errorJsonReplacer(key, value) {
 
