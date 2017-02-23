@@ -599,9 +599,17 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
           if (!ifSure) {
             return false;
           }
-          pacKitchen.resetToDefaults();
-          backgroundPage.utils.fireEvent('ip-to-host-reset-to-defaults');
-          window.close();
+          conduct(
+            'Сбрасываем...',
+            (cb) => {
+
+              pacKitchen.resetToDefaults();
+              backgroundPage.utils.fireRequest('ip-to-host-reset-to-defaults', cb);
+
+            },
+            'Откройте окно заново для отображения эффекта.',
+            () => window.close()
+          );
 
         };
 

@@ -295,7 +295,6 @@
 
     keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
 
-      console.log('Keep cooked now...', pacMods);
       if (typeof(pacMods) === 'function') {
         cb = pacMods;
         pacMods = getCurrentConfigs();
@@ -307,10 +306,11 @@
         }
         kitchenState(modsKey, pacMods);
       }
+      console.log('Keep cooked now...', pacMods);
       this._tryNowAsync(
         (err, res, ...warns) => {
 
-          console.log('Try now cb...', err);
+          console.log('Try now err:', err);
           if (err) {
             return cb(err, res, ...warns);
           }
@@ -321,8 +321,7 @@
           }
 
           const hosts = par.map( (ps) => ps.split(/\s+/)[1] );
-          window.utils.fireEvent('ip-to-host-replace-all', hosts, throwIfError);
-          cb(null, null, ...warns);
+          window.utils.fireRequest('ip-to-host-replace-all', hosts, (err, res, ...moreWarns) => cb( err, res, ...warns.concat(moreWarns) ));
 
         }
       );

@@ -2,7 +2,7 @@
 
 {
 
-  const IF_DEBUG = false;
+  const IF_DEBUG = true;
 
   if (!IF_DEBUG) {
     // I believe logging objects precludes them from being GCed.
@@ -17,6 +17,10 @@
       };
     });
   }
+
+  const privates = {
+    requestToResponder: {},
+  };
 
   const self = window.utils = {
 
@@ -84,15 +88,34 @@
 
     },
 
-    addEventHandler(type, handler) {
+    assert(value) {
 
-      document.addEventListener(type, (event) => handler(...event.detail));
+      if(!value) {
+        console.assert(value);
+        throw new Error('Assert failed for:' + value);
+      }
 
     },
 
-    fireEvent(type, ...args) {
+    addRequestResponder(requestType, responder) {
 
-      document.dispatchEvent( new CustomEvent(type, {detail: args}) );
+      if( privates.requestToResponder[requestType] ) {
+        throw new TypeError(`Request ${requestType} already has responder!`);
+      }
+      privates.requestToResponder[requestType] = responder;
+
+    },
+
+    fireRequest(requestType, ...args) {
+
+      const cb = args.slice(-1)[0];
+      self.assert(typeof(cb) === 'function');
+      const responder = privates.requestToResponder[requestType];
+      if(responder) {
+        responder(...args);
+      } else {
+        cb();
+      }
 
     },
 

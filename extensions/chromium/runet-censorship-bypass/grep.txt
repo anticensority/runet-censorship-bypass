@@ -1,0 +1,1 @@
+grep -r addEvent ./ --exclude-dir=vendor --exclude-dir=node_modules
