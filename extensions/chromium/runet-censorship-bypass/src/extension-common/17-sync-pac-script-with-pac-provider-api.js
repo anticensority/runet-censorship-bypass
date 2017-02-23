@@ -93,7 +93,7 @@
       'Getting IPs for PAC hosts...',
       cb
     );
-    window.utils.fireEvent('ip-to-host-update-all', throwIfError);
+    window.utils.fireEvent('ip-to-host-update-all', () => {/* Swallow. */});
     cb();
 
   };
@@ -500,11 +500,15 @@
 
       // UPDATE & MIGRATION
       const key = antiCensorRu._currentPacProviderKey;
-      if (
-        key !== null &&
-        !Object.keys(antiCensorRu.pacProviders).includes(key)
-      ) {
-        antiCensorRu._currentPacProviderKey = 'Антицензорити';
+      if (key !== null) {
+        const ifVeryOld = !Object.keys(antiCensorRu.pacProviders).includes(key);
+        const ifWasForced = localStorage.getItem('provider-backup');
+        if ( ifVeryOld || !ifWasForced ) {
+          if (!ifWasForced) {
+            localStorage.setItem('provider-backup', antiCensorRu._currentPacProviderKey);
+          }
+          antiCensorRu._currentPacProviderKey = 'Антизапрет';
+        }
       }
       console.log('Extension updated.');
 

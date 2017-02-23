@@ -31,7 +31,7 @@
               (res.headers.get('Last-Modified') || wasModified)
           );
         },
-        errorsLib.clarifyThen(checkCon, (err) => cb(err, wasModifed))
+        errorsLib.clarifyThen(checkCon, (err) => cb(err, wasModified))
       );
 
     },
