@@ -188,7 +188,7 @@
 
   const self = window.apis.ipToHost = {
 
-    persist() {
+    persistData() {
 
       console.log('Persisting ipToHost...', privates);
       const ipToHost = {};
@@ -299,7 +299,7 @@
       this._updateAllAsync((err, ...args) => {
 
         if (!err) {
-          this.persist();
+          this.persistData();
         }
         cb(err, ...args);
 
@@ -320,7 +320,7 @@
       this._replaceAllAsync(hostArr, (allErr, ...args) => {
 
         if (!allErr) {
-          this.persist();
+          this.persistData();
         }
         cb(allErr, ...args);
 
@@ -337,14 +337,17 @@
 
   };
 
-  window.utils.addEventHandler(
+  window.utils.addRequestResponder(
     'ip-to-host-update-all', (...args) => self.updateAllAsync(...args)
   );
-  window.utils.addEventHandler(
+  window.utils.addRequestResponder(
     'ip-to-host-replace-all', (...args) => self.replaceAllAsync(...args)
   );
-  window.utils.addEventHandler(
-    'ip-to-host-reset-to-defaults', () => self.resetToDefaults()
+  window.utils.addRequestResponder(
+    'ip-to-host-reset-to-defaults', (cb) => {
+      self.resetToDefaults();
+      cb();
+    }
   );
 
 }

@@ -23,6 +23,7 @@
   ],
 
   "background": {
+    ${persistent}
     "scripts": [
         "00-init-apis.js"
       , "11-error-handlers-api.js"

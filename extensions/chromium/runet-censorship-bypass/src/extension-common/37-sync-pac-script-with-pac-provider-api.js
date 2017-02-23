@@ -93,8 +93,7 @@
       'Getting IPs for PAC hosts...',
       cb
     );
-    window.utils.fireEvent('ip-to-host-update-all', () => {/* Swallow. */});
-    cb();
+    window.utils.fireRequest('ip-to-host-update-all', cb);
 
   };
 
@@ -261,7 +260,7 @@
 
     },
 
-    _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта Антизапрет',
+    _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта',
 
     pushToStorageAsync(cb = throwIfError) {
 
