@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['eslint:recommended', 'google'],
+  extends: ['eslint:recommended', 'airbnb'],
     env: {
       browser: true,
       webextensions: true,
@@ -20,14 +20,23 @@ module.exports = {
       'no-console': 'off',
       'padded-blocks': 'off',
       'require-jsdoc': 'off',
-
-      // Taken from airbnb:
+      'no-multi-assign': 'off',
+      'arrow-parens': ['error', 'always'],
+      'no-plusplus': 'off',
+      'comma-dangle': ['error', {
+        arrays: 'always-multiline',
+        objects: 'always-multiline',
+        imports: 'always-multiline',
+        exports: 'always-multiline',
+        functions: 'ignore',
+      }],
+      /* Taken from airbnb:
       'max-len': ['error', 100, 2, {
         ignoreUrls: true,
         ignoreComments: false,
         ignoreRegExpLiterals: true,
         ignoreStrings: true,
         ignoreTemplateLiterals: true,
-      }],
+      }],*/
     },
 };

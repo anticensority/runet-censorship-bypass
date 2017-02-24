@@ -65,36 +65,10 @@
 
   const getDefaults = function getDefaults() {
 
-    return Object.keys(configs).reduce((acc, key) => {
-
-      acc[key] = configs[key].dflt;
-      return acc;
-
-    }, {});
-
-  };
-
-  const getCurrentConfigs = function getCurrentConfigs() {
-
-    const mods = kitchenState(modsKey);
-    return new PacModifiers(mods || {});
-
-  };
-
-  const getOrderedConfigsForUser = function getOrderedConfigs() {
-
-    const pacMods = getCurrentConfigs();
-    return Object.keys(configs).reduce((arr, key) => {
-
-      const conf = configs[key];
-      if(typeof(conf.index) === 'number') {
-        arr[conf.index] = conf;
-        conf.value = pacMods[key];
-        conf.key = key;
-      }
-      return arr;
-
-    }, []);
+    return Object.keys(configs).reduce((acc, key) =>
+      Object.assign(acc, { [key]: configs[key].dflt }),
+      {}
+    );
 
   };
 
@@ -110,17 +84,17 @@
         );
 
       Object.assign(this, defaults, mods);
-      this.ifNoMods = ifAllDefaults ? true : false;
+      this.ifNoMods = ifAllDefaults;
 
       let customProxyArray = [];
       if (this.customProxyStringRaw) {
         customProxyArray = this.customProxyStringRaw
           .replace(/#.*$/mg, '') // Strip comments.
-          .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
-          .map( (p) => p.trim() )
-          .filter( (p) => p && /\s+/g.test(p) );
+          .split(/(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g)
+          .map((p) => p.trim())
+          .filter((p) => p && /\s+/g.test(p));
         if (this.ifUseSecureProxiesOnly) {
-          customProxyArray = customProxyArray.filter( (p) => !p.startsWith('HTTP ') );
+          customProxyArray = customProxyArray.filter((p) => !p.startsWith('HTTP '));
         }
       }
       if (this.ifUseLocalTor) {
@@ -142,13 +116,13 @@
       if (this.ifMindExceptions && this.exceptions) {
         this.included = [];
         this.excluded = [];
-        for(const host of Object.keys(this.exceptions)) {
+        Object.keys(this.exceptions).forEach((host) => {
           if (this.exceptions[host]) {
             this.included.push(host);
           } else {
             this.excluded.push(host);
           }
-        }
+        });
         if (this.included && !this.filteredCustomsString) {
           throw new TypeError(
             'Проксировать свои сайты можно только через свои прокси. Нет ни одного своего прокси, удовлетворяющего вашим требованиям!'
@@ -160,6 +134,73 @@
 
   }
 
+  const getCurrentConfigs = function getCurrentConfigs() {
+
+    const mods = kitchenState(modsKey);
+    return new PacModifiers(mods || {});
+
+  };
+
+  const getOrderedConfigsForUser = function getOrderedConfigs() {
+
+    const pacMods = getCurrentConfigs();
+    return Object.keys(configs).reduce((arr, key) => {
+
+      const conf = configs[key];
+      if (typeof conf.index === 'number') {
+        Object.assign(arr, { [conf.index]: conf });
+        conf.value = pacMods[key];
+        conf.key = key;
+      }
+      return arr;
+
+    }, []);
+
+  };
+
+  const privates = {};
+
+  privates.tryNowAsync = function tryNowAsync(maybeDetails, maybeCb = throwIfError) {
+
+    let cb;
+    let detailsOrUndefined;
+    if (typeof maybeDetails === 'function') {
+      detailsOrUndefined = undefined;
+      cb = maybeDetails;
+    } else {
+      detailsOrUndefined = maybeDetails;
+      cb = maybeCb;
+    }
+
+    new Promise((resolve) => (
+      detailsOrUndefined
+        ? resolve(detailsOrUndefined)
+        : chrome.proxy.settings.get({}, timeouted(resolve))
+    )).then((details) => {
+
+      if (
+        details.levelOfControl === 'controlled_by_this_extension'
+      ) {
+        const pac = window.utils.getProp(details, 'value.pacScript');
+        if (pac && pac.data) {
+          // Delete old kitchen modifications.
+          pac.data = pac.data.replace(
+            new RegExp(`${kitchenStartsMark}[\\s\\S]*$`, 'g'),
+            ''
+          );
+          return chrome.proxy.settings.set(details, chromified(cb));
+        }
+      }
+
+      kitchenState(ifIncontinence, true);
+      return cb(null, null, new TypeError(
+        'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
+      ));
+
+    });
+
+  };
+
   window.apis.pacKitchen = {
 
     getPacMods: getCurrentConfigs,
@@ -167,13 +208,13 @@
 
     cook(pacData, pacMods = mandatory()) {
 
-      return pacMods.ifNoMods ? pacData : pacData + `${ kitchenStartsMark }
+      return pacMods.ifNoMods ? pacData : `${pacData}${kitchenStartsMark}
 ;+function(global) {
   "use strict";
 
   const originalFindProxyForURL = FindProxyForURL;
   global.FindProxyForURL = function(url, host) {
-    ${function() {
+    ${((function generateNewFindProxyForURL() {
 
       let res = pacMods.ifProhibitDns ? `
     global.dnsResolve = function(host) { return null; };
@@ -203,42 +244,42 @@
 `;
       }
 
-      if(
+      if (
         !pacMods.ifUseSecureProxiesOnly &&
         !pacMods.filteredCustomsString &&
          pacMods.ifUsePacScriptProxies
       ) {
-        return res + `
+        return `${res}
     return originalFindProxyForURL(url, host);
 `;
       }
 
-      return res + `
+      return `${res}
     const originalProxyString = originalFindProxyForURL(url, host);
     let originalProxyArray = originalProxyString.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
     if (originalProxyArray.every( (p) => /^DIRECT$/i.test(p) )) {
       // Directs only or null, no proxies.
       return originalProxyString;
     }
-    return ` +
-      function() {
+    return ${
+      ((function getProxies() {
 
         if (!pacMods.ifUsePacScriptProxies) {
-          return '"' + pacMods.filteredCustomsString + '"';
+          return `"${pacMods.filteredCustomsString}"`;
         }
         let filteredOriginalsExp = 'originalProxyString';
         if (pacMods.ifUseSecureProxiesOnly) {
           filteredOriginalsExp =
             'originalProxyArray.filter( (p) => !p.toUpperCase().startsWith("HTTP ") ).join("; ")';
         }
-        if ( !pacMods.filteredCustomsString ) {
+        if (!pacMods.filteredCustomsString) {
           return filteredOriginalsExp;
         }
-        return '"' + pacMods.filteredCustomsString + '; " + ' + filteredOriginalsExp;
+        return `"${pacMods.filteredCustomsString}; " + ${filteredOriginalsExp}`;
 
-      }() + ' + "; DIRECT";'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+      })())} + "; DIRECT";`; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
-    }()}
+    })())}
 
   };
 
@@ -246,68 +287,33 @@
 
     },
 
-    _tryNowAsync(details, cb = throwIfError) {
-
-      if (typeof(details) === 'function') {
-        cb = details;
-        details = undefined;
-      }
-
-      new Promise((resolve) =>
-
-        details
-          ? resolve(details)
-          : chrome.proxy.settings.get({}, timeouted(resolve) )
-
-      ).then( (details) => {
-
-        if (
-          details.levelOfControl === 'controlled_by_this_extension'
-        ) {
-          const pac = window.utils.getProp(details, 'value.pacScript');
-          if (pac && pac.data) {
-            // Delete old kitchen modifications.
-            pac.data = pac.data.replace(
-              new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
-              ''
-            );
-            return chrome.proxy.settings.set(details, chromified(cb));
-          }
-        }
-
-        kitchenState(ifIncontinence, true);
-        cb(null, null, new TypeError(
-          'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
-        ));
-
-      });
-
-    },
-
     checkIncontinence(details) {
 
-      if ( kitchenState(ifIncontinence) ) {
-        this._tryNowAsync(details, () => {/* Swallow. */});
+      if (kitchenState(ifIncontinence)) {
+        privates.tryNowAsync(details, () => { /* Swallow. */ });
       }
 
     },
 
 
-    keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
+    keepCookedNowAsync(maybePacMods = mandatory(), maybeCb = throwIfError) {
 
-      if (typeof(pacMods) === 'function') {
-        cb = pacMods;
+      let pacMods;
+      let cb;
+      if (typeof maybePacMods === 'function') {
+        cb = maybePacMods;
         pacMods = getCurrentConfigs();
       } else {
         try {
-          pacMods = new PacModifiers(pacMods);
-        } catch(e) {
+          pacMods = new PacModifiers(maybePacMods);
+        } catch (e) {
           return cb(e);
         }
         kitchenState(modsKey, pacMods);
+        cb = maybeCb;
       }
       console.log('Keep cooked now...', pacMods);
-      this._tryNowAsync(
+      return privates.tryNowAsync(
         (err, res, ...warns) => {
 
           console.log('Try now err:', err);
@@ -320,8 +326,12 @@
             return cb(null, res, ...warns);
           }
 
-          const hosts = par.map( (ps) => ps.split(/\s+/)[1] );
-          window.utils.fireRequest('ip-to-host-replace-all', hosts, (err, res, ...moreWarns) => cb( err, res, ...warns.concat(moreWarns) ));
+          const hosts = par.map((ps) => ps.split(/\s+/)[1]);
+          return window.utils.fireRequest(
+            'ip-to-host-replace-all',
+            hosts,
+            (ipErr, ipRes, ...ipWarns) => cb(ipErr, ipRes, ...warns.concat(ipWarns))
+          );
 
         }
       );
@@ -340,20 +350,20 @@
 
   const pacKitchen = window.apis.pacKitchen;
 
-  const originalSet = chrome.proxy.settings.set.bind( chrome.proxy.settings );
+  const originalSet = chrome.proxy.settings.set.bind(chrome.proxy.settings);
 
-  chrome.proxy.settings.set = function(details, cb) {
+  chrome.proxy.settings.set = function modifiedSet(details, cb = () => {}) {
 
     const pac = window.utils.getProp(details, 'value.pacScript');
     if (!(pac && pac.data)) {
       return originalSet(details, cb);
     }
     const pacMods = getCurrentConfigs();
-    pac.data = pacKitchen.cook( pac.data, pacMods );
-    originalSet({value: details.value}, (/* No args. */) => {
+    pac.data = pacKitchen.cook(pac.data, pacMods);
+    return originalSet({ value: details.value }, (/* No args. */) => {
 
       kitchenState(ifIncontinence, null);
-      cb && cb();
+      cb();
 
     });
 

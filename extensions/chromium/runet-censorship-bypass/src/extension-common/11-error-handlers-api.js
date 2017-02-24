@@ -8,38 +8,36 @@
   const errorJsonReplacer = function errorJsonReplacer(key, value) {
 
     // fooWindow.ErrorEvent !== barWindow.ErrorEvent
-    if (!( value && value.constructor
+    if (!(value && value.constructor
       && ['Error', 'Event'].some(
-        (suff) => value.constructor.name.endsWith(suff)
-      )
+        (suff) => value.constructor.name.endsWith(suff))
     )) {
       return value;
     }
-    const alt = {};
 
-    Object.getOwnPropertyNames(value).forEach(function(key) {
+    const alt = Object.getOwnPropertyNames(value).reduce(
+      (acc, ownProp) =>
+        Object.assign(acc, { [ownProp]: value[ownProp] }),
+      {}
+    );
 
-        alt[key] = value[key];
-
-    }, value);
-
-    for(const prop in value) {
+    for (const prop in value) { // eslint-disable-line no-restricted-syntax
       if (/^[A-Z]/.test(prop)) {
         // MOUSEMOVE, CLICK, KEYUP, NONE, etc.
-        continue;
+        continue; // eslint-disable-line no-continue
       }
       alt[prop] = value[prop];
     }
 
     if (value.constructor.name === 'ErrorEvent') {
-      for(const circularProp of
-        [  // First line are circular props.
-          'target', 'srcElement', 'path', 'currentTarget',
-          'bubbles', 'cancelBubble', 'cancelable', 'composed',
-          'defaultPrevented', 'eventPhase', 'isTrusted', 'returnValue',
-          'timeStamp']) {
+      [
+        'target', 'srcElement', 'path', 'currentTarget',
+        'bubbles', 'cancelBubble', 'cancelable', 'composed',
+        'defaultPrevented', 'eventPhase', 'isTrusted', 'returnValue',
+        'timeStamp',
+      ].forEach((circularProp) => {
         delete alt[circularProp];
-      }
+      });
     }
 
     if (value.name) {
@@ -53,8 +51,8 @@
   const openAndFocus = function openAndFocus(url) {
 
     chrome.tabs.create(
-      {url: url},
-      (tab) => chrome.windows.update(tab.windowId, {focused: true})
+      { url },
+      (tab) => chrome.windows.update(tab.windowId, { focused: true })
     );
 
   };
@@ -69,13 +67,11 @@
 
     viewError(type = window.utils.mandatory(), err) {
 
-      const errors = err ? {[type]: err} : this.idToError;
+      const errors = err ? { [type]: err } : this.idToError;
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
       openAndFocus(
-        'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
-          (type ? '&type=' + encodeURIComponent(type) : '') +
-          '&version=' + chrome.runtime.getManifest().version
+        `http://rebrand.ly/ac-error/?json=${encodeURIComponent(json)}${type ? `&type=${encodeURIComponent(type)}` : ''}&version=${chrome.runtime.getManifest().version}`
       );
 
     },
@@ -93,19 +89,18 @@
     switch(onOffStr, eventName) {
 
       if (!['on', 'off'].includes(onOffStr)) {
-        throw new TypeError('First argument bust be "on" or "off".');
+        throw new TypeError('First argument must be "on" or "off".');
       }
-      for(
-        const name of (eventName ? [eventName] : this.getEventsMap().keys() )
-      ) {
-        this.state( ifPrefix + name, onOffStr === 'on' ? 'on' : null );
-      }
+      (eventName ? [eventName] : this.getEventsMap().keys()).forEach(
+        (name) =>
+          this.state(ifPrefix + name, onOffStr === 'on' ? 'on' : null)
+      );
 
     },
 
     isOn(eventName) {
 
-      return this.state( ifPrefix + eventName );
+      return this.state(ifPrefix + eventName);
 
     },
 
@@ -123,7 +118,7 @@
       }
 
       if (this.ifControlled) {
-        chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
+        chrome.browserAction.setIcon({ path: './icons/default-128.png' });
       } else {
         chrome.browserAction.setIcon({
           path: './icons/default-grayscale-128.png',
@@ -163,12 +158,12 @@
       id, title, errOrMessage,
       {
         icon = 'default-128.png',
-        context = extName + ' ' + extVersion,
+        context = `${extName} ${extVersion}`,
         ifSticky = true,
       } = {}
     ) {
 
-      if ( !this.isOn(id) ) {
+      if (!this.isOn(id)) {
         return;
       }
       this.idToError[id] = errOrMessage;
@@ -176,12 +171,12 @@
       chrome.notifications.create(
         id,
         {
-          title: title,
-          message: message,
+          title,
+          message,
           contextMessage: context,
           requireInteraction: ifSticky,
           type: 'basic',
-          iconUrl: './icons/' + icon,
+          iconUrl: `./icons/${icon}`,
           appIconMaskUrl: './icons/default-mask-128.png',
           isClickable: true,
         }
@@ -193,15 +188,16 @@
 
       win.addEventListener('error', (errEvent) => {
 
-        console.warn(name + ':GLOBAL ERROR', errEvent);
+        console.warn(`${name}:GLOBAL ERROR`, errEvent);
         this.mayNotify('ext-error', 'Ошибка расширения', errEvent,
-          {icon: 'ext-error-128.png'});
+          { icon: 'ext-error-128.png' }
+        );
 
       });
 
       win.addEventListener('unhandledrejection', (event) => {
 
-        console.warn(name + ': Unhandled rejection. Throwing error.');
+        console.warn(`${name}: Unhandled rejection. Throwing error.`);
         event.preventDefault();
         console.log('ev', event);
         throw event.reason;
@@ -225,24 +221,23 @@
 
   chrome.proxy.settings.get(
     {},
-    timeouted( handlers.isControllable.bind(handlers) )
+    timeouted(handlers.isControllable.bind(handlers))
   );
 
-  chrome.notifications.onClicked.addListener( timeouted( (notId) => {
+  chrome.notifications.onClicked.addListener(timeouted((notId) => {
 
     chrome.notifications.clear(notId);
-    if(notId === 'no-control') {
+    if (notId === 'no-control') {
       return openAndFocus(
-        window.utils.messages.searchSettingsForUrl('proxy')
-      );
+        window.utils.messages.searchSettingsForUrl('proxy'));
     }
-    handlers.viewError(notId);
+    return handlers.viewError(notId);
 
   }));
 
   handlers.installListenersOn(window, 'BG');
 
-  chrome.proxy.onProxyError.addListener( timeouted( (details) => {
+  chrome.proxy.onProxyError.addListener(timeouted((details) => {
 
     if (!handlers.ifControlled) {
       return;
@@ -256,26 +251,26 @@
     console.warn('PAC ERROR', details);
     // TOOD: add "view pac script at this line" button.
     handlers.mayNotify('pac-error', 'Ошибка PAC!',
-      details.error + '\n' + details.details,
-      {icon: 'pac-error-128.png'}
+      `${details.error}\n${details.details}`,
+      { icon: 'pac-error-128.png' }
     );
 
   }));
 
-  chrome.proxy.settings.onChange.addListener( timeouted( (details) => {
+  chrome.proxy.settings.onChange.addListener(timeouted((details) => {
 
     console.log('Proxy settings changed.', details);
     const noCon = 'no-control';
     const ifWasControllable = handlers.ifControllable;
-    if ( !handlers.isControllable(details) && ifWasControllable ) {
+    if (!handlers.isControllable(details) && ifWasControllable) {
       handlers.mayNotify(
         noCon,
         chrome.i18n.getMessage('noControl'),
         chrome.i18n.getMessage('which'),
-        {icon: 'no-control-128.png', ifSticky: false}
+        { icon: 'no-control-128.png', ifSticky: false }
       );
     } else {
-      chrome.notifications.clear( noCon );
+      chrome.notifications.clear(noCon);
     }
 
   }));

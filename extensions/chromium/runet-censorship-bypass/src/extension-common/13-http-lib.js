@@ -39,35 +39,31 @@
     get(url, cb = mandatory()) {
 
       const start = Date.now();
-      fetch(url, {cache: 'no-store'}).then(
+      fetch(url, { cache: 'no-store' }).then(
         (res) => {
 
           const textCb =
             (err) => {
 
-              console.log('Reading response as text...');
               res.text().then(
-                (text) => {
-                  console.log('Calling CB...');
-                  cb(err, text);
-                },
+                (text) => cb(err, text),
                 cb
               );
 
             };
 
           const status = res.status;
-          if ( !( status >= 200 && status < 300 || status === 304 ) ) {
+          if (!((status >= 200 && status < 300) || status === 304)) {
             return textCb(
               errorsLib.clarify(
                 res,
-                'Получен ответ с неудачным HTTP-кодом ' + status + '.'
+                `Получен ответ с неудачным HTTP-кодом ${status}.`
               )
             );
           }
 
           console.log('GETed with success:', url, Date.now() - start);
-          textCb();
+          return textCb();
 
         },
         errorsLib.clarifyThen(checkCon, cb)

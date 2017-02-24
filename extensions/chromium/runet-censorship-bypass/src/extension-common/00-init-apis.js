@@ -8,11 +8,11 @@
     // I believe logging objects precludes them from being GCed.
     // I also don't remove logs for sake of client-side troubleshooting
     // (though no one sent me logs so far).
-    ['log', 'warn', 'error'].forEach( (meth) => {
-      const _meth = window.console[meth].bind(console);
-      window.console[meth] = function(...args) {
+    ['log', 'warn', 'error'].forEach((meth) => {
+      const originalMeth = window.console[meth].bind(console);
+      window.console[meth] = function wrappedForDebug(...args) {
 
-        _meth(...args.map((a) => '' + a));
+        originalMeth(...args.map((a) => `${a}`/* toString, but safer */));
 
       };
     });
@@ -33,7 +33,7 @@
 
     throwIfError(err) {
 
-      if(err) {
+      if (err) {
         throw err;
       }
 
@@ -45,7 +45,7 @@
       // method invokation.
       const err = chrome.runtime.lastError || chrome.extension.lastError;
       if (!err) {
-        return;
+        return null;
       }
       console.warn('API returned error:', err);
       return new Error(err.message); // Add stack.
@@ -62,7 +62,7 @@
     chromified(cb = self.mandatory()) {
 
       // Take error first callback and convert it to chrome API callback.
-      return function(...args) {
+      return function cbForChromeApi(...args) {
 
         const err = self.checkChromeError();
         self.timeouted(cb)(err, ...args);
@@ -71,35 +71,42 @@
 
     },
 
-    getProp(obj, path = self.mandatory()) {
+    getProp(targetObj, path = self.mandatory()) {
 
       const props = path.split('.');
       if (!props.length) {
         throw new TypeError('Property must be supplied.');
       }
-      const lastProp = props.pop();
-      for( const prop of props ) {
-        if (!(prop in obj)) {
-          return undefined;
+
+      const ifSupportsInOp = (obj) =>
+        ['object', 'function'].includes(typeof obj);
+
+      return props.reduce((currentObj, prop) => {
+
+        if (
+          ifSupportsInOp(currentObj)
+          && prop in currentObj
+        ) {
+          return currentObj[prop];
         }
-        obj = obj[prop];
-      }
-      return obj[lastProp];
+        return undefined;
+
+      }, targetObj);
 
     },
 
     assert(value) {
 
-      if(!value) {
+      if (!value) {
         console.assert(value);
-        throw new Error('Assert failed for:' + value);
+        throw new Error(`Assert failed for:${value}`);
       }
 
     },
 
     addRequestResponder(requestType, responder) {
 
-      if( privates.requestToResponder[requestType] ) {
+      if (privates.requestToResponder[requestType]) {
         throw new TypeError(`Request ${requestType} already has responder!`);
       }
       privates.requestToResponder[requestType] = responder;
@@ -109,9 +116,9 @@
     fireRequest(requestType, ...args) {
 
       const cb = args.slice(-1)[0];
-      self.assert(typeof(cb) === 'function');
+      self.assert(typeof cb === 'function');
       const responder = privates.requestToResponder[requestType];
-      if(responder) {
+      if (responder) {
         responder(...args);
       } else {
         cb();
@@ -123,18 +130,18 @@
 
       return function state(key, value) {
 
-        key = prefix + key;
+        const prefixedKey = prefix + key;
         if (value === null) {
-          return localStorage.removeItem(key);
+          return localStorage.removeItem(prefixedKey);
         }
         if (value === undefined) {
-          const item = localStorage.getItem(key);
+          const item = localStorage.getItem(prefixedKey);
           return item && JSON.parse(item);
         }
         if (value instanceof Date) {
           throw new TypeError('Converting Date format to JSON is not supported.');
         }
-        localStorage.setItem(key, JSON.stringify(value));
+        return localStorage.setItem(prefixedKey, JSON.stringify(value));
 
       };
 
@@ -168,15 +175,15 @@
 
       searchSettingsForUrl(niddle) {
 
-        return 'chrome://settings/search#' + (chrome.i18n.getMessage(niddle) || niddle);
+        return `chrome://settings/search#${(chrome.i18n.getMessage(niddle) || niddle)}`;
 
       },
 
       whichExtensionHtml() {
 
-        return chrome.i18n.getMessage('noControl') +
-          ` <a href="${ this.searchSettingsForUrl('proxy') }">
-            ${ chrome.i18n.getMessage('which') }
+        return `${chrome.i18n.getMessage('noControl')}
+          <a href="${this.searchSettingsForUrl('proxy')}">
+            ${chrome.i18n.getMessage('which')}
           </a>`;
 
       },
