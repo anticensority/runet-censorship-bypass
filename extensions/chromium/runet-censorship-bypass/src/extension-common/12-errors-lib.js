@@ -1,4 +1,5 @@
 'use strict';
+
 /*
  *  Error Library
  *  PURPOSE 1:
@@ -32,7 +33,7 @@
 
     },
 
-    clarify: function(err, message = mandatory(), {data} = {}) {
+    clarify(err, message = mandatory(), { data } = {}) {
 
       if (!err) {
         return err;
@@ -46,9 +47,9 @@
 
     },
 
-    clarifyThen: function(message, cb = mandatory()) {
+    clarifyThen(message, cb = mandatory()) {
 
-      return (err, ...args) => cb( self.clarify(err, message), ...args );
+      return (err, ...args) => cb(self.clarify(err, message), ...args);
 
     },
 

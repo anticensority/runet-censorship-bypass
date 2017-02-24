@@ -35,11 +35,11 @@
   const asyncLogGroup = function asyncLogGroup(...args) {
 
     const cb = args.pop();
-    if(!(cb && typeof(cb) === 'function')) {
-      throw new TypeError('cb must be a function, but got: ' + cb);
+    if (!cb || typeof cb !== 'function') {
+      throw new TypeError(`cb must be a function, but got: ${cb}`);
     }
     console.group(...args);
-    return function(...cbArgs) {
+    return function finishLogGroup(...cbArgs) {
 
       console.groupEnd();
       console.log('Group finished.');
@@ -61,23 +61,23 @@
       },
     };
     console.log('Setting chrome proxy settings...');
-    chrome.proxy.settings.set( {value: config}, chromified((err) => {
+    chrome.proxy.settings.set({ value: config }, chromified((err) => {
 
       if (err) {
         return cb(err);
       }
-      handlers.updateControlState( () => {
+      return handlers.updateControlState(() => {
 
-        if ( !handlers.ifControlled ) {
+        if (!handlers.ifControlled) {
 
           console.warn('Failed, other extension is in control.');
           return cb(
-            new Error( window.utils.messages.whichExtensionHtml() )
+            new Error(window.utils.messages.whichExtensionHtml())
           );
 
         }
         console.log('Successfuly set PAC in proxy settings..');
-        cb();
+        return cb();
 
       });
 
@@ -86,25 +86,25 @@
   };
 
   const updatePacProxyIps = function updatePacProxyIps(
-    cb = throwIfError
+    originalCb = throwIfError
   ) {
 
-    cb = asyncLogGroup(
+    const cb = asyncLogGroup(
       'Getting IPs for PAC hosts...',
-      cb
+      originalCb
     );
     window.utils.fireRequest('ip-to-host-update-all', cb);
 
   };
 
   const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
-    provider, lastModified = mandatory(), cb = throwIfError
+    provider, lastModified = mandatory(), originalCb = throwIfError
   ) {
 
     const pacUrl = provider.pacUrls[0];
-    cb = asyncLogGroup(
+    const cb = asyncLogGroup(
       'Getting PAC script from provider...', pacUrl,
-      cb
+      originalCb
     );
 
     httpLib.ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
@@ -112,10 +112,9 @@
       if (!newLastModified) {
         return cb(
           null,
-          {lastModified},
+          { lastModified },
           new Warning(
-            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-              lastModified
+            `Ваш PAC-скрипт не нуждается в обновлении. Его дата: ${lastModified}.`
           )
         );
       }
@@ -126,7 +125,7 @@
           () => new Promise(
             (resolve, reject) => httpLib.get(
               url,
-              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
+              (newErr, pacData) => (newErr ? reject(newErr) : resolve(pacData))
             )
           )
         ),
@@ -139,29 +138,75 @@
 
           setPacAsync(
             pacData,
-            (err, res) => cb(
-              err,
-              Object.assign(res || {}, {lastModified: newLastModified})
+            (pacErr, pacRes) => cb(
+              pacErr,
+              Object.assign(pacRes || {}, { lastModified: newLastModified })
             )
           );
 
         },
 
         clarifyThen(
-          'Не удалось скачать PAC-скрипт с адресов: [ '
-          + provider.pacUrls.join(' , ') + ' ].',
+          `Не удалось скачать PAC-скрипт с адресов: [ ${provider.pacUrls.join(' , ')} ].`,
           cb
         )
 
       );
+      return undefined;
 
     });
 
   };
 
-  window.apis.antiCensorRu = {
+  const currentVersion = chrome.runtime.getManifest().version;
 
-    version: chrome.runtime.getManifest().version,
+  const privates = {
+
+    pacUpdatePeriodInMinutes: 12 * 60,
+    periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта',
+    state: window.utils.createStorage('anti-censor-ru-'),
+
+    get version() {
+      return this.state('version');
+    },
+    set version(newValue) {
+      return this.state('version', newValue);
+    },
+
+    get ifFirstInstall() {
+      return this.version === null;
+    },
+    set ifFirstInstall(newValue) {
+      if (newValue) {
+        throw new TypeError('ifFirstInstall can\'t be set to true!');
+      }
+      this.version = currentVersion;
+    },
+
+    get currentPacProviderKey() {
+      return this.state('current-pac');
+    },
+    set currentPacProviderKey(newValue) {
+      return this.state('current-pac', newValue);
+    },
+
+    get lastPacUpdateStamp() {
+      return this.state('last-pac-update-stamp') || 0;
+    },
+    set lastPacUpdateStamp(newValue) {
+      return this.state('last-pac-update-stamp', newValue);
+    },
+
+    get currentPacProviderLastModified() {
+      return this.state('current-pac-last-mod') || 0;
+    },
+    set currentPacProviderLastModified(newValue) {
+      return this.state('current-pac-last-mod', newValue);
+    },
+
+  };
+
+  window.apis.antiCensorRu = {
 
     pacProviders: {
       Антизапрет: {
@@ -199,20 +244,24 @@
       },
     },
 
-    _currentPacProviderKey: 'Антизапрет',
-
     /* Is it the first time extension installed?
        Do something, e.g. initiate PAC sync.
     */
-    ifFirstInstall: false,
-    lastPacUpdateStamp: 0,
+    get ifFirstInstall() {
 
-    _currentPacProviderLastModified: 0, // Not initialized.
+      return privates.ifFirstInstall;
+
+    },
+    get lastPacUpdateStamp() {
+
+      return privates.lastPacUpdateStamp;
+
+    },
 
     getLastModifiedForKey(key = mandatory()) {
 
-      if (this._currentPacProviderKey === key) {
-        return new Date(this._currentPacProviderLastModified).toUTCString();
+      if (privates.currentPacProviderKey === key) {
+        return new Date(privates.currentPacProviderLastModified).toUTCString();
       }
       return new Date(0).toUTCString();
 
@@ -220,21 +269,21 @@
 
     setLastModified(newValue = mandatory()) {
 
-      this._currentPacProviderLastModified = newValue;
+      privates.currentPacProviderLastModified = newValue;
 
     },
 
     mustBeKey(key = mandatory()) {
 
-      if ( !(key === null || this.pacProviders[key]) ) {
-        throw new TypeError('No provider for key:' + key);
+      if (key !== null && !this.pacProviders[key]) {
+        throw new TypeError(`No provider for key:${key}`);
       }
 
     },
 
     getCurrentPacProviderKey() {
 
-      return this._currentPacProviderKey;
+      return privates.currentPacProviderKey;
 
     },
 
@@ -244,15 +293,17 @@
     ) {
 
       this.mustBeKey(newKey);
-      this._currentPacProviderKey = newKey;
-      this._currentPacProviderLastModified = lastModified;
+      privates.currentPacProviderKey = newKey;
+      privates.currentPacProviderLastModified = lastModified;
 
     },
 
-    getPacProvider(key) {
+    getPacProvider(maybeKey) {
 
-      if(key) {
-        this.mustBeKey(key);
+      let key;
+      if (maybeKey) {
+        this.mustBeKey(maybeKey);
+        key = maybeKey;
       } else {
         key = this.getCurrentPacProviderKey();
       }
@@ -260,40 +311,18 @@
 
     },
 
-    _periodicUpdateAlarmReason: 'Периодичное обновление PAC-скрипта',
+    syncWithPacProviderAsync(maybeKey = this.currentPacProvierKey, maybeCb = throwIfError) {
 
-    pushToStorageAsync(cb = throwIfError) {
-
-      console.log('Pushing to storage...');
-
-      // Copy only settable properties (except functions).
-      const onlySettable = {};
-      for(const key of Object.keys(this)) {
-        if (
-          Object.getOwnPropertyDescriptor(this, key).writable
-            && typeof(this[key]) !== 'function'
-        ) {
-          onlySettable[key] = this[key];
-        }
-      }
-
-      chrome.storage.local.clear(
-        () => chrome.storage.local.set(
-          onlySettable,
-          chromified(cb)
-        )
-      );
-
-    },
-
-    syncWithPacProviderAsync(
-      key = this.currentPacProvierKey, cb = throwIfError) {
-
-      if( typeof(key) === 'function' ) {
-        cb = key;
+      let key;
+      let originalCb;
+      if (typeof maybeKey === 'function') {
         key = this.getCurrentPacProviderKey();
+        originalCb = maybeKey;
+      } else {
+        key = maybeKey;
+        originalCb = maybeCb;
       }
-      cb = asyncLogGroup('Syncing with PAC provider ' + key + '...', cb);
+      const cb = asyncLogGroup(`Syncing with PAC provider ${key}...`, originalCb);
 
       if (key === null) {
         // No pac provider set.
@@ -303,15 +332,15 @@
       const pacProvider = this.getPacProvider(key);
 
       const pacSetPromise = new Promise(
-        (resolve, reject) => setPacScriptFromProviderAsync(
+        (resolve) => setPacScriptFromProviderAsync(
           pacProvider,
           this.getLastModifiedForKey(key),
           (err, res, ...warns) => {
 
             if (!err) {
               this.setCurrentPacProviderKey(key, res.lastModified);
-              this.lastPacUpdateStamp = Date.now();
-              this.ifFirstInstall = false;
+              privates.lastPacUpdateStamp = Date.now();
+              privates.ifFirstInstall = false;
               this.setAlarms();
             }
 
@@ -322,7 +351,7 @@
       );
 
       const ipsErrorPromise = new Promise(
-        (resolve, reject) => updatePacProxyIps(
+        (resolve) => updatePacProxyIps(
           resolve
         )
       );
@@ -337,27 +366,25 @@
           if (ipsErr) {
             warns.push(ipsErr);
           }
-          this.pushToStorageAsync(
-            (pushErr) => cb(pacErr || pushErr, null, ...warns)
-          );
+          return cb(pacErr, null, ...warns);
 
         },
         cb
       );
+      return undefined;
 
     },
 
-    _pacUpdatePeriodInMinutes: 12*60,
     get pacUpdatePeriodInMinutes() {
 
-      return this._pacUpdatePeriodInMinutes;
+      return privates.pacUpdatePeriodInMinutes;
 
     },
 
     setAlarms() {
 
       let nextUpdateMoment = this.lastPacUpdateStamp
-        + this._pacUpdatePeriodInMinutes*60*1000;
+        + (privates.pacUpdatePeriodInMinutes * 60 * 1000);
       const now = Date.now();
       if (nextUpdateMoment < now) {
         nextUpdateMoment = now;
@@ -369,10 +396,10 @@
       );
 
       chrome.alarms.create(
-        this._periodicUpdateAlarmReason,
+        privates.periodicUpdateAlarmReason,
         {
           when: nextUpdateMoment,
-          periodInMinutes: this._pacUpdatePeriodInMinutes,
+          periodInMinutes: privates.pacUpdatePeriodInMinutes,
         }
       );
 
@@ -390,14 +417,14 @@
       if (this.currentProviderKey !== key) {
         return this.syncWithPacProviderAsync(key, cb);
       }
-      console.log(key + ' already installed.');
-      cb();
+      console.log(`${key} already installed.`);
+      return cb();
 
     },
 
-    clearPacAsync(cb = throwIfError) {
+    clearPacAsync(originalCb = throwIfError) {
 
-      cb = asyncLogGroup('Cearing alarms and PAC...', cb);
+      const cb = asyncLogGroup('Cearing alarms and PAC...', originalCb);
       chrome.alarms.clearAll(
         () => chrome.proxy.settings.clear(
           {},
@@ -407,9 +434,7 @@
               return cb(err);
             }
             this.setCurrentPacProviderKey(null);
-            this.pushToStorageAsync(
-              () => handlers.updateControlState(cb)
-            );
+            return handlers.updateControlState(cb);
 
           })
         )
@@ -420,12 +445,7 @@
   };
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
-  chrome.storage.local.get(null, chromified( (err, oldStorage) => {
-
-    if (err) {
-      throw err;
-    }
-
+  ((async function init() {
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
@@ -435,14 +455,14 @@
     const antiCensorRu = window.apis.antiCensorRu;
 
     chrome.alarms.onAlarm.addListener(
-      timeouted( (alarm) => {
+      timeouted((alarm) => {
 
-        if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
+        if (alarm.name === privates.periodicUpdateAlarmReason) {
           console.log(
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU')
           );
-          antiCensorRu.syncWithPacProviderAsync(() => {/* swallow */});
+          antiCensorRu.syncWithPacProviderAsync(() => { /* swallow */ });
         }
 
       })
@@ -456,24 +476,14 @@
 
     });
 
-    console.log('Storage on init:', oldStorage);
-    antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
-
     if (antiCensorRu.ifFirstInstall) {
       // INSTALL
       console.log('Installing...');
+      privates.currentPacProviderKey = 'Антизапрет';
       return chrome.runtime.openOptionsPage();
     }
 
     // LAUNCH, RELOAD, UPDATE
-    // Use old or migrate to default.
-    antiCensorRu._currentPacProviderKey =
-      oldStorage._currentPacProviderKey || null;
-    antiCensorRu.lastPacUpdateStamp =
-      oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
-    antiCensorRu._currentPacProviderLastModified =
-      oldStorage._currentPacProviderLastModified
-      || antiCensorRu._currentPacProviderLastModified;
     console.log(
       'Last PAC update was on',
       new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
@@ -487,44 +497,48 @@
       2. We have to check storage for migration before using it.
          Better on each launch then on each pull.
     */
-    const ifUpdating = antiCensorRu.version !== oldStorage.version;
+    const ifUpdating = currentVersion !== privates.version;
 
     if (!ifUpdating) {
 
       // LAUNCH, RELOAD, ENABLE
-      antiCensorRu.pacProviders = oldStorage.pacProviders;
       console.log('Extension launched, reloaded or enabled.');
 
     } else {
 
       // UPDATE & MIGRATION
-      const key = antiCensorRu._currentPacProviderKey;
-      if (key !== null) {
-        const ifVeryOld = !Object.keys(antiCensorRu.pacProviders).includes(key);
-        const ifWasForced = localStorage.getItem('provider-backup');
-        if ( ifVeryOld || !ifWasForced ) {
-          if (!ifWasForced) {
-            localStorage.setItem('provider-backup', antiCensorRu._currentPacProviderKey);
+      // Use old or migrate to defaults.
+      const oldStorage = await new Promise((resolve) =>
+        chrome.storage.local.get(null, resolve)
+      );
+      if (Object.keys(oldStorage).length) {
+        // eslint-disable-next-line no-underscore-dangle
+        let oldKey = oldStorage._currentPacProviderKey;
+        if (oldKey) {
+          const ifVeryOld = !Object.keys(antiCensorRu.pacProviders).includes(oldKey);
+          const ifWasForced = localStorage.getItem('provider-backup');
+          if (ifVeryOld || !ifWasForced) {
+            if (!ifWasForced) {
+              localStorage.setItem('provider-backup', oldKey);
+            }
+            oldKey = 'Антизапрет';
           }
-          antiCensorRu._currentPacProviderKey = 'Антизапрет';
         }
+        privates.currentPacProviderKey = oldKey || null;
+        // eslint-disable-next-line no-underscore-dangle
+        privates.currentPacProviderLastModified = oldStorage._currentPacProviderLastModified || 0;
+        privates.lastPacUpdateStamp = oldStorage.lastPacUpdateStamp || 0;
+        await new Promise((resolve) => chrome.storage.local.clear(resolve));
       }
+      privates.version = currentVersion;
       console.log('Extension updated.');
 
     }
 
     if (antiCensorRu.getPacProvider()) {
-
-      const ifAlarmTriggered = antiCensorRu.setAlarms();
-
-      if (ifAlarmTriggered) {
-        return; // Already pushed.
-      }
-
+      antiCensorRu.setAlarms();
     }
-    if( ifUpdating ) {
-      antiCensorRu.pushToStorageAsync();
-    }
+    return undefined;
 
     /*
       History of Changes to Storage (Migration Guide)
@@ -540,7 +554,6 @@
         * Change storage.ifNotInstalled to storage.ifFirstInstall.
         * Add storage.lastPacUpdateStamp.
     **/
-
-  }));
+  })());
 
 }

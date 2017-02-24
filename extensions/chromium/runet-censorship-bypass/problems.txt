@@ -1,0 +1,18 @@
+
+/mnt/d/__Storage__/Workspace/repos/LATEST/extensions/chromium/runet-censorship-bypass/src/extension-full/20-ip-to-host-api.js
+   19:9   error  Unexpected dangling '_' in '_match'               no-underscore-dangle
+   23:35  error  Expected property shorthand                       object-shorthand
+   27:9   error  Unexpected dangling '_' in '_test'                no-underscore-dangle
+   53:9   error  Unexpected dangling '_' in '_state'               no-underscore-dangle
+   58:9   error  Unexpected dangling '_' in '_createHostObj'       no-underscore-dangle
+   64:9   error  Unexpected dangling '_' in '_getHostObj'          no-underscore-dangle
+   73:11  error  Unexpected dangling '_' in '_antizapret'          no-underscore-dangle
+  174:9   error  Unexpected dangling '_' in '_canonize'            no-underscore-dangle
+  232:11  error  Unexpected dangling '_' in '_purgeOldIpsForSync'  no-underscore-dangle
+  252:24  error  Unexpected dangling '_' in '_addAsync'            no-underscore-dangle
+  300:7   error  Unexpected dangling '_' in '_updateAllAsync'      no-underscore-dangle
+  308:7   error  Unexpected dangling '_' in '_updateAllAsync'      no-underscore-dangle
+  330:7   error  Unexpected dangling '_' in '_replaceAllAsync'     no-underscore-dangle
+
+✖ 13 problems (13 errors, 0 warnings)
+

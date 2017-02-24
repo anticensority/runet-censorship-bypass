@@ -20,47 +20,52 @@
     color: '#db4b2f',
   });
 
-  const _tabCallbacks = {};
+  const privates = {};
+
+  privates.tabCallbacks = {};
 
   const afterTabUpdated = function afterTabUpdated(tabId, cb) {
 
-    if (_tabCallbacks[tabId]) {
-      _tabCallbacks[tabId].push(cb);
+    if (privates.tabCallbacks[tabId]) {
+      privates.tabCallbacks[tabId].push(cb);
     } else {
-      _tabCallbacks[tabId] = [cb];
+      privates.tabCallbacks[tabId] = [cb];
     }
 
   };
 
   const onTabUpdate = function onTabUpdate(tabId) {
 
-    if (_tabCallbacks[tabId]) {
-      _tabCallbacks[tabId].map( (f) => f() );
-      delete _tabCallbacks[tabId];
+    if (privates.tabCallbacks[tabId]) {
+      privates.tabCallbacks[tabId].map((f) => f());
+      delete privates.tabCallbacks[tabId];
     }
 
   };
 
-  chrome.tabs.onUpdated.addListener( onTabUpdate );
+  chrome.tabs.onUpdated.addListener(onTabUpdate);
 
   const updateTitle = function updateTitle(requestDetails, proxyHost, cb) {
 
     chrome.browserAction.getTitle(
-      {tabId: requestDetails.tabId},
+      { tabId: requestDetails.tabId },
       (title) => {
 
         const ifTitleSetAlready = /\n/.test(title);
 
-        const hostname = new URL( requestDetails.url ).hostname;
+        const hostname = new URL(requestDetails.url).hostname;
 
         let ifShouldUpdateTitle = false;
         const indent = '  ';
         const proxyTitle = 'Прокси:';
 
+        let theLatestCb = cb;
+        let newTitle = title;
+
         if (!ifTitleSetAlready) {
 
-          title = 'Разблокированы:\n' + indent + hostname + '\n'
-            + proxyTitle + '\n' + indent + proxyHost;
+          newTitle = `Разблокированы:\n${indent}${hostname}\n${proxyTitle}\n`
+            + `${indent}${proxyHost}`;
           ifShouldUpdateTitle = true;
 
           chrome.browserAction.setBadgeText({
@@ -70,37 +75,36 @@
 
         } else {
 
-          const hostsProxiesPair = title.split(proxyTitle);
+          const hostsProxiesPair = newTitle.split(proxyTitle);
 
           if (hostsProxiesPair[1].indexOf(proxyHost) === -1) {
-            title = title.replace(
+            newTitle = newTitle.replace(
               hostsProxiesPair[1],
-              hostsProxiesPair[1] + '\n' + indent + proxyHost
+              `${hostsProxiesPair[1]}\n${indent}${proxyHost}`
             );
             ifShouldUpdateTitle = true;
           }
 
           if (hostsProxiesPair[0].indexOf(hostname) === -1) {
 
-            title = title.replace(
+            newTitle = newTitle.replace(
               proxyTitle,
-              indent + hostname + '\n' + proxyTitle
+              `${indent}${hostname}\n${proxyTitle}`
             );
             ifShouldUpdateTitle = true;
 
-            const _cb = cb;
-            cb = () => chrome.browserAction.getBadgeText(
-              {tabId: requestDetails.tabId},
+            theLatestCb = () => chrome.browserAction.getBadgeText(
+              { tabId: requestDetails.tabId },
               (result) => {
 
+                const charPrefix = isNaN(result.charAt(0)) ? result.charAt(0) : '';
                 chrome.browserAction.setBadgeText(
                   {
                     tabId: requestDetails.tabId,
-                    text: (isNaN( result.charAt(0)) && result.charAt(0) || '')
-                      + (hostsProxiesPair[0].split('\n').length - 1),
+                    text: charPrefix + (hostsProxiesPair[0].split('\n').length - 1),
                   }
                 );
-                return _cb();
+                return cb();
 
               }
             );
@@ -111,12 +115,12 @@
 
         if (ifShouldUpdateTitle) {
           chrome.browserAction.setTitle({
-            title: title,
+            title: newTitle,
             tabId: requestDetails.tabId,
           });
         }
 
-        return cb();
+        return theLatestCb();
 
       }
     );
@@ -127,7 +131,7 @@
 
   const tryProxyAndInform = function tryProxyAndInform(requestDetails) {
 
-    const host = window.apis.ipToHost.get( requestDetails.ip );
+    const host = window.apis.ipToHost.get(requestDetails.ip);
     if (!host) {
       return;
     }
@@ -137,7 +141,7 @@
     previousUpdateTitleFinished = previousUpdateTitleFinished.then(
       () => new Promise(
         (resolve) => {
-          const cb = () => updateTitle( requestDetails, host, resolve );
+          const cb = () => updateTitle(requestDetails, host, resolve);
           return ifMainFrame
             ? afterTabUpdated(requestDetails.tabId, cb) : cb();
         }
@@ -155,11 +159,11 @@
 
   };
 
-  for(const eventName of ['onResponseStarted', 'onErrorOccurred']) {
+  ['onResponseStarted', 'onErrorOccurred'].forEach((eventName) =>
     chrome.webRequest[eventName].addListener(
       onRequest,
-      {urls: ['<all_urls>']}
-    );
-  }
+      { urls: ['<all_urls>'] }
+    )
+  );
 
 }
