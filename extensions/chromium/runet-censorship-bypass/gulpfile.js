@@ -19,8 +19,9 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
       return cb(new PluginError(PluginName, 'Streams not supported!'));
     } else if (file.isBuffer()) {
 
-      const {keys, values} = Object.entries(context).reduce( (acc, [key, value]) => {
+      const {keys, values} = Object.keys(context).reduce( (acc, key) => {
 
+	const value = context[key];
         acc.keys.push(key);
         acc.values.push(value);
         return acc;

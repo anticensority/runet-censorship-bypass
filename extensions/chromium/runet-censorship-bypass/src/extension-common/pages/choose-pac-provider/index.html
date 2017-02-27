@@ -7,8 +7,9 @@
         --ribbon-color: #4169e1;
         --blue-bg: dodgerblue;
         --default-grey: #bfbfbf;
-        max-width: 27em;
+        max-width: 28em;
       }
+
       body {
         margin: 0;
       }
@@ -44,6 +45,9 @@
       }
       li, li > * {
         vertical-align: middle;
+      }
+      input[type="radio"], input[type="checkbox"] {
+        flex-shrink: 0;
       }
       input[type="radio"], label {
         cursor: pointer;
@@ -205,34 +209,22 @@
       /* INFO SIGNS */
 
       .info-row {
-        display: table;
-        width: 100%;
-
         position: relative;
       }
-      .info-sign {
-        font-size: 1.4em;
-        vertical-align: middle;
-        line-height: 100%;
+      .right-bottom-icon {
         margin-left: 0.1em;
+        vertical-align: bottom;
       }
-      .info-url {
+      .info-url, .info-url:hover {
         text-decoration: none;
-
-        float: right;
-        text-align: right;
-
-        line-height: normal !important;
-        vertical-align: top !important;
       }
 
       /* Source: https://jsfiddle.net/greypants/zgCb7/ */
       .desc {
-        display: table-cell;
         text-align: right;
         color: var(--ribbon-color);
         cursor: help;
-        width: 1%;
+        padding-left: 0.3em;
       }
       .tooltip {
         display: none;
@@ -265,13 +257,13 @@
         right: 0;
         height: 0;
       }
-      /* This bridges the gap so you can mouse into the tooltip without it disappearing */
+      /* This bridges the gap so you can mouse into the tooltip without it disappearing. */
       .desc .tooltip:before {
         position: absolute;
         top: -1em;
         content: "";
         display: block;
-        height: 1.6em;
+        height: 1.2em;
         left: 75%;
         width: calc(25% + 0.6em);
       }
@@ -355,6 +347,14 @@
         margin: 1em 0 1em 0;
       }
 
+      .hor-flex > input:not([type="button"]) {
+        align-self: flex-end;
+      }
+      .label-container {
+        flex-grow: 9;
+        padding-left: 0.3em;
+      }
+
       /* STATUS */
 
       #status-row {
@@ -370,6 +370,25 @@
       }
       .other-version:hover {
         text-decoration: none;
+      }
+
+      @font-face {
+        font-family: "emoji";
+        src:url("../lib/fonts/emoji.woff") format("woff");
+        font-weight: normal;
+        font-style: normal;
+      }
+      .emoji {
+        font-family: "emoji";
+      }
+
+      svg.icon {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        stroke-width: 0;
+        stroke: currentColor;
+        fill: currentColor;
       }
     </style>
   </head>
@@ -397,10 +416,16 @@
 
         <header class="only-for-options-page">PAC-скрипт:</header>
         <ul id="list-of-providers">
-          <li><input type="radio" name="pacProvider" id="none" checked> <label for="none">Отключить</label></li>
+          <li class="info-row hor-flex"><input type="radio" name="pacProvider" id="none" checked> <div class="label-container"><label for="none">Отключить</label></div></li>
         </ul>
-        <div id="update-message">
-          Обновлялись: <span class="update-date">...</span>
+        <div id="update-message" class="hor-flex">
+          <div>Обновлялись: <span class="update-date">...</span></div>
+          <div>
+            <a class="only-for-mini-version other-version emoji" href="https://rebrand.ly/ac-versions"
+              title="Полная версия">🏋</a>
+            <a class="only-for-full-version other-version emoji" href="https://rebrand.ly/ac-versions"
+              title="Версия для слабых машин">🐌</a>
+          </div>
         </div>
 
       </section>
@@ -416,7 +441,11 @@
         </div>
         <datalist id="exc-list"></datalist>
         <ol class="horizontal-list" id="exc-radio">
-          <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/> <label for="this-auto">🔄&#xFE0E; авто</label></li>
+          <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/>
+            <label for="this-auto"><!--span class="emoji">🔄(looks fat)</span--><svg
+              class="icon"
+              style="position: relative; top: 0.15em;"><use xlink:href="#icon-loop-round"></use></svg>&nbsp;авто</label>
+          </li>
           <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
           <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
         </ol>
@@ -445,10 +474,8 @@
     <hr/>
 
     <div class="hor-padded">
-      <section class="hor-flex" id="status-row">
+      <section id="status-row">
         <div id="status" style="will-change: contents">Загрузка...</div>
-        <a class="only-for-mini-version other-version" title="Полная версия" href="https://rebrand.ly/ac-versions">🏋&#xFE0E;</a>
-        <a class="only-for-full-version other-version" title="Версия для слабых машин" href="https://rebrand.ly/ac-versions">🐌&#xFE0E;</a>
       </section>
 
       <footer class="control-row hor-flex">
@@ -461,5 +488,18 @@
 
     <script src="./index.js"></script>
     <script src="../lib/keep-links-clickable.js"></script>
+    <!-- ICONS -->
+    <svg style="display: none" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <symbol id="icon-info" viewBox="0 0 100 100">
+        <title>info</title>
+        <circle shape-rendering="geometricPrecision" fill="none" stroke="currentColor" stroke-width="7" cx="50" cy="50" r="45"/>
+        <path shape-rendering="crispEdges" d="M 55,40 V 80 H 45 V 40 z m 0,-20 V 35 H 45 V 20 Z"/>
+      </symbol>
+      <symbol id="icon-loop-round" viewBox="0 0 32 32">
+        <title>loop-round</title>
+        <path d="M27.802 5.197c-2.925-3.194-7.13-5.197-11.803-5.197-8.837 0-16 7.163-16 16h3c0-7.18 5.82-13 13-13 3.844 0 7.298 1.669 9.678 4.322l-4.678 4.678h11v-11l-4.198 4.197z"/>
+        <path d="M29 16c0 7.18-5.82 13-13 13-3.844 0-7.298-1.669-9.678-4.322l4.678-4.678h-11v11l4.197-4.197c2.925 3.194 7.13 5.197 11.803 5.197 8.837 0 16-7.163 16-16h-3z"/>
+      </symbol>
+    </svg>
   </body>
 </html>

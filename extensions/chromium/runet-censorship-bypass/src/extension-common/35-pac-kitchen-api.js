@@ -109,6 +109,7 @@
             || Boolean(defaults[prop]) === Boolean(mods[prop])
         );
 
+      console.log('MODS', mods);
       Object.assign(this, defaults, mods);
       this.ifNoMods = ifAllDefaults ? true : false;
 
@@ -149,7 +150,7 @@
             this.excluded.push(host);
           }
         }
-        if (this.included && !this.filteredCustomsString) {
+        if (this.included.length && !this.filteredCustomsString) {
           throw new TypeError(
             'Проксировать свои сайты можно только через свои прокси. Нет ни одного своего прокси, удовлетворяющего вашим требованиям!'
           );
@@ -214,11 +215,11 @@
       }
 
       return res + `
-    const originalProxyString = originalFindProxyForURL(url, host);
-    let originalProxyArray = originalProxyString.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
-    if (originalProxyArray.every( (p) => /^DIRECT$/i.test(p) )) {
+    const pacProxyString = originalFindProxyForURL(url, host);
+    let pacProxyArray = pacProxyString.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
+    if (pacProxyArray.every( (p) => /^DIRECT$/i.test(p) )) {
       // Directs only or null, no proxies.
-      return originalProxyString;
+      return pacProxyString;
     }
     return ` +
       function() {
@@ -226,15 +227,15 @@
         if (!pacMods.ifUsePacScriptProxies) {
           return '"' + pacMods.filteredCustomsString + '"';
         }
-        let filteredOriginalsExp = 'originalProxyString';
+        let filteredPacExp = 'pacProxyString';
         if (pacMods.ifUseSecureProxiesOnly) {
-          filteredOriginalsExp =
-            'originalProxyArray.filter( (p) => !p.toUpperCase().startsWith("HTTP ") ).join("; ")';
+          filteredPacExp =
+            'pacProxyArray.filter( (p) => !p.toUpperCase().startsWith("HTTP ") ).join("; ")';
         }
         if ( !pacMods.filteredCustomsString ) {
-          return filteredOriginalsExp;
+          return filteredPacExp;
         }
-        return '"' + pacMods.filteredCustomsString + '; " + ' + filteredOriginalsExp;
+        return filteredPacExp + '"; ' + pacMods.filteredCustomsString + '"';
 
       }() + ' + "; DIRECT";'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
@@ -291,7 +292,6 @@
       }
 
     },
-
 
     keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
 
