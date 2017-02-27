@@ -3,7 +3,8 @@
   "version": "0.0.19",
   "description": "Development tools for chromium extension",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint ./src/**/*.js --ignore-pattern vendor"
+    "lint": "eslint ./src/**/*.js --ignore-pattern vendor",
+    "gulp": "gulp"
   },
   "author": "Ilya Ig. Petrov",
   "license": "GPLv3",

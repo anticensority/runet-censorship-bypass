@@ -110,7 +110,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         }
         setStatusTo(
           `<span style="color:red">
-            ${err ? '🔥&#xFE0E; Ошибка!' : 'Некритичная ошибка.'}
+            ${err ? '<span class="emoji">🔥</span> Ошибка!' : 'Некритичная ошибка.'}
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred">${message}</span>
@@ -156,10 +156,16 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       };
 
+      const infoIcon = `
+        <svg class="icon"
+          style="position: relative; top: 0.08em"><use xlink:href="#icon-info"></use></svg>
+        <!--span style="font-size: 1.3em" class="emoji">🛈(looks huge)</span-->
+      `;
+
       const infoSign = function infoSign(tooltip) {
 
         return `<div class="desc">
-          <span class="info-sign">🛈</span>
+          ${infoIcon}
           <div class="tooltip">${tooltip}</div>
         </div>`;
 
@@ -173,12 +179,14 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         ) {
           const provider = antiCensorRu.getPacProvider(providerKey);
           const li = document.createElement('li');
-          li.className = 'info-row';
+          li.classList.add('info-row', 'hor-flex');
           li.innerHTML = `
             <input type="radio" name="pacProvider" id="${providerKey}">
-            <label for="${providerKey}"> ${provider.label}</label>
-            &nbsp;<a href class="link-button update-button"
-              id="update-${providerKey}">[обновить]</a> ` +
+            <div class="label-container">
+              <label for="${providerKey}"> ${provider.label}</label>
+              &nbsp;<a href class="link-button update-button"
+                id="update-${providerKey}">[обновить]</a>
+            </div>` +
             infoSign(provider.desc);
           li.querySelector('.link-button').onclick =
             () => {
@@ -516,16 +524,20 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           const key = conf.key;
           const iddy = 'mods-' + conf.key.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
           const li = document.createElement('li');
-          li.className = 'info-row';
+          li.classList.add('info-row', 'hor-flex');
           keyToLi[key] = li;
+          const ifMultiline = key === customProxyStringKey;
           li.innerHTML = `
-            <input type="checkbox" id="${iddy}" ${ conf.value ? 'checked' : '' }/>
-            <label for="${iddy}"> ${ conf.label }</label>`;
+              <input type="checkbox" id="${iddy}" ${ conf.value ? 'checked' : '' }/>
+              <div class="label-container">
+                <label for="${iddy}"> ${ conf.label }</label>
+              </div>`;
 
-          if (key !== customProxyStringKey) {
+          if (!ifMultiline) {
             li.innerHTML += infoSign(conf.desc);
           } else {
-            li.innerHTML += `<a href="${conf.url}" class="info-sign info-url">🛈</a><br/>
+            li.style.flexWrap = 'wrap';
+            li.innerHTML += `<a href="${conf.url}" class="right-bottom-icon info-url">${infoIcon}</a>
 <textarea
   spellcheck="false"
   placeholder="SOCKS5 localhost:9050; # TOR Expert
