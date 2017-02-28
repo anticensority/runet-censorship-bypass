@@ -9,7 +9,6 @@
         --default-grey: #bfbfbf;
         max-width: 28em;
       }
-
       body {
         margin: 0;
       }
@@ -33,9 +32,23 @@
       ul, ol {
         list-style-type: none;
       }
+      :root:not(.if-options-page) ul,
+      :root:not(.if-options-page) ol {
+        /*Here is a flex bug:
+          () antizapret [update]                     (i)
+          () anticensority very_long_foobar [update]  (i) <- Sic!
+          Also: options page is wider, check it too.
+          But: fixed 100% width conflicts with margins/paddings.
+          So: use only when needed and avoid margins.
+          FYI: setting left-margin fixes problem too, but margins are not wanted.
+          Fix this problem below:
+        */
+        display: inline-block;
+        min-width: 100%;
+      }
       :root.if-options-page ul,
       :root.if-options-page ol,
-      #list-of-handlers {
+      #list-of-notifiers {
         margin-left: 0.4em;
       }
       li, footer {
@@ -273,7 +286,7 @@
       .update-button {
         visibility: hidden;
       }
-      input:checked ~ .update-button {
+      input:checked ~ .label-container .update-button {
         visibility: inherit;
       }
       #none:checked + label {
@@ -465,7 +478,7 @@
 
       <section data-for="acc-ntf">
         <header>Я ❤️ yведомления:</header>
-        <ul id="list-of-handlers"></ul>
+        <ul id="list-of-notifiers"></ul>
 
       </section>
 

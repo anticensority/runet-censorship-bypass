@@ -629,7 +629,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
       // NOTIFICATIONS PANEL
 
-      const conPanel = document.getElementById('list-of-handlers');
+      const conPanel = document.getElementById('list-of-notifiers');
       errorHandlers.getEventsMap().forEach( (value, name) => {
 
         const li = document.createElement('li');
