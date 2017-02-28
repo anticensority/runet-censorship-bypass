@@ -498,12 +498,14 @@
     } else {
 
       // UPDATE & MIGRATION
+      console.log('Updating from ', oldStorage.version, 'to', antiCensorRu.version);
       const key = antiCensorRu._currentPacProviderKey;
       if (key !== null) {
         const ifVeryOld = !Object.keys(antiCensorRu.pacProviders).includes(key);
-        const ifWasForced = localStorage.getItem('provider-backup');
-        if ( ifVeryOld || !ifWasForced ) {
-          if (!ifWasForced) {
+        const ifNeedsForcing = (oldStorage.version < '0.0.0.2') && !localStorage.getItem('provider-backup');
+        if ( ifVeryOld || ifNeedsForcing ) {
+          if (ifNeedsForcing) {
+            console.log('Update forces antizapret...')
             localStorage.setItem('provider-backup', antiCensorRu._currentPacProviderKey);
           }
           antiCensorRu._currentPacProviderKey = 'Антизапрет';
