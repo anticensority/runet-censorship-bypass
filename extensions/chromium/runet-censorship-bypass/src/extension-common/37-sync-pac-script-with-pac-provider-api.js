@@ -462,6 +462,7 @@
     if (antiCensorRu.ifFirstInstall) {
       // INSTALL
       console.log('Installing...');
+      handlers.switch('on', 'ext-error');
       return chrome.runtime.openOptionsPage();
     }
 
