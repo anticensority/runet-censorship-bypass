@@ -113,7 +113,7 @@
     const promises = types.map(
       (type) => new Promise((resolve) =>
         httpLib.get(
-          'https://dns.google.com/resolve?type=' + type + '&name=' + host,
+          `https://dns.google.com/resolve?type=${type}&name=${host}&edns_client_subnet=0.0.0.0/0`,
           (err, res) => {
 
             if (res) {

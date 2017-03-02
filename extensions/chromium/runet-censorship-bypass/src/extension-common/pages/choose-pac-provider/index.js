@@ -136,7 +136,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       };
 
-      const conduct = (beforeStatus, operation, afterStatus, onSuccess) => {
+      const conduct = (beforeStatus, operation, afterStatus, onSuccess = () => {}, onError = () => {}) => {
 
         setStatusTo(beforeStatus);
         switchInputs('off');
@@ -150,7 +150,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           }
           switchInputs('on');
           if (!err) {
-            onSuccess && onSuccess(res);
+            onSuccess(res);
+          } else {
+            onError(err);
           }
         });
 
@@ -275,9 +277,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-          const ifProxyLabel = '✔';
-          const ifNotProxyLabel = '✘';
-          const ifAutoLabel = '🔄';
+          const labelIfProxied = '✔';
+          const labelIfNotProxied = '✘';
+          const labelIfAuto = '🔄';
 
           const addOption = function addOption(host, yesNoUndefined) {
 
@@ -287,13 +289,13 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             opt.dataset.host = host;
             switch(yesNoUndefined) {
               case true:
-                opt.label = ifProxyLabel;
+                opt.label = labelIfProxied;
                 break;
               case false:
-                opt.label = ifNotProxyLabel;
+                opt.label = labelIfNotProxied;
                 break;
               default:
-                opt.label = ifAutoLabel;
+                opt.label = labelIfAuto;
             }
             const editorHost = excEditor.value.trim();
             if (host === editorHost) {
@@ -322,7 +324,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           }
 
           const hideOpt = (opt) => opt.value = '\n';
-          const unhideOpt = (opt) => opt.value = opt.dataset.host + ' ';
+          const unhideOptAndAddSpace = (opt) => opt.value = opt.dataset.host + ' ';
 
           const excList = document.getElementById('exc-list');
 
@@ -337,7 +339,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-          const renderExceptions = function renderExceptions(event) {
+          const renderExceptionsPanelFromExcList = function renderExceptionsPanelFromExcList(event) {
 
             // If triangle button on right of datalist input clicked.
 
@@ -376,9 +378,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             excList.childNodes.forEach(
               (opt) => {
 
-                unhideOpt(opt);
+                unhideOptAndAddSpace(opt);
 
-                if(opt.label === ifAutoLabel) {
+                if(opt.label === labelIfAuto) {
                   editedOpt = opt;
                   return;
                 }
@@ -392,11 +394,13 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             thisAuto.checked = true;
             excEditor.parentNode.classList.remove(noClass, yesClass);
 
-            if (ifTriangleClicked || !originalHost) {
+            const ifInputEmpty = !originalHost;
+            if (ifTriangleClicked || ifInputEmpty) {
               // Show all opts.
               if (editedOpt) {
-                const ifBackspaced = !originalHost && editedOpt.value.length < 3;
-                if (ifBackspaced) {
+                // Example of editedOpt.value: 'abcde ' <- Mind the space (see unhideOptAndAddSpace)!
+                const ifBackspacedOneChar = ifInputEmpty && editedOpt.value.length < 3;
+                if (ifBackspacedOneChar) {
                   editedOpt.remove();
                 }
               }
@@ -404,18 +408,16 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             }
 
             if (editedOpt) {
-              hideOpt(editedOpt);
+              const ifEditedOptAlreadyExists = editedOpt.dataset.host === originalHost;
+              if(ifEditedOptAlreadyExists) {
+                hideOpt(editedOpt);
+                return true;
+              }
+              // Not exact! Update!
+              editedOpt.remove();
             }
 
             if (!exactOpt) {
-              if(editedOpt) {
-                const ifExact = editedOpt.dataset.host === originalHost;
-                if(ifExact) {
-                  return true;
-                }
-                // Not exact! Update!
-                editedOpt.remove();
-              }
               editedOpt = addOption(originalHost, undefined);
               if (!ifClick) {
                 // New value was typed -- don't show tooltip.
@@ -426,7 +428,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
             // Exact found!
             hideOpt(exactOpt);
-            if(exactOpt.label === ifProxyLabel) {
+            if(exactOpt.label === labelIfProxied) {
               thisYes.checked = true;
               excEditor.parentNode.classList.add(yesClass);
             } else {
@@ -437,7 +439,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-          excEditor.onclick = excEditor.oninput = renderExceptions;
+          excEditor.onclick = excEditor.oninput = renderExceptionsPanelFromExcList;
 
           if (currentTab && !currentTab.url.startsWith('chrome')) {
             excEditor.value = new URL(currentTab.url).hostname;
@@ -452,7 +454,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
               addOption(host, pacMods.exceptions[host]);
             }
-            renderExceptions(); // Colorize input.
+            renderExceptionsPanelFromExcList(); // Colorize input.
 
           }
 
@@ -469,24 +471,36 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             const pacMods = pacKitchen.getPacMods();
             pacMods.exceptions = pacMods.exceptions || {};
 
-            let fixUi = () => {};
+            let fixOptions;
+            const curOptOrNull = excList.querySelector(`[data-host="${host}"]`);
 
             if (thisAuto.checked) {
               delete pacMods.exceptions[host];
-              fixUi = () => excEditor.value = '';
+              fixOptions = () => {
+                curOptOrNull && curOptOrNull.remove();
+              }
             } else {
-              // YES or NO.
+              // YES or NO checked.
+              const ifYesClicked = thisYes.checked;
               if (!validateHost(host)) {
                 return false;
               }
-              if (thisYes.checked && !pacMods.filteredCustomsString) {
+              if (ifYesClicked && !pacMods.filteredCustomsString) {
                 showErrors( new TypeError(
                   'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ).'
                 ));
                 return false;
               }
-              pacMods.exceptions[host] = thisYes.checked;
-              fixUi = () => addOption(host, thisYes.checked);
+              //const ifNew = !(host in pacMods.exceptions);
+              pacMods.exceptions[host] = ifYesClicked;
+                // Change label.
+              fixOptions = () => {
+                if (curOptOrNull) {
+                  curOptOrNull.label = ifYesClicked ? labelIfProxied : labelIfNotProxied;
+                } else {
+                  addOption(host, ifYesClicked);
+                }
+              };
             }
 
             conduct(
@@ -495,17 +509,13 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               'Исключения применены. Не забывайте о кэше!',
               () => {
 
-                excList.childNodes.forEach(
-                  (opt) => opt.dataset.host === host && opt.remove()
-                );
-                fixUi();
+                fixOptions();
                 // Window may be closed before this line executes.
-                console.log(excEditor, excEditor.oninput);
-                renderExceptions();
+                renderExceptionsPanelFromExcList();
 
               }
             );
-            return true;
+            return false; // Don't check before operation is finished.
 
           };
 
