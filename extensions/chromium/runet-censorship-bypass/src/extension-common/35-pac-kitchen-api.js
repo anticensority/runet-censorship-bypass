@@ -76,8 +76,7 @@
 
   const getCurrentConfigs = function getCurrentConfigs() {
 
-    const mods = kitchenState(modsKey);
-    return new PacModifiers(mods || {});
+    return kitchenState(modsKey) || getDefaults();
 
   };
 
@@ -98,68 +97,66 @@
 
   };
 
-  class PacModifiers {
+  const createPacModifiers = function createPacModifiers(mods = {}) {
 
-    constructor(mods = {}) {
+    const defaults = getDefaults();
+    const ifAllDefaults = Object.keys(defaults)
+      .every(
+        (prop) => !(prop in mods)
+          || Boolean(defaults[prop]) === Boolean(mods[prop])
+      );
 
-      const defaults = getDefaults();
-      const ifAllDefaults = Object.keys(defaults)
-        .every(
-          (prop) => !(prop in mods)
-            || Boolean(defaults[prop]) === Boolean(mods[prop])
-        );
+    console.log('Input mods:', mods);
+    const self = {};
+    Object.assign(self, defaults, mods);
+    self.ifNoMods = ifAllDefaults ? true : false;
 
-      console.log('MODS', mods);
-      Object.assign(this, defaults, mods);
-      this.ifNoMods = ifAllDefaults ? true : false;
-
-      let customProxyArray = [];
-      if (this.customProxyStringRaw) {
-        customProxyArray = this.customProxyStringRaw
-          .replace(/#.*$/mg, '') // Strip comments.
-          .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
-          .map( (p) => p.trim() )
-          .filter( (p) => p && /\s+/g.test(p) );
-        if (this.ifUseSecureProxiesOnly) {
-          customProxyArray = customProxyArray.filter( (p) => !p.startsWith('HTTP ') );
-        }
+    let customProxyArray = [];
+    if (self.customProxyStringRaw) {
+      customProxyArray = self.customProxyStringRaw
+        .replace(/#.*$/mg, '') // Strip comments.
+        .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
+        .map( (p) => p.trim() )
+        .filter( (p) => p && /\s+/g.test(p) );
+      if (self.ifUseSecureProxiesOnly) {
+        customProxyArray = customProxyArray.filter( (p) => !p.startsWith('HTTP ') );
       }
-      if (this.ifUseLocalTor) {
-        customProxyArray.push('SOCKS5 localhost:9050', 'SOCKS5 localhost:9150');
-      }
-
-      if (customProxyArray.length) {
-        this.customProxyArray = customProxyArray;
-        this.filteredCustomsString = customProxyArray.join('; ');
-      } else {
-        if (!this.ifUsePacScriptProxies) {
-          throw new TypeError('Нет ни одного прокси, удовлетворяющего вашим требованиям!');
-        }
-        this.customProxyArray = false;
-        this.filteredCustomsString = '';
-      }
-
-      this.included = this.excluded = undefined;
-      if (this.ifMindExceptions && this.exceptions) {
-        this.included = [];
-        this.excluded = [];
-        for(const host of Object.keys(this.exceptions)) {
-          if (this.exceptions[host]) {
-            this.included.push(host);
-          } else {
-            this.excluded.push(host);
-          }
-        }
-        if (this.included.length && !this.filteredCustomsString) {
-          throw new TypeError(
-            'Проксировать свои сайты можно только через свои прокси. Нет ни одного своего прокси, удовлетворяющего вашим требованиям!'
-          );
-        }
-      }
-
+    }
+    if (self.ifUseLocalTor) {
+      customProxyArray.push('SOCKS5 localhost:9050', 'SOCKS5 localhost:9150');
     }
 
-  }
+    if (customProxyArray.length) {
+      self.customProxyArray = customProxyArray;
+      self.filteredCustomsString = customProxyArray.join('; ');
+    } else {
+      if (!self.ifUsePacScriptProxies) {
+        return [new TypeError('Нет ни одного прокси, удовлетворяющего вашим требованиям!')];
+      }
+      self.customProxyArray = false;
+      self.filteredCustomsString = '';
+    }
+
+    self.included = self.excluded = undefined;
+    if (self.ifMindExceptions && self.exceptions) {
+      self.included = [];
+      self.excluded = [];
+      for(const host of Object.keys(self.exceptions)) {
+        if (self.exceptions[host]) {
+          self.included.push(host);
+        } else {
+          self.excluded.push(host);
+        }
+      }
+      if (self.included.length && !self.filteredCustomsString) {
+        return [null, self, new TypeError(
+          'Имеются сайты, добавленные вручную. Они проксироваться не будут, т.к. нет СВОИХ проски, удовлетворяющих вашим запросам!'
+        )];
+      }
+    }
+    return [null, self];
+
+  };
 
   window.apis.pacKitchen = {
 
@@ -225,7 +222,7 @@
       function() {
 
         if (!pacMods.ifUsePacScriptProxies) {
-          return '"' + pacMods.filteredCustomsString + '"';
+          return `"${pacMods.filteredCustomsString}"`;
         }
         let filteredPacExp = 'pacProxyString';
         if (pacMods.ifUseSecureProxiesOnly) {
@@ -235,7 +232,7 @@
         if ( !pacMods.filteredCustomsString ) {
           return filteredPacExp;
         }
-        return filteredPacExp + '"; ' + pacMods.filteredCustomsString + '"';
+        return `${filteredPacExp} + "; ${pacMods.filteredCustomsString}"`;
 
       }() + ' + "; DIRECT";'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
@@ -247,7 +244,7 @@
 
     },
 
-    _tryNowAsync(details, cb = throwIfError) {
+    setNowAsync(details, cb = throwIfError) {
 
       if (typeof(details) === 'function') {
         cb = details;
@@ -288,40 +285,45 @@
     checkIncontinence(details) {
 
       if ( kitchenState(ifIncontinence) ) {
-        this._tryNowAsync(details, () => {/* Swallow. */});
+        this.setNowAsync(details, () => {/* Swallow. */});
       }
 
     },
 
     keepCookedNowAsync(pacMods = mandatory(), cb = throwIfError) {
 
+      let ifProxiesChanged = false;
+      let modsWarns = [];
       if (typeof(pacMods) === 'function') {
         cb = pacMods;
         pacMods = getCurrentConfigs();
       } else {
-        try {
-          pacMods = new PacModifiers(pacMods);
-        } catch(e) {
-          return cb(e);
+        let modsErr;
+        [modsErr, pacMods, ...modsWarns] = createPacModifiers(pacMods);
+        if (modsErr) {
+          return cb(modsErr, null, modsWarns);
         }
+        const oldProxies = getCurrentConfigs().filteredCustomsString || '';
+        const newProxies = pacMods.filteredCustomsString || '';
+        ifProxiesChanged = oldProxies !== newProxies;
+        console.log('Proxies changed from:', oldProxies, 'to', newProxies);
         kitchenState(modsKey, pacMods);
       }
       console.log('Keep cooked now...', pacMods);
-      this._tryNowAsync(
-        (err, res, ...warns) => {
+      this.setNowAsync(
+        (err, res, ...setWarns) => {
 
+          const accWarns = modsWarns.concat(setWarns); // Acc = accumulated.
           console.log('Try now err:', err);
           if (err) {
-            return cb(err, res, ...warns);
+            return cb(err, res, ...accWarns);
           }
 
-          const par = pacMods.customProxyArray;
-          if (!(par && par.length)) {
-            return cb(null, res, ...warns);
+          if (!ifProxiesChanged) {
+            return cb(null, res, ...accWarns);
           }
-
-          const hosts = par.map( (ps) => ps.split(/\s+/)[1] );
-          window.utils.fireRequest('ip-to-host-replace-all', hosts, (err, res, ...moreWarns) => cb( err, res, ...warns.concat(moreWarns) ));
+          const newHosts = (pacMods.customProxyArray || []).map( (ps) => ps.split(/\s+/)[1] );
+          window.utils.fireRequest('ip-to-host-replace-all', newHosts, (err, res, ...moreWarns) => cb( err, res, ...accWarns.concat(moreWarns) ));
 
         }
       );
