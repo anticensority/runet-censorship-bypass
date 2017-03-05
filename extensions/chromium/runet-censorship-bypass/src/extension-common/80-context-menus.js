@@ -2,7 +2,7 @@
 
 {
 
-  const timeouted = window.utils.timeouted;
+  const chromified = window.utils.chromified;
 
   let seqId = 0;
 
@@ -10,21 +10,17 @@
 
     const id = (++seqId).toString();
 
-    chrome.runtime.onInstalled.addListener(
-      () => chrome.contextMenus.create({
-        id: id,
-        title: title,
-        contexts: ['browser_action'],
-      }, timeouted(() => {
+    chrome.contextMenus.create({
+      id: id,
+      title: title,
+      contexts: ['browser_action'],
+    }, chromified((err) => {
 
-        const err = chrome.runtime.lastError;
-        if(err) {
-          console.warn('Context menu error:', err);
-          throw err;
-        }
+      if(err) {
+        console.warn('Context menu error ignored:', err);
+      }
 
-      }))
-    );
+    }));
 
     chrome.contextMenus.onClicked.addListener((info, tab) => {
 
