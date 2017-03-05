@@ -581,16 +581,16 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
 
             const taVal = liPs.querySelector('textarea').value;
             if (oldMods[customProxyStringKey] !== false) {
-              const ifValid = taVal
+              const ifValidArr = taVal
                 .replace(/#.*$/mg)
                 .split(/\s*[;\n\r]+\s*/g)
-                .filter( (str) => str )
-                .every(
-                  (str) =>
-                    /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
-                      .test(str)
-                );
-              if (!ifValid) {
+                .filter( (str) => str );
+              const ifValid = ifValidArr.every(
+                (str) =>
+                  /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
+                    .test(str)
+              );
+              if (!(ifValidArr.length && ifValid)) {
                 return showErrors(new TypeError(
                   'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
                 ));
