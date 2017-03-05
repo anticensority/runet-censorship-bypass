@@ -16,6 +16,8 @@
 
 {
 
+  const chromified = window.utils.chromified;
+
   window.chrome.browserAction.setBadgeBackgroundColor({
     color: '#db4b2f',
   });
@@ -47,8 +49,14 @@
 
     chrome.browserAction.getTitle(
       {tabId: requestDetails.tabId},
-      (title) => {
+      chromified((err, title) => {
 
+        if (err) {
+          // E.g., no tab with such id happens.
+          // Because requestDetails may be stale.
+          console.log('Notifier error ignored:', err);
+          return cb();
+        }
         const ifTitleSetAlready = /\n/.test(title);
 
         const hostname = new URL( requestDetails.url ).hostname;
@@ -118,7 +126,7 @@
 
         return cb();
 
-      }
+      })
     );
 
   };
