@@ -24,7 +24,7 @@
     ifUseSecureProxiesOnly: {
       dflt: false,
       label: 'только шифрованная связь с прокси',
-      desc: 'Шифровать соединение до прокси от провайдера. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS. Опция вряд ли может быть вам полезна, т.к. шифруется не весь трафик, а лишь разблокируемые ресурсы.',
+      desc: 'Шифровать соединение до прокси от провайдера, используя только прокси типа HTTPS или локальный Tor. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS (даже с Tor). Опция вряд ли может быть вам полезна, т.к. шифруется не весь трафик, а лишь разблокируемые ресурсы.',
       index: 1,
     },
     ifProhibitDns: {
@@ -119,7 +119,7 @@
         .map( (p) => p.trim() )
         .filter( (p) => p && /\s+/g.test(p) );
       if (self.ifUseSecureProxiesOnly) {
-        customProxyArray = customProxyArray.filter( (p) => !p.startsWith('HTTP ') );
+        customProxyArray = customProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) );
       }
     }
     if (self.ifUseLocalTor) {
@@ -227,7 +227,7 @@
         let filteredPacExp = 'pacProxyString';
         if (pacMods.ifUseSecureProxiesOnly) {
           filteredPacExp =
-            'pacProxyArray.filter( (p) => !p.toUpperCase().startsWith("HTTP ") ).join("; ")';
+            'pacProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) ).join("; ")';
         }
         if ( !pacMods.filteredCustomsString ) {
           return filteredPacExp;
