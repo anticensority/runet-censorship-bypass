@@ -114,7 +114,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred">${message}</span>
-          ${err ? '<a href class="link-button">[Ещё&nbsp;подробнее]</a>' : ''}`
+          ${err ? '<a href class="link-button">[Техн.детали]</a>' : ''}`
         );
         if (err) {
           getStatus().querySelector('.link-button').onclick = function() {
@@ -487,7 +487,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               }
               if (ifYesClicked && !pacMods.filteredCustomsString) {
                 showErrors( new TypeError(
-                  'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ).'
+                  'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ). Нет своих прокси, удовлетворяющих вашим требованиям.'
                 ));
                 return false;
               }
@@ -582,6 +582,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
             const taVal = liPs.querySelector('textarea').value;
             if (oldMods[customProxyStringKey] !== false) {
               const ifValidArr = taVal
+                .trim()
                 .replace(/#.*$/mg)
                 .split(/\s*[;\n\r]+\s*/g)
                 .filter( (str) => str );

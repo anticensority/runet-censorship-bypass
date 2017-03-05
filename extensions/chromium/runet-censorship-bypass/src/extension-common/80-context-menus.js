@@ -60,12 +60,12 @@
   );
 
   createMenuLinkEntry(
-    'Другие варианты разблокировки',
+    'Разблокировать по-другому',
     (tab) => 'https://rebrand.ly/ac-unblock#' + tab.url
   );
 
   createMenuLinkEntry(
-    'У меня проблемы с расширением!',
+    'Документация / Помощь / Поддержка',
     (tab) => 'https://rebrand.ly/ac-support'
   );
 
