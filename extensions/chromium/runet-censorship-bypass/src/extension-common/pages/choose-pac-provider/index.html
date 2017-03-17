@@ -2,7 +2,7 @@
 <html style="display: none; will-change: contents, display">
   <head>
     <meta charset="utf-8">
-    <title>Выбор провайдера PAC</title>
+    <title>Настройки</title>
     <style>
       :root {
         --ribbon-color: #4169e1;
@@ -316,13 +316,22 @@
       }
 
       /* TAB_3 EXCEPTIONS */
+      #exc-address-container {
+        display: flex;
+        align-items: center;
+        width: 100%;
+      }
+      #exc-address-container > a {
+        border-bottom: 1px solid transparent;
+        margin-left: 0.2em;
+      }
       #exc-address {
+        width: 100%;
         display: flex;
         align-items: baseline;
-        width: 100%;
         --exc-hieght: 1.6em;
-        border-bottom: 1px solid var(--ribbon-color) !important;
         font-size: 1em;
+        border-bottom: 1px solid var(--ribbon-color) !important;
       }
       input#exc-editor {
         border: none;
@@ -454,9 +463,15 @@
       </section>
       <section data-for="acc-exc" class="hidden-for-options-page">
 
-        <div>Проксировать указанный сайт?
-        <div id="exc-address">
-          <span>*.</span><input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor" style=""/><a href="../exceptions/index.html">☰</a></div>
+        <div>Проксировать указанный сайт?</div>
+        <div id="exc-address-container">
+          <div id="exc-address">
+            <span>*.</span><input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor" style=""/>
+          </div>
+          <a href="../exceptions/index.html" title="импорт-экспорт"><svg
+            class="icon"
+            ><use xlink:href="#icon-import-export"></use></svg>
+          </a>
         </div>
         <datalist id="exc-list"></datalist>
         <ol class="horizontal-list" id="exc-radio">
@@ -518,6 +533,19 @@
         <title>loop-round</title>
         <path d="M27.802 5.197c-2.925-3.194-7.13-5.197-11.803-5.197-8.837 0-16 7.163-16 16h3c0-7.18 5.82-13 13-13 3.844 0 7.298 1.669 9.678 4.322l-4.678 4.678h11v-11l-4.198 4.197z"/>
         <path d="M29 16c0 7.18-5.82 13-13 13-3.844 0-7.298-1.669-9.678-4.322l4.678-4.678h-11v11l4.197-4.197c2.925 3.194 7.13 5.197 11.803 5.197 8.837 0 16-7.163 16-16h-3z"/>
+      </symbol>
+      <symbol id="icon-import-export" viewBox="0 0 32 32">
+        <title>import-export</title>
+        <g transform="rotate(0 16 16)">
+          <path d="M7 22  h 25 v 4 h -25 v  5  l -7-7  7-7 v5 z"/>
+          <path d="M25 10 h-25 v-4 h 25  v -5  l  7 7 -7 7    z"/>
+        </g>
+
+        <!-- With bars on peaks.
+        <path d="M30 0h2v16h-2v-16z"></path>
+        <path d="M0 16h2v16h-2v-16z"></path>
+        <path d="M10 22 h 22 v 4 h -22 v 5  l -7-7 7-7 v5 z"></path>
+        <path d="M22 10 h-22 v-4 h 22  v -5 l 7 7 -7 7    z"></path-->
       </symbol>
     </svg>
   </body>
