@@ -15,7 +15,10 @@
       cb = mandatory()
     ) {
 
-      const wasModified = new Date(0).toUTCString();
+      if (url.startsWith('data:')) {
+        return cb(null, false);
+      }
+      const wasModifiedIn1970 = new Date(0).toUTCString();
       const notModifiedCode = 304;
       fetch(url, {
         method: 'HEAD',
@@ -28,10 +31,10 @@
             null,
             res.status === notModifiedCode ?
               false :
-              (res.headers.get('Last-Modified') || wasModified)
+              (res.headers.get('Last-Modified') || wasModifiedIn1970)
           );
         },
-        errorsLib.clarifyThen(checkCon, (err) => cb(err, wasModified))
+        errorsLib.clarifyThen(checkCon, (err) => cb(err, wasModifiedIn1970))
       );
 
     },
