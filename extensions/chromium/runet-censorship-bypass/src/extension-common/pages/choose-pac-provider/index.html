@@ -290,9 +290,14 @@
       input:checked ~ .label-container .update-button {
         visibility: inherit;
       }
-      #none:checked + label {
+      label[for="onlyOwnSites"] + .update-button {
+        display: none;
+      }
+      #none:checked ~ .label-container label {
         color: red;
       }
+
+
       #update-message {
         white-space: nowrap;
         margin-top: 0.5em;

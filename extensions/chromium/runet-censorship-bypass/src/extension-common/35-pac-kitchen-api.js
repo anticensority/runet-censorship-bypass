@@ -185,22 +185,53 @@
 `;
       }
 
-      if (pacMods.included && pacMods.included.length) {
+      const ifIncluded = pacMods.included && pacMods.included.length;
+      const ifExcluded = pacMods.excluded && pacMods.excluded.length;
+      const ifExceptions = ifIncluded || ifExcluded;
+
+      if (ifExceptions) {
         res += `
-    if ( ${JSON.stringify(pacMods.included)}.some( (included) => host.endsWith(included) ) ) {
-      return "${pacMods.filteredCustomsString}; DIRECT";
+    const dotHost = '.' + host;
+    const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
+    const domainReducer = (maxWeight, [domain, ifIncluded]) => {
+
+      if (!isHostInDomain(domain)) {
+        return maxWeight;
+      }
+      const newWeightAbs = domain.length;
+      if (newWeightAbs < Math.abs(maxWeight)) {
+        return maxWeight;
+      }
+      return newWeightAbs*(ifIncluded ? 1 : -1);
+
+    };
+
+    const excWeight = ${JSON.stringify(Object.entries(pacMods.exceptions))}.reduce( domainReducer, 0 );
+    if (excWeight !== 0) {
+      if (excWeight > 0) {
+        return "${pacMods.filteredCustomsString}; DIRECT";
+      } else {
+        return "DIRECT";
+      }
+    }
+`;
+      }
+      /*
+      if (ifIncluded) {
+        res += `
+    if (${JSON.stringify(pacMods.included)}.some(isHostInDomain)) {
     }
 `;
       }
 
-      if (pacMods.excluded && pacMods.excluded.length) {
+      if (ifExcluded) {
         res += `
-    if ( ${JSON.stringify(pacMods.excluded)}.some( (excluded) => host.endsWith(excluded) ) ) {
+    if (${JSON.stringify(pacMods.excluded)}.some(isHostInDomain)) {
       return "DIRECT";
     }
 `;
       }
-
+      */
       if(
         !pacMods.ifUseSecureProxiesOnly &&
         !pacMods.filteredCustomsString &&

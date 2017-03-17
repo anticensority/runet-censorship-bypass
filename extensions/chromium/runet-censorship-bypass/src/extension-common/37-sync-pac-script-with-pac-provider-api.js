@@ -170,7 +170,7 @@
           ' Блокировка определяется по доменному имени,' +
           ' для некоторых провайдеров есть автоопредление.' +
           ' <br/> <a href="https://antizapret.prostovpn.org">Страница проекта</a>.',
-
+        order: 0,
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
@@ -179,6 +179,7 @@
         ' Блокировка определятся по доменному имени или IP адресу.' +
         ' Работает на switch-ах. <br/>' +
         ' <a href="https://rebrand.ly/ac-anticensority">Страница проекта</a>.',
+        order: 1,
 
         /*
           Don't use in system configs! Because Windows does poor caching.
@@ -197,6 +198,20 @@
           // Google Drive (0.17):
           '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'], // eslint-disable-line max-len
       },
+      onlyOwnSites: {
+        label: 'Только свои сайты и свои прокси',
+        desc: 'Проксируются только добавленные вручную сайты через СВОИ вручную добавленные прокси или через локальный Tor.',
+        order: 99,
+        pacUrls: [
+          'data:application/x-ns-proxy-autoconfig,' + escape('function FindProxyForURL(){ return "DIRECT"; }'),
+        ]
+      }
+    },
+
+    getSortedEntriesForProviders() {
+
+      return Object.entries(this.pacProviders).sort((entryA, entryB) => entryA[1].order - entryB[1].order);
+
     },
 
     _currentPacProviderKey: 'Антизапрет',

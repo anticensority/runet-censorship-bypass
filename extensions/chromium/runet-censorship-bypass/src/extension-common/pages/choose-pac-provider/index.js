@@ -177,9 +177,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         const ul = document.querySelector('#list-of-providers');
         const _firstChild = ul.firstChild;
         for(
-          const providerKey of Object.keys(antiCensorRu.pacProviders).sort()
+          const [providerKey, provider] of antiCensorRu.getSortedEntriesForProviders()
         ) {
-          const provider = antiCensorRu.getPacProvider(providerKey);
           const li = document.createElement('li');
           li.classList.add('info-row', 'hor-flex');
           li.innerHTML = `
@@ -583,7 +582,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
             if (oldMods[customProxyStringKey] !== false) {
               const ifValidArr = taVal
                 .trim()
-                .replace(/#.*$/mg)
+                .replace(/#.*$/mg, '')
                 .split(/\s*[;\n\r]+\s*/g)
                 .filter( (str) => str );
               const ifValid = ifValidArr.every(
