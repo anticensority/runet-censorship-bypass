@@ -348,7 +348,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             {
               const maxIndentFromRightInPx = 15;
               ifTriangleClicked = ifClick
-                && !excEditor.selectionStart && !excEditor.selectionStart
+                && !excEditor.selectionStart && !excEditor.selectionEnd
                 && event.x > excEditor.getBoundingClientRect().right - maxIndentFromRightInPx;
             }
 
@@ -426,7 +426,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             }
 
             // Exact found!
-            hideOpt(exactOpt);
+            excList.childNodes.forEach(hideOpt);
             if(exactOpt.label === labelIfProxied) {
               thisYes.checked = true;
               excEditor.parentNode.classList.add(yesClass);

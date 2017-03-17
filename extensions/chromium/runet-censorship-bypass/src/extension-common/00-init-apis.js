@@ -2,7 +2,7 @@
 
 {
 
-  const IF_DEBUG = false;
+  const IF_DEBUG = true;
 
   if (!IF_DEBUG) {
     // I believe logging objects precludes them from being GCed.

@@ -104,6 +104,14 @@
 
   reinit();
 
+  const generateRandomHexString = function generateRandomHexString(minLen, maxLen) {
+
+    return Array.from(window.crypto.getRandomValues(new Uint8Array(maxLen)))
+      .slice(minLen + Math.floor(Math.random()*(maxLen - minLen)))
+      .map((i) => i.toString(16)).join('');
+
+  };
+
   const getIpsFor = function getIpsFor(host, cb = mandatory()) {
 
     if (host.trim() === 'localhost') {
@@ -113,7 +121,7 @@
     const promises = types.map(
       (type) => new Promise((resolve) =>
         httpLib.get(
-          `https://dns.google.com/resolve?type=${type}&name=${host}&edns_client_subnet=0.0.0.0/0`,
+          `https://dns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
           (err, res) => {
 
             if (res) {

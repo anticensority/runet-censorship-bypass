@@ -98,7 +98,7 @@
   };
 
   const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
-    provider, lastModified = mandatory(), cb = throwIfError
+    provider, lastModifiedStr = mandatory(), cb = throwIfError
   ) {
 
     const pacUrl = provider.pacUrls[0];
@@ -107,17 +107,20 @@
       cb
     );
 
-    httpLib.ifModifiedSince(pacUrl, lastModified, (err, newLastModified) => {
+    httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
 
-      if (!newLastModified) {
-        return cb(
-          null,
-          {lastModified},
-          new Warning(
-            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-              lastModified
-          )
-        );
+      if (!newLastModifiedStr) {
+        const res = {lastModified: lastModifiedStr};
+        const ifWasEverModified = lastModifiedStr !== new Date(0).toUTCString();
+        if (ifWasEverModified) {
+          return cb(
+            null, res,
+            new Warning(
+              'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
+                lastModifiedStr
+            )
+          );
+        }
       }
 
       // Employ all urls, the latter are fallbacks for the former.
@@ -141,7 +144,7 @@
             pacData,
             (err, res) => cb(
               err,
-              Object.assign(res || {}, {lastModified: newLastModified})
+              Object.assign(res || {}, {lastModified: newLastModifiedStr})
             )
           );
 
