@@ -1,5 +1,3 @@
-# [Хром 56 съедает всю память?](https://github.com/anticensorship-russia/chromium-extension/issues/6)
-
 # [Maintainer Needed! Нужен разработчик!](https://github.com/anticensorship-russia/chromium-extension/issues/2)
 
 Also, if you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so.
