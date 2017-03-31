@@ -438,7 +438,7 @@
   };
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
-  chrome.storage.local.get(null, chromified( (err, oldStorage) => {
+  chrome.storage.local.get(null, chromified( async (err, oldStorage) => {
 
     if (err) {
       throw err;
@@ -508,13 +508,16 @@
     */
     const ifUpdating = antiCensorRu.version !== oldStorage.version;
 
-    if (!ifUpdating) {
+    await new Promise((resolve) => {
 
-      // LAUNCH, RELOAD, ENABLE
-      antiCensorRu.pacProviders = oldStorage.pacProviders;
-      console.log('Extension launched, reloaded or enabled.');
+      if (!ifUpdating) {
 
-    } else {
+        // LAUNCH, RELOAD, ENABLE
+        antiCensorRu.pacProviders = oldStorage.pacProviders;
+        console.log('Extension launched, reloaded or enabled.');
+        return resolve();
+
+      }
 
       // UPDATE & MIGRATION
       console.log('Updating from ', oldStorage.version, 'to', antiCensorRu.version);
@@ -530,21 +533,20 @@
           antiCensorRu._currentPacProviderKey = 'Антизапрет';
         }
       }
-      console.log('Extension updated.');
 
-    }
+      antiCensorRu.pushToStorageAsync(() =>
+        window.apis.pacKitchen.keepCookedNowAsync(() => {
+
+          console.log('Extension updated.');
+          resolve();
+
+        })
+      );
+
+    });
 
     if (antiCensorRu.getPacProvider()) {
-
-      const ifAlarmTriggered = antiCensorRu.setAlarms();
-
-      if (ifAlarmTriggered) {
-        return; // Already pushed.
-      }
-
-    }
-    if( ifUpdating ) {
-      antiCensorRu.pushToStorageAsync();
+      antiCensorRu.setAlarms();
     }
 
     /*

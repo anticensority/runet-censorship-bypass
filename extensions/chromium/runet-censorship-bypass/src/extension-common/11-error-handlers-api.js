@@ -253,6 +253,12 @@
         error: "net::ERR_PAC_SCRIPT_FAILED",
         fatal: false,
     */
+    const ifConFail = details.error === 'net::ERR_PROXY_CONNECTION_FAILED';
+    if (ifConFail) {
+      // Happens if you return neither prixies nor "DIRECT".
+      // Ignore it.
+      return;
+    }
     console.warn('PAC ERROR', details);
     // TOOD: add "view pac script at this line" button.
     handlers.mayNotify('pac-error', 'Ошибка PAC!',

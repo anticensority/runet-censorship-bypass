@@ -33,17 +33,23 @@
       desc: 'Пытается запретить скрипту использовать DNS, без которого определение блокировки по IP работать не будет (т.е. будет разблокироваться меньше сайтов). Используйте, чтобы получить прирост в производительности или если вам кажется, что мы проксируем слишком много сайтов. Запрет действует только для скрипта, браузер и др.программы продолжат использование DNS.',
       index: 2,
     },
+    ifProxyOrDie: {
+      dflt: true,
+      label: 'проксируй или умри!',
+      desc: 'Запрещает соединение с сайтами напрямую без прокси в случаях, когда все прокси отказывают. Например, если все ВАШИ прокси вдруг недоступны, то добавленные вручную сайты открываться не будут совсем.',
+      index: 3,
+    },
     ifUsePacScriptProxies: {
       dflt: true,
       label: 'использовать прокси PAC-скрипта',
       desc: 'Использовать прокси-сервера от авторов PAC-скрипта.',
-      index: 3,
+      index: 4,
     },
     ifUseLocalTor: {
       dflt: false,
-      label: 'использовать СВОЙ локальный TOR',
-      desc: 'Установите <a href="https://rebrand.ly/ac-tor">TOR</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
-      index: 4,
+      label: 'использовать СВОЙ локальный Tor',
+      desc: 'Установите <a href="https://rebrand.ly/ac-tor">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
+      index: 5,
     },
     exceptions: {
       dflt: null,
@@ -52,13 +58,13 @@
       dflt: true,
       label: 'учитывать исключения',
       desc: 'Учитывать сайты, добавленные вручную. Только для своих прокси-серверов! Без своих прокси работать не будет.',
-      index: 5,
+      index: 6,
     },
     customProxyStringRaw: {
       dflt: '',
       label: 'использовать СВОИ прокси',
       url: 'https://rebrand.ly/ac-own-proxy',
-      index: 6,
+      index: 7,
     },
 
   };
@@ -76,7 +82,11 @@
 
   const getCurrentConfigs = function getCurrentConfigs() {
 
-    return kitchenState(modsKey) || getDefaults();
+    const [err, mods, ...warns] = createPacModifiers( kitchenState(modsKey) );
+    if (err) {
+      throw err;
+    }
+    return mods;
 
   };
 
@@ -102,8 +112,8 @@
     const defaults = getDefaults();
     const ifAllDefaults = Object.keys(defaults)
       .every(
-        (prop) => !(prop in mods)
-          || Boolean(defaults[prop]) === Boolean(mods[prop])
+        (dProp) => !(dProp in mods)
+          || Boolean(defaults[dProp]) === Boolean(mods[dProp])
       );
 
     console.log('Input mods:', mods);
@@ -148,6 +158,14 @@
           self.excluded.push(host);
         }
       }
+      ['included', 'excluded'].forEach((who) => {
+
+        self[who] = self[who]
+          .map( (s) => s.split('').reverse() )
+          .sort()
+          .map( (a) => a.reverse().join('') );
+
+      });
       if (self.included.length && !self.filteredCustomsString) {
         return [null, self, new TypeError(
           'Имеются сайты, добавленные вручную. Они проксироваться не будут, т.к. нет СВОИХ проски, удовлетворяющих вашим запросам!'
@@ -175,15 +193,18 @@
 
       let res = pacMods.ifProhibitDns ? `
     global.dnsResolve = function(host) { return null; };
-` : '';
+      ` : '';
       if (pacMods.ifProxyHttpsUrlsOnly) {
 
         res += `
     if (!url.startsWith("https")) {
       return "DIRECT";
     }
-`;
+        `;
       }
+      res += `
+    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"; DIRECT"'};
+      `;
 
       const ifIncluded = pacMods.included && pacMods.included.length;
       const ifExcluded = pacMods.excluded && pacMods.excluded.length;
@@ -191,6 +212,7 @@
 
       if (ifExceptions) {
         res += `
+    /* EXCEPTIONS START */
     const dotHost = '.' + host;
     const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
     const domainReducer = (maxWeight, [domain, ifIncluded]) => {
@@ -209,45 +231,35 @@
     const excWeight = ${JSON.stringify(Object.entries(pacMods.exceptions))}.reduce( domainReducer, 0 );
     if (excWeight !== 0) {
       if (excWeight > 0) {
-        return "${pacMods.filteredCustomsString}; DIRECT";
+        // Always proxy it!
+        return "${pacMods.filteredCustomsString}" + directIfAllowed;
       } else {
+        // Never proxy it!
         return "DIRECT";
       }
     }
+    /* EXCEPTIONS END */
 `;
       }
-      /*
-      if (ifIncluded) {
-        res += `
-    if (${JSON.stringify(pacMods.included)}.some(isHostInDomain)) {
-    }
-`;
-      }
-
-      if (ifExcluded) {
-        res += `
-    if (${JSON.stringify(pacMods.excluded)}.some(isHostInDomain)) {
-      return "DIRECT";
-    }
-`;
-      }
-      */
+      res += `
+    const pacProxyString = originalFindProxyForURL(url, host)${
+          pacMods.ifProxyOrDie ? '.replace(/DIRECT/g, "")' : ' + directIfAllowed'
+      };`;
       if(
         !pacMods.ifUseSecureProxiesOnly &&
         !pacMods.filteredCustomsString &&
          pacMods.ifUsePacScriptProxies
       ) {
         return res + `
-    return originalFindProxyForURL(url, host);
-`;
+        return pacProxyString;`;
       }
 
       return res + `
-    const pacProxyString = originalFindProxyForURL(url, host);
     let pacProxyArray = pacProxyString.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
-    if (pacProxyArray.every( (p) => /^DIRECT$/i.test(p) )) {
+    const ifNoProxies = pacProxyArray${pacMods.ifProxyOrDie ? '.length === 0' : '.every( (p) => /^DIRECT$/i.test(p) )'};
+    if (ifNoProxies) {
       // Directs only or null, no proxies.
-      return pacProxyString;
+      return "DIRECT";
     }
     return ` +
       function() {
@@ -258,14 +270,14 @@
         let filteredPacExp = 'pacProxyString';
         if (pacMods.ifUseSecureProxiesOnly) {
           filteredPacExp =
-            'pacProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) ).join("; ")';
+            'pacProxyArray.filter( (pStr) => /^HTTPS\\s/.test(pStr) ).join("; ")';
         }
         if ( !pacMods.filteredCustomsString ) {
           return filteredPacExp;
         }
         return `${filteredPacExp} + "; ${pacMods.filteredCustomsString}"`;
 
-      }() + ' + "; DIRECT";'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+      }() + ' + directIfAllowed;'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
     }()}
 
