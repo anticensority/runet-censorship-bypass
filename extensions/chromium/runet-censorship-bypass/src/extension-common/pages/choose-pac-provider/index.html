@@ -305,6 +305,12 @@
 
       /* TAB_2 PAC MODS */
 
+      #pac-mods label {
+        display: block;
+      }
+      #pac-mods label:first-letter {
+        text-transform: uppercase;
+      }
       #mods-custom-proxy-string-raw ~ textarea {
         width: 100%;
         height: 7em;
@@ -468,7 +474,7 @@
           <div id="exc-address">
             <span>*.</span><input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor" style=""/>
           </div>
-          <a href="../exceptions/index.html" title="импорт-экспорт"><svg
+          <a href="../exceptions/index.html" title="импорт/экспорт"><svg
             class="icon"
             ><use xlink:href="#icon-import-export"></use></svg>
           </a>
