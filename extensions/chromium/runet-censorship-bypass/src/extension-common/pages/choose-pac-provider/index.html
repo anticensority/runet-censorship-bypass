@@ -405,6 +405,10 @@
       .other-version:hover {
         text-decoration: none;
       }
+      .full-line-height,
+      .full-line-height * {
+        line-height: 100%;
+      }
 
       @font-face {
         font-family: "emoji";
@@ -452,9 +456,9 @@
         <ul id="list-of-providers">
           <li class="info-row hor-flex"><input type="radio" name="pacProvider" id="none" checked> <div class="label-container"><label for="none">Отключить</label></div></li>
         </ul>
-        <div id="update-message" class="hor-flex">
+        <div id="update-message" class="hor-flex" style="align-items: center">
           <div>Обновлялись: <span class="update-date">...</span></div>
-          <div>
+          <div class="full-line-height">
             <a class="only-for-mini-version other-version emoji" href="https://rebrand.ly/ac-versions"
               title="Полная версия">🏋</a>
             <a class="only-for-full-version other-version emoji" href="https://rebrand.ly/ac-versions"
