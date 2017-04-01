@@ -227,20 +227,38 @@
 
     _addAsync(hostStr, cb = mandatory()) {
 
-      getIpsFor(hostStr, (err, ips, ...warns) => {
+      new Promise((resolveIps, reject) => {
 
-        console.log('Got IPs + err?:', ips, err);
-        if (!err) {
+        const ipm = _test.ipv4v6(hostStr);
+        if (ipm.ifMatched) {
+          return resolveIps([hostStr]);
+        }
+
+        getIpsFor(hostStr, (err, ips, ...warns) => {
+
+          console.log('Got IPs + err?:', ips, err);
+          if (!err) {
+            resolveIps(ips);
+          } else {
+            reject([err, null, ...warns]);
+          }
+
+        });
+
+      }).then(
+        (ips) => {
+
           this._purgeOldIpsForSync(hostStr);
           // Object may be shared, string can't.
           const hostObj = _getHostObj(hostStr);
           for(const ip of ips) {
             privates._ipToHostObj[ip] = hostObj;
           }
-        }
-        return cb(err, null, ...warns);
+          cb();
 
-      });
+        },
+        (args) => cb(...args)
+      );
 
     },
 
@@ -317,15 +335,14 @@
 
     replaceAllAsync(addrArr, cb = mandatory()) {
 
-      console.log('Replacing...');
+      console.log('Replacing...', addrArr);
       const [ipSet, hostSet] = _canonize(addrArr);
       for( const ip of ipSet ) {
         const host = _getHostObj(ip);
         privates._ipToHostObj[ip] = host;
       }
 
-      const hostArr = Array.from(hostSet);
-      this._replaceAllAsync(hostArr, (allErr, ...args) => {
+      this._replaceAllAsync([...ipSet, ...hostSet], (allErr, ...args) => {
 
         if (!allErr) {
           this.persistData();
