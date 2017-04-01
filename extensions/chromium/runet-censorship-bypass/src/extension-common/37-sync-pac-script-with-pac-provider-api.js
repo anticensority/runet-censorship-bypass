@@ -474,6 +474,9 @@
 
     });
 
+    console.log('Keep cooked...');
+    await new Promise((resolve) => window.apis.pacKitchen.keepCookedNowAsync(resolve));
+
     console.log('Storage on init:', oldStorage);
     antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
 
@@ -534,14 +537,12 @@
         }
       }
 
-      antiCensorRu.pushToStorageAsync(() =>
-        window.apis.pacKitchen.keepCookedNowAsync(() => {
+      antiCensorRu.pushToStorageAsync(() => {
 
-          console.log('Extension updated.');
-          resolve();
+        console.log('Extension updated.');
+        resolve();
 
-        })
-      );
+      });
 
     });
 

@@ -35,6 +35,7 @@
     },
     ifProxyOrDie: {
       dflt: true,
+      ifDfltMods: true,
       label: 'проксируй или умри!',
       desc: 'Запрещает соединение с сайтами напрямую без прокси в случаях, когда все прокси отказывают. Например, если все ВАШИ прокси вдруг недоступны, то добавленные вручную сайты открываться не будут совсем.',
       index: 3,
@@ -109,17 +110,23 @@
 
   const createPacModifiers = function createPacModifiers(mods = {}) {
 
-    const defaults = getDefaults();
-    const ifAllDefaults = Object.keys(defaults)
-      .every(
-        (dProp) => !(dProp in mods)
-          || Boolean(defaults[dProp]) === Boolean(mods[dProp])
-      );
+    mods = mods || {}; // null?
+    const ifNoMods = Object.keys(configs)
+      .every((dProp) => {
+
+        const ifDflt = (
+          !(dProp in mods) ||
+          Boolean(configs[dProp].dflt) === Boolean(mods[dProp])
+        );
+        const ifMods = configs[dProp].ifDfltMods;
+        return ifDflt ? !ifMods : ifMods;
+
+      });
 
     console.log('Input mods:', mods);
     const self = {};
-    Object.assign(self, defaults, mods);
-    self.ifNoMods = ifAllDefaults ? true : false;
+    Object.assign(self, getDefaults(), mods);
+    self.ifNoMods = ifNoMods;
 
     let customProxyArray = [];
     if (self.customProxyStringRaw) {
@@ -136,6 +143,7 @@
       customProxyArray.push('SOCKS5 localhost:9050', 'SOCKS5 localhost:9150');
     }
 
+    self.filteredCustomsString = '';
     if (customProxyArray.length) {
       self.customProxyArray = customProxyArray;
       self.filteredCustomsString = customProxyArray.join('; ');
@@ -144,7 +152,6 @@
         return [new TypeError('Нет ни одного прокси, удовлетворяющего вашим требованиям!')];
       }
       self.customProxyArray = false;
-      self.filteredCustomsString = '';
     }
 
     self.included = self.excluded = undefined;
@@ -210,7 +217,7 @@
       const ifExcluded = pacMods.excluded && pacMods.excluded.length;
       const ifExceptions = ifIncluded || ifExcluded;
 
-      if (ifExceptions) {
+      if (ifExceptions && pacMods.filteredCustomsString) {
         res += `
     /* EXCEPTIONS START */
     const dotHost = '.' + host;
@@ -251,7 +258,7 @@
          pacMods.ifUsePacScriptProxies
       ) {
         return res + `
-        return pacProxyString;`;
+    return pacProxyString;`;
       }
 
       return res + `
