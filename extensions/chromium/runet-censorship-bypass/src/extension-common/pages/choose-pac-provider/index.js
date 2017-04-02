@@ -588,7 +588,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
               const ifValid = ifValidArr.every(
                 (str) =>
                   /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
-                    .test(str)
+                    .test(str.trim())
               );
               if (!(ifValidArr.length && ifValid)) {
                 return showErrors(new TypeError(
