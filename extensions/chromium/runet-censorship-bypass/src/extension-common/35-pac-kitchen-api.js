@@ -217,7 +217,7 @@
       const ifExcluded = pacMods.excluded && pacMods.excluded.length;
       const ifExceptions = ifIncluded || ifExcluded;
 
-      if (ifExceptions && pacMods.filteredCustomsString) {
+      if (ifExceptions) {
         res += `
     /* EXCEPTIONS START */
     const dotHost = '.' + host;
@@ -239,7 +239,10 @@
     if (excWeight !== 0) {
       if (excWeight > 0) {
         // Always proxy it!
-        return "${pacMods.filteredCustomsString}" + directIfAllowed;
+        ${ pacMods.filteredCustomsString
+          ? `return "${pacMods.filteredCustomsString}" + directIfAllowed;`
+          : '/* No proxies -- continue. */'
+        }
       } else {
         // Never proxy it!
         return "DIRECT";
