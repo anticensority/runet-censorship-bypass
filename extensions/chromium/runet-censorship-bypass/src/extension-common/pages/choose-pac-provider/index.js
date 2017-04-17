@@ -549,10 +549,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             li.innerHTML += `<a href="${conf.url}" class="right-bottom-icon info-url">${infoIcon}</a>
 <textarea
   spellcheck="false"
-  placeholder="SOCKS5 localhost:9050; # TOR Expert
-SOCKS5 localhost:9150; # TOR Browser
-HTTPS foobar.com:3143;
-HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</textarea>`;
+  placeholder="SOCKS5 localhost:9050; # Tor Expert
+SOCKS5 localhost:9150; # Tor Browser
+HTTPS 11.22.33.44:3143;
+PROXY foobar.com:8080; # Not HTTP!">${conf.value || localStorage.getItem(uiRaw) || ''}</textarea>`;
             li.querySelector('textarea').onkeyup = function() {
 
               this.dispatchEvent( new Event('change', {'bubbles': true}) );
@@ -587,7 +587,7 @@ HTTPS 11.22.33.44:8080;">${conf.value || localStorage.getItem(uiRaw) || ''}</tex
                 .filter( (str) => str );
               const ifValid = ifValidArr.every(
                 (str) =>
-                  /^(?:DIRECT|(?:(?:HTTPS?|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
+                  /^(?:DIRECT|(?:(?:HTTPS|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
                     .test(str.trim())
               );
               if (!(ifValidArr.length && ifValid)) {
