@@ -278,7 +278,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           const labelIfProxied = '✔';
           const labelIfNotProxied = '✘';
-          const labelIfAuto = '🔄';
+          const labelIfAuto = '↻';
 
           const addOption = function addOption(host, yesNoUndefined) {
 
