@@ -1,7 +1,7 @@
 'use strict';
 
 const commonContext = {
-  version: '0.31',
+  version: '0.32',
 };
 
 exports.contexts = {};
