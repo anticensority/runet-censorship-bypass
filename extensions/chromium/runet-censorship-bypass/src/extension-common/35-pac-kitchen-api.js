@@ -19,53 +19,72 @@
       dflt: false,
       label: 'проксировать только HTTP<em>S</em>-сайты',
       desc: 'Проксировать только сайты, доступные по шифрованному протоколу HTTP<em>S</em>. Прокси и провайдер смогут видеть только адреса проксируемых HTTP<em>S</em>-сайтов, но не их содержимое. Используйте, если вы не доверяете прокси-серверам ваш HTTP-трафик. Разумеется, что с этой опцией разблокировка HTTP-сайтов работать не будет.',
-      index: 0,
+      order: 0,
     },
     ifUseSecureProxiesOnly: {
       dflt: false,
       label: 'только шифрованная связь с прокси',
       desc: 'Шифровать соединение до прокси от провайдера, используя только прокси типа HTTPS или локальный Tor. Провайдер всё же сможет видеть адреса (но не содержимое) проксируемых ресурсов из протокола DNS (даже с Tor). Опция вряд ли может быть вам полезна, т.к. шифруется не весь трафик, а лишь разблокируемые ресурсы.',
-      index: 1,
+      order: 1,
     },
     ifProhibitDns: {
       dflt: false,
       label: 'запретить опредление по IP/DNS',
       desc: 'Пытается запретить скрипту использовать DNS, без которого определение блокировки по IP работать не будет (т.е. будет разблокироваться меньше сайтов). Используйте, чтобы получить прирост в производительности или если вам кажется, что мы проксируем слишком много сайтов. Запрет действует только для скрипта, браузер и др.программы продолжат использование DNS.',
-      index: 2,
+      order: 2,
     },
     ifProxyOrDie: {
       dflt: true,
       ifDfltMods: true,
       label: 'проксируй или умри!',
       desc: 'Запрещает соединение с сайтами напрямую без прокси в случаях, когда все прокси отказывают. Например, если все ВАШИ прокси вдруг недоступны, то добавленные вручную сайты открываться не будут совсем. Однако смысл опции в том, что она препятствует занесению прокси в чёрные списки Хрома. Рекомендуется не отключать.',
-      index: 3,
+      order: 3,
     },
     ifUsePacScriptProxies: {
       dflt: true,
+      category: 'ownProxies',
       label: 'использовать прокси PAC-скрипта',
       desc: 'Использовать прокси-сервера от авторов PAC-скрипта.',
-      index: 4,
+      order: 4,
     },
     ifUseLocalTor: {
       dflt: false,
+      category: 'ownProxies',
       label: 'использовать СВОЙ локальный Tor',
       desc: 'Установите <a href="https://rebrand.ly/ac-tor">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
-      index: 5,
+      order: 5,
     },
     exceptions: {
+      category: 'exceptions',
       dflt: null,
     },
     ifMindExceptions: {
       dflt: true,
+      category: 'exceptions',
       label: 'учитывать исключения',
       desc: 'Учитывать сайты, добавленные вручную. Только для своих прокси-серверов! Без своих прокси работать не будет.',
-      index: 6,
+      order: 6,
+    },
+    ifProxyErrors: {
+      dflt: false,
+      category: 'exceptions',
+      label: 'проксировать <a href>выбранные</a> ошибки',
+      desc: 'Предлагать добавить сайт в исключения при выбранных ошибках',
+      order: 7,
     },
     customProxyStringRaw: {
       dflt: '',
+      category: 'ownProxies',
       label: 'использовать СВОИ прокси',
       url: 'https://rebrand.ly/ac-own-proxy',
-      index: 7,
+      order: 8,
+    },
+    ifProxyMoreDomains: {
+      dflt: false,
+      category: 'ownProxies',
+      label: 'проксировать .onion, .i2p и OpenNIC',
+      desc: 'Проксировать особые домены. Необходима поддержка со стороны прокси.',
+      order: 9,
     },
 
   };
@@ -91,20 +110,24 @@
 
   };
 
-  const getOrderedConfigsForUser = function getOrderedConfigs() {
+  const getOrderedConfigsForUser = function getOrderedConfigs(category) {
 
     const pacMods = getCurrentConfigs();
-    return Object.keys(configs).reduce((arr, key) => {
+    return Object.keys(configs)
+      .sort((keyA, keyB) => configs[keyA].order - configs[keyB].order)
+      .reduce((arr, key) => {
 
-      const conf = configs[key];
-      if(typeof(conf.index) === 'number') {
-        arr[conf.index] = conf;
-        conf.value = pacMods[key];
-        conf.key = key;
-      }
-      return arr;
+        const conf = configs[key];
+        if(typeof(conf.order) === 'number') {
+          if(!category || category === (conf.category || 'general')) {
+            arr.push(conf);
+            conf.value = pacMods[key];
+            conf.key = key;
+         }
+        }
+        return arr;
 
-    }, []);
+      }, []);
 
   };
 
@@ -322,6 +345,7 @@
               new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
               ''
             );
+            /a/.test('a'); // GC RegExp.input and friends.
             return chrome.proxy.settings.set(details, chromified(cb));
           }
         }
