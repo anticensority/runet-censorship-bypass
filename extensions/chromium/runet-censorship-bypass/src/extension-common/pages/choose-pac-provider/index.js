@@ -158,11 +158,9 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       };
 
-      const infoIcon = `
-        <svg class="icon"
-          style="position: relative; top: 0.08em"><use xlink:href="#icon-info"></use></svg>
-        <!--span style="font-size: 1.3em" class="emoji">🛈(looks huge)</span-->
-      `;
+      const infoIcon = `<svg class="icon" style="position: relative; top: 0.08em">
+        <use xlink:href="#icon-info"></use>
+      </svg>`;
 
       const infoSign = function infoSign(tooltip) {
 
@@ -173,22 +171,31 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       };
 
+      const infoUrl = (url) => `<a href="${url}" class="right-bottom-icon info-url">${infoIcon}</a>`;
+
+      const appendInfoRow = (mountEl, conf, inputTypeName, inputId, htmlAfterLabel = '') => {
+
+        mountEl.classList.add('info-row', 'hor-flex');
+        mountEl.innerHTML = `
+          <input ${inputTypeName} id="${inputId}">
+          <div class="label-container">
+            <label for="${inputId}"> ${conf.label}</label>
+            ${htmlAfterLabel}
+          </div>` + (conf.desc ? infoSign(conf.desc) : infoUrl(conf.url));
+
+      };
+
       {
         const ul = document.querySelector('#list-of-providers');
         const _firstChild = ul.firstChild;
         for(
-          const [providerKey, provider] of antiCensorRu.getSortedEntriesForProviders()
+          const provConf of antiCensorRu.getSortedEntriesForProviders()
         ) {
           const li = document.createElement('li');
-          li.classList.add('info-row', 'hor-flex');
-          li.innerHTML = `
-            <input type="radio" name="pacProvider" id="${providerKey}">
-            <div class="label-container">
-              <label for="${providerKey}"> ${provider.label}</label>
-              &nbsp;<a href class="link-button update-button"
-                id="update-${providerKey}">[обновить]</a>
-            </div>` +
-            infoSign(provider.desc);
+          appendInfoRow(li, provConf, 'type="radio" name="pacProvider"', provConf.key, `
+            &nbsp;<a href class="link-button update-button"
+              id="update-${provConf.key}">[обновить]</a>
+          `);
           li.querySelector('.link-button').onclick =
             () => {
               conduct(
@@ -255,13 +262,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
         document.documentElement.classList.add('if-options-page');
       }
 
-      // EXCEPTIONS PANEL
 
-      {
+      { // KITCHEN PANELS starts.
 
         const pacKitchen = backgroundPage.apis.pacKitchen;
 
-        {
+        { // EXCEPTIONS TAB starts.
 
           const excEditor = document.getElementById('exc-editor');
 
@@ -518,124 +524,140 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           };
 
-        }
+        } // EXCEPTIONS TAB ends.
 
-        // PAC MODS PANEL
+        const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
 
-        const modPanel = document.getElementById('pac-mods');
-        const _firstChild = modPanel.firstChild;
-        const keyToLi = {};
-        const customProxyStringKey = 'customProxyStringRaw';
-        const uiRaw = 'ui-proxy-string-raw';
+        { // OWN PROXIES TAB starts.
 
-        for(const conf of pacKitchen.getOrderedConfigs()) {
+          const ownsList = document.getElementById('own-proxies');
+          const _firstChild = ownsList.firstChild;
+          const keyToLi = {};
+          const customProxyStringKey = 'customProxyStringRaw';
+          const uiRaw = 'ui-proxy-string-raw';
 
-          const key = conf.key;
-          const iddy = 'mods-' + conf.key.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
-          const li = document.createElement('li');
-          li.classList.add('info-row', 'hor-flex');
-          keyToLi[key] = li;
-          const ifMultiline = key === customProxyStringKey;
-          li.innerHTML = `
-              <input type="checkbox" id="${iddy}" ${ conf.value ? 'checked' : '' }/>
-              <div class="label-container">
-                <label for="${iddy}"> ${ conf.label }</label>
-              </div>`;
+          for(const conf of pacKitchen.getOrderedConfigs('ownProxies')) {
 
-          if (!ifMultiline) {
-            li.innerHTML += infoSign(conf.desc);
-          } else {
-            li.style.flexWrap = 'wrap';
-            li.innerHTML += `<a href="${conf.url}" class="right-bottom-icon info-url">${infoIcon}</a>
-<textarea
-  spellcheck="false"
-  placeholder="SOCKS5 localhost:9050; # Tor Expert
+            const key = conf.key;
+            const iddy = 'mods-' + camelToDash(conf.key);
+            const li = document.createElement('li');
+            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+
+            const ifMultiline = key === customProxyStringKey;
+            if (ifMultiline) {
+              li.style.flexWrap = 'wrap';
+              li.innerHTML += `
+                <textarea
+                  spellcheck="false"
+                  placeholder="SOCKS5 localhost:9050; # Tor Expert
 SOCKS5 localhost:9150; # Tor Browser
 HTTPS 11.22.33.44:3143;
-PROXY foobar.com:8080; # Not HTTP!">${conf.value || localStorage.getItem(uiRaw) || ''}</textarea>`;
-            li.querySelector('textarea').onkeyup = function() {
+PROXY foobar.com:8080; # Not HTTP!">${conf.value || localStorage.getItem(uiRaw) || ''}</textarea>
+              `;
+              li.querySelector('textarea').onkeyup = function() {
 
-              this.dispatchEvent( new Event('change', {'bubbles': true}) );
+                this.dispatchEvent( new Event('change', {'bubbles': true}) );
 
-            };
+              };
+            }
+
+            ownsList.insertBefore( li, _firstChild );
+
           }
 
-          modPanel.insertBefore( li, _firstChild );
+        } // OWN PROXIES TAB ends.
 
-        };
-        document.getElementById('apply-mods').onclick = () => {
+        { // PAC MODS TAB starts.
 
-          const oldMods = pacKitchen.getPacMods();
-          for(const key of Object.keys(keyToLi)) {
-            oldMods[key] = keyToLi[key].querySelector('input').checked;
+          const modsList = document.getElementById('pac-mods');
+          const _firstChild = modsList.firstChild;
+          const keyToLi = {};
+
+          for(const conf of pacKitchen.getOrderedConfigs('general')) {
+
+            const key = conf.key;
+            const iddy = 'mods-' + camelToDash(conf.key);
+            const li = document.createElement('li');
+            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+            keyToLi[key] = li;
+            modsList.insertBefore( li, _firstChild );
+
+          };
+          document.getElementById('apply-mods').onclick = () => {
+
+            const oldMods = pacKitchen.getPacMods();
+            for(const key of Object.keys(keyToLi)) {
+              oldMods[key] = keyToLi[key].querySelector('input').checked;
+            };
+
+            {
+              // OWN PROXY
+
+              const liPs = keyToLi[customProxyStringKey];
+              oldMods[customProxyStringKey]
+                = liPs.querySelector('input').checked
+                  && liPs.querySelector('textarea').value.trim();
+
+              const taVal = liPs.querySelector('textarea').value;
+              if (oldMods[customProxyStringKey] !== false) {
+                const ifValidArr = taVal
+                  .trim()
+                  .replace(/#.*$/mg, '')
+                  .split(/\s*[;\n\r]+\s*/g)
+                  .filter( (str) => str );
+                const ifValid = ifValidArr.every(
+                  (str) =>
+                    /^(?:DIRECT|(?:(?:HTTPS|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
+                      .test(str.trim())
+                );
+                if (!(ifValidArr.length && ifValid)) {
+                  return showErrors(new TypeError(
+                    'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
+                  ));
+                }
+                oldMods[customProxyStringKey] = taVal;
+              } else {
+                localStorage.setItem(uiRaw, taVal);
+              }
+
+            }
+
+            conduct(
+              'Применяем настройки...',
+              (cb) => pacKitchen.keepCookedNowAsync(oldMods, cb),
+              'Настройки применены.',
+              () => {
+
+                document.getElementById('apply-mods').disabled = true;
+
+              }
+            );
+
           };
 
-          {
-            // OWN PROXY
+          document.getElementById('reset-mods').onclick = () => {
 
-            const liPs = keyToLi[customProxyStringKey];
-            oldMods[customProxyStringKey]
-              = liPs.querySelector('input').checked
-                && liPs.querySelector('textarea').value.trim();
-
-            const taVal = liPs.querySelector('textarea').value;
-            if (oldMods[customProxyStringKey] !== false) {
-              const ifValidArr = taVal
-                .trim()
-                .replace(/#.*$/mg, '')
-                .split(/\s*[;\n\r]+\s*/g)
-                .filter( (str) => str );
-              const ifValid = ifValidArr.every(
-                (str) =>
-                  /^(?:DIRECT|(?:(?:HTTPS|PROXY|SOCKS(?:4|5)?)\s+\S+))$/g
-                    .test(str.trim())
-              );
-              if (!(ifValidArr.length && ifValid)) {
-                return showErrors(new TypeError(
-                  'Неверный формат своих прокси. Свертесь с <a href="https://rebrand.ly/ac-own-proxy" data-in-bg="true">документацией</a>.'
-                ));
-              }
-              oldMods[customProxyStringKey] = taVal;
-            } else {
-              localStorage.setItem(uiRaw, taVal);
+            const ifSure = backgroundPage.confirm('Сбросить все модификаторы и ИСКЛЮЧЕНИЯ?');
+            if (!ifSure) {
+              return false;
             }
+            conduct(
+              'Сбрасываем...',
+              (cb) => {
 
-          }
+                pacKitchen.resetToDefaults();
+                backgroundPage.utils.fireRequest('ip-to-host-reset-to-defaults', cb);
 
-          conduct(
-            'Применяем настройки...',
-            (cb) => pacKitchen.keepCookedNowAsync(oldMods, cb),
-            'Настройки применены.',
-            () => {
+              },
+              'Откройте окно заново для отображения эффекта.',
+              () => window.close()
+            );
 
-              document.getElementById('apply-mods').disabled = true;
+          };
 
-            }
-          );
+        } // PAC MODS TAB ends.
 
-        };
-
-        document.getElementById('reset-mods').onclick = () => {
-
-          const ifSure = backgroundPage.confirm('Сбросить все модификаторы и ИСКЛЮЧЕНИЯ?');
-          if (!ifSure) {
-            return false;
-          }
-          conduct(
-            'Сбрасываем...',
-            (cb) => {
-
-              pacKitchen.resetToDefaults();
-              backgroundPage.utils.fireRequest('ip-to-host-reset-to-defaults', cb);
-
-            },
-            'Откройте окно заново для отображения эффекта.',
-            () => window.close()
-          );
-
-        };
-
-      }
+      } // KITCHEN PANELS ends.
 
       // NOTIFICATIONS PANEL
 
