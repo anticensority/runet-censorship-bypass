@@ -322,6 +322,7 @@
               new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
               ''
             );
+            /a/.test('a'); // GC RegExp.input and friends.
             return chrome.proxy.settings.set(details, chromified(cb));
           }
         }
