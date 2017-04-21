@@ -213,7 +213,7 @@
 
     getSortedEntriesForProviders() {
 
-      return Object.entries(this.pacProviders).sort((entryA, entryB) => entryA[1].order - entryB[1].order);
+      return Object.entries(this.pacProviders).sort((entryA, entryB) => entryA[1].order - entryB[1].order).map(([key, prov]) => Object.assign({key: key}, prov));
 
     },
 

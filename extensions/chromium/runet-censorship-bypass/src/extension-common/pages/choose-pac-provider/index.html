@@ -177,6 +177,7 @@
         margin-bottom: 0 !important;
       }
       .nav-labels {
+        background-color: #eef;
         text-align: center;
       }
       .nav-labels li label {
@@ -508,52 +509,7 @@
 
       <section data-for="acc-own">
 
-        <ul id="owns-foo">
-
-          <li class="info-row hor-flex">
-              <input type="checkbox" id="mods-if-mind-exceptions" checked="">
-              <div class="label-container">
-                <label for="mods-if-mind-exceptions"> Использовать СВОЙ локальный Tor</label>
-              </div><div class="desc">
-                <svg class="icon" style="position: relative; top: 0.08em"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-info"></use></svg>
-                <div class="tooltip">Учитывать сайты, добавленные вручную. Только для своих прокси-серверов! Без своих прокси работать не будет.</div>
-              </div>
-          </li>
-
-          <li class="info-row hor-flex" style="flex-wrap: wrap;">
-              <input type="checkbox" id="mods-custom-proxy-string-raw">
-              <div class="label-container">
-                <label for="mods-custom-proxy-string-raw"> использовать СВОИ прокси</label>
-              </div>
-              <a href="https://rebrand.ly/ac-own-proxy" class="right-bottom-icon info-url">
-                <svg class="icon" style="position: relative; top: 0.08em"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-info"></use></svg>
-              </a>
-              <textarea spellcheck="false" placeholder="SOCKS5 localhost:9050; # Tor Expert
-SOCKS5 localhost:9150; # Tor Browser
-HTTPS 11.22.33.44:3143;
-PROXY foobar.com:8080; # Not HTTP!"></textarea>
-          </li>
-
-          <li class="info-row hor-flex">
-              <input type="checkbox" id="mods-if-mind-exceptions" checked="">
-              <div class="label-container">
-                <label for="mods-if-mind-exceptions"> Проксировать .onion, .i2p, .bit и др.</label>
-              </div><div class="desc">
-                <svg class="icon" style="position: relative; top: 0.08em"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-info"></use></svg>
-                <div class="tooltip">Учитывать сайты, добавленные вручную. Только для своих прокси-серверов! Без своих прокси работать не будет.</div>
-              </div>
-          </li>
-
-          <li class="info-row hor-flex">
-              <input type="checkbox" id="mods-if-mind-exceptions" checked="">
-              <div class="label-container">
-                <label for="mods-if-mind-exceptions"> Проксировать <a href>некоторые</a> ошибки</label>
-              </div><div class="desc">
-                <svg class="icon" style="position: relative; top: 0.08em"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-info"></use></svg>
-                <div class="tooltip">Учитывать сайты, добавленные вручную. Только для своих прокси-серверов! Без своих прокси работать не будет.</div>
-              </div>
-          </li>
-
+        <ul id="own-proxies">
           <li class="control-row hor-flex">
             <input type="button" value="Применить" id="apply-mods" disabled/>
             <a href id="bar-reset-mods">К изначальным!</a>
