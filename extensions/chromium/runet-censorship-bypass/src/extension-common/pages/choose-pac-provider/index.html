@@ -8,6 +8,8 @@
         --ribbon-color: #4169e1;
         --blue-bg: dodgerblue;
         --default-grey: #bfbfbf;
+				--mild-hr: #d3d3d3;
+				--hr: #bababa;
         max-width: 28em;
       }
       body {
@@ -52,7 +54,7 @@
       #list-of-notifiers {
         margin-left: 0.4em;
       }
-      li, footer {
+      li, .nowrap {
         display: block;
         white-space: nowrap;
         word-break: keep-all;
@@ -67,7 +69,8 @@
         cursor: pointer;
       }
       hr {
-        border-width: 1px 0 0 0;
+        border: none;
+				border-top: 1px solid var(--hr);
         margin: 0 0 0.6em 0;
         padding: 0;
       }
@@ -143,17 +146,19 @@
       :root.if-options-page section[data-for] {
         padding-bottom: 0.6em;
       }
-      :root.if-options-page section[data-for]:not(:last-child) {
-        border-bottom: 1px solid var(--default-grey);
+      :root.if-options-page section[data-for]:not(:last-child),
+			.underlined {
+        border-bottom: 1px solid var(--mild-hr);
       }
 
-      /* HIDE */
-
+      /* HIDE starts. */
       :root:not(.if-options-page) #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"],
       :root:not(.if-options-page) #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"],
-      :root:not(.if-options-page) #acc-own:not(:checked) ~ .main-nav section[data-for="acc-own"],
+      :root:not(.if-options-page) #acc-own-mods:not(:checked) ~ .main-nav section[data-for="acc-own-mods"],
       :root:not(.if-options-page) #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"],
-      :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"]
+      :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"],
+			/* One button shared between two sections: */
+      :root:not(.if-options-page) #acc-own-mods:not(:checked) + #acc-mods:not(:checked) ~ .main-nav #apply-mods-button
       {
         /* Hide, but preclude width resizes. */
         height: 0px !important;
@@ -169,21 +174,25 @@
       }
       :root:not(.if-options-page) #acc-pac:not(:checked) ~ .main-nav section[data-for="acc-pac"] *,
       :root:not(.if-options-page) #acc-exc:not(:checked) ~ .main-nav section[data-for="acc-exc"] *,
-      :root:not(.if-options-page) #acc-own:not(:checked) ~ .main-nav section[data-for="acc-own"] *,
+      :root:not(.if-options-page) #acc-own-mods:not(:checked) ~ .main-nav section[data-for="acc-own-mods"] *,
       :root:not(.if-options-page) #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"] *,
-      :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"] *
+      :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"] *,
+			/* One button shared between two sections: */
+      :root:not(.if-options-page) #acc-own-mods:not(:checked) + #acc-mods:not(:checked) ~ .main-nav #apply-mods-button *
       {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
       }
+      /* HIDE ends. */
+
       .nav-labels {
-        background-color: #eef;
+        background-color: var(--chrome-grey);
         text-align: center;
       }
       .nav-labels li label {
         display: inline-block;
 
-        border: 1px solid var(--blue-bg);
+        border: 1px solid var(--ribbon-color);
         border-radius: 0.2em;
 
         background-color: white;
@@ -201,10 +210,11 @@
         border-color: white;
         border-style: dotted;*/
       }
-      /* CHECKED LABELS */
+
+      /* LABELS starts. */
       #acc-pac:checked ~ .nav-labels label[for="acc-pac"]:not(:hover),
       #acc-exc:checked ~ .nav-labels label[for="acc-exc"]:not(:hover),
-      #acc-own:checked ~ .nav-labels label[for="acc-own"]:not(:hover),
+      #acc-own-mods:checked ~ .nav-labels label[for="acc-own-mods"]:not(:hover),
       #acc-mods:checked ~ .nav-labels label[for="acc-mods"]:not(:hover),
       #acc-ntf:checked ~ .nav-labels label[for="acc-ntf"]:not(:hover)
       {
@@ -220,12 +230,13 @@
       .nav-labels li label:hover:before,
       #acc-pac:checked ~ .nav-labels label[for="acc-pac"]:before,
       #acc-exc:checked ~ .nav-labels label[for="acc-exc"]:before,
-      #acc-own:checked ~ .nav-labels label[for="acc-own"]:before,
+      #acc-own-mods:checked ~ .nav-labels label[for="acc-own-mods"]:before,
       #acc-mods:checked ~ .nav-labels label[for="acc-mods"]:before,
       #acc-ntf:checked ~ .nav-labels label[for="acc-ntf"]:before
       {
         visibility: initial;
       }
+      /* LABELS ends. */
 
       /* COMMON 2 */
 
@@ -444,7 +455,7 @@
 
     <input type="radio" name="accordion" class="off" id="acc-pac" checked/>
     <input type="radio" name="accordion" class="off" id="acc-exc"/>
-    <input type="radio" name="accordion" class="off" id="acc-own"/>
+    <input type="radio" name="accordion" class="off" id="acc-own-mods"/>
     <input type="radio" name="accordion" class="off" id="acc-mods"/>
     <input type="radio" name="accordion" class="off" id="acc-ntf"/>
 
@@ -452,7 +463,7 @@
       <ul class='horizontal-list'>
         <li><label for="acc-pac"  class="nav-label">PAC-скрипт</label></li>
         <li><label for="acc-exc"  class="nav-label">Исключения</label></li>
-        <li><label for="acc-own"  class="nav-label">Свои прокси</label></li>
+        <li><label for="acc-own-mods"  class="nav-label">Свои прокси</label></li>
         <li><label for="acc-mods" class="nav-label">Модификаторы</label></li>
         <li><label for="acc-ntf"  class="nav-label">Уведомления</label></li>
       </ul>
@@ -479,7 +490,7 @@
 
       </section>
 
-      <section data-for="acc-exc" class="only-for-options-page">
+      <section class="only-for-options-page nowrap underlined">
         Редактор исключений доступен толко для <a href="chrome://newtab">вкладок</a>.
       </section>
       <section data-for="acc-exc" class="hidden-for-options-page">
@@ -507,27 +518,18 @@
 
       </section>
 
-      <section data-for="acc-own">
-
-        <ul id="own-proxies">
-          <li class="control-row hor-flex">
-            <input type="button" value="Применить" id="apply-mods" disabled/>
-            <a href id="bar-reset-mods">К изначальным!</a>
-          </li>
-        </ul>
-
+      <section data-for="acc-own-mods">
+        <ul id="own-proxies"></ul>
       </section>
 
       <section data-for="acc-mods">
-
-        <ul id="pac-mods">
-          <li class="control-row hor-flex">
-            <input type="button" value="Применить" id="apply-mods" disabled/>
-            <a href id="reset-mods">К изначальным!</a>
-          </li>
-        </ul>
-
+        <ul id="pac-mods"></ul>
       </section>
+
+			<section id="apply-mods-button" class="control-row hor-flex" style="margin-top: 0.2em">
+				<input type="button" value="Применить" id="apply-mods" disabled/>
+				<a href id="reset-mods">К изначальным!</a>
+			</section>
 
       <section data-for="acc-ntf">
         <header>Я <span style="color: #f93a17">❤</span> yведомления:</header>
@@ -544,7 +546,7 @@
         <div id="status" style="will-change: contents">Загрузка...</div>
       </section>
 
-      <footer class="control-row hor-flex">
+      <footer class="control-row hor-flex nowrap">
         <input type="button" value="Готово" class="close-button">
         <a href="../troubleshoot/index.html">
           Проблемы?
