@@ -8,8 +8,10 @@
         --ribbon-color: #4169e1;
         --blue-bg: dodgerblue;
         --default-grey: #bfbfbf;
-				--mild-hr: #d3d3d3;
-				--hr: #bababa;
+        --cr-options-headline: #d3d3d3;
+        --cr-icon-selected: #d7d7d7;
+        --cr-popup-border: #bababa;
+        --cr-grey-panel: #f2f2f2;
         max-width: 28em;
       }
       body {
@@ -70,7 +72,7 @@
       }
       hr {
         border: none;
-				border-top: 1px solid var(--hr);
+        border-top: 1px solid var(--cr-popup-border);
         margin: 0 0 0.6em 0;
         padding: 0;
       }
@@ -143,12 +145,18 @@
       section[data-for] {
         padding: 0.6em 0 1em;
       }
+      section[data-for] li label {
+        display: inline-block; /* Needed for ::first-letter below. */
+      }
+      section[data-for] li label::first-letter {
+        text-transform: uppercase;
+      }
       :root.if-options-page section[data-for] {
         padding-bottom: 0.6em;
       }
       :root.if-options-page section[data-for]:not(:last-child),
-			.underlined {
-        border-bottom: 1px solid var(--mild-hr);
+      .underlined {
+        border-bottom: 1px solid var(--cr-options-headline);
       }
 
       /* HIDE starts. */
@@ -157,8 +165,8 @@
       :root:not(.if-options-page) #acc-own-mods:not(:checked) ~ .main-nav section[data-for="acc-own-mods"],
       :root:not(.if-options-page) #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"],
       :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"],
-			/* One button shared between two sections: */
-      :root:not(.if-options-page) #acc-own-mods:not(:checked) + #acc-mods:not(:checked) ~ .main-nav #apply-mods-button
+      /* One button shared between two sections: */
+      :root:not(.if-options-page) #acc-own-mods:not(:checked) + #acc-mods:not(:checked) ~ .main-nav #apply-mods-section
       {
         /* Hide, but preclude width resizes. */
         height: 0px !important;
@@ -177,8 +185,8 @@
       :root:not(.if-options-page) #acc-own-mods:not(:checked) ~ .main-nav section[data-for="acc-own-mods"] *,
       :root:not(.if-options-page) #acc-mods:not(:checked) ~ .main-nav section[data-for="acc-mods"] *,
       :root:not(.if-options-page) #acc-ntf:not(:checked) ~ .main-nav section[data-for="acc-ntf"] *,
-			/* One button shared between two sections: */
-      :root:not(.if-options-page) #acc-own-mods:not(:checked) + #acc-mods:not(:checked) ~ .main-nav #apply-mods-button *
+      /* One button shared between two sections: */
+      :root:not(.if-options-page) #acc-own-mods:not(:checked) + #acc-mods:not(:checked) ~ .main-nav #apply-mods-section *
       {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
@@ -186,7 +194,7 @@
       /* HIDE ends. */
 
       .nav-labels {
-        background-color: var(--chrome-grey);
+        background-color: var(--cr-grey-panel);
         text-align: center;
       }
       .nav-labels li label {
@@ -241,6 +249,11 @@
       /* COMMON 2 */
 
       /* INFO SIGNS */
+
+      input:disabled + .label-container label {
+        color: var(--default-grey);
+        pointer-events: none;
+      }
 
       .info-row {
         position: relative;
@@ -302,7 +315,7 @@
         width: calc(25% + 0.6em);
       }
 
-      /* TAB_1 PAC PROVIDER */
+      /* TAB_1: PAC PROVIDER */
 
       .update-button {
         visibility: hidden;
@@ -323,14 +336,8 @@
         margin-top: 0.5em;
       }
 
-      /* TAB_2 PAC MODS */
+      /* TAB_2: PAC MODS */
 
-      #pac-mods label {
-        display: block;
-      }
-      #pac-mods label:first-letter {
-        text-transform: uppercase;
-      }
       #mods-custom-proxy-string-raw ~ textarea {
         width: 100%;
         height: 7em;
@@ -341,53 +348,63 @@
         display: none;
       }
 
-      /* TAB_3 EXCEPTIONS */
-      #exc-address-container {
-        display: flex;
-        align-items: center;
-        width: 100%;
-      }
-      #exc-address-container > a {
-        border-bottom: 1px solid transparent;
-        margin-left: 0.2em;
-      }
-      #exc-address {
-        width: 100%;
-        display: flex;
-        align-items: baseline;
-        --exc-hieght: 1.6em;
-        font-size: 1em;
-        border-bottom: 1px solid var(--ribbon-color) !important;
-      }
-      input#exc-editor {
-        border: none;
-        width: 100%;
-        background: inherit;
-        /* The two below align '.' (dot) vertically. */
-        max-height: var(--exc-hieght) !important;
-        min-height: var(--exc-hieght) !important;
-      }
-      #exc-radio {
-        display: flex;
-        justify-content: space-around;
-        margin-top: 0.5em;
-      }
-      [name="if-proxy-this-site"]:checked + label {
-        font-weight: bold;
-      }
-      #exc-address.if-yes {
-        background-color: lightgreen;
-      }
-      #exc-address.if-no {
-        background-color: pink;
-      }
+      /* TAB_3: EXCEPTIONS */
 
-      option.if-proxied {
-        color: var(--ribbon-color);
-      }
-      option:not(.if-proxied) {
-        color: red;
-      }
+        /* EXC-EDITOR starts. */
+        #exc-address-container {
+          display: flex;
+          align-items: center;
+          width: 100%;
+        }
+        #exc-address-container > a {
+          border-bottom: 1px solid transparent;
+          margin-left: 0.2em;
+        }
+        #exc-address {
+          width: 100%;
+          display: flex;
+          align-items: baseline;
+          --exc-hieght: 1.6em;
+          font-size: 1em;
+          border-bottom: 1px solid var(--ribbon-color) !important;
+        }
+        input#exc-editor {
+          border: none;
+          width: 100%;
+          background: inherit;
+          /* The two below align '.' (dot) vertically. */
+          max-height: var(--exc-hieght) !important;
+          min-height: var(--exc-hieght) !important;
+        }
+        #exc-radio {
+          display: flex;
+          justify-content: space-around;
+          margin-top: 0.5em;
+        }
+        [name="if-proxy-this-site"]:checked + label {
+          font-weight: bold;
+        }
+        #exc-address.if-yes {
+          background-color: lightgreen;
+        }
+        #exc-address.if-no {
+          background-color: pink;
+        }
+
+        option.if-proxied {
+          color: var(--ribbon-color);
+        }
+        option:not(.if-proxied) {
+          color: red;
+        }
+
+        /* EXC-EDITOR ends. */
+        #exc-mods {
+          padding-top: 1em;
+        }
+        #exc-mods input#mods-if-mind-exceptions:not(:checked) + .label-container label {
+          color: red;
+        }
 
       /* CONTROL RAW = BUTTON + LINK */
 
@@ -401,7 +418,7 @@
         margin: 1em 0 1em 0;
       }
 
-      .hor-flex > input:not([type="button"]) {
+      .hor-flex input:not([type="button"]) {
         align-self: flex-end;
       }
       .label-container {
@@ -495,41 +512,44 @@
       </section>
       <section data-for="acc-exc" class="hidden-for-options-page">
 
-        <div>Проксировать указанный сайт?</div>
-        <div id="exc-address-container">
-          <div id="exc-address">
-            <span>*.</span><input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor" style=""/>
-          </div>
-          <a href="../exceptions/index.html" title="импорт/экспорт"><svg
-            class="icon"
-            ><use xlink:href="#icon-import-export"></use></svg>
-          </a>
-        </div>
-        <datalist id="exc-list"></datalist>
-        <ol class="horizontal-list" id="exc-radio">
-          <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/>
-            <label for="this-auto"><!--span class="emoji">🔄(looks fat)</span--><svg
+        <section class="exc-editor-section" style="padding-bottom: 1em;">
+          <div>Проксировать указанный сайт?</div>
+          <div id="exc-address-container">
+            <div id="exc-address">
+              <span>*.</span><input placeholder="navalny.com" list="exc-list" name="browser" id="exc-editor" style=""/>
+            </div>
+            <a href="../exceptions/index.html" title="импорт/экспорт"><svg
               class="icon"
-              style="position: relative; top: 0.15em;"><use xlink:href="#icon-loop-round"></use></svg>&nbsp;авто</label>
-          </li>
-          <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
-          <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
-        </ol>
+              ><use xlink:href="#icon-import-export"></use></svg>
+            </a>
+          </div>
+          <datalist id="exc-list"></datalist>
+          <ol class="horizontal-list" id="exc-radio">
+            <li><input id="this-auto" type="radio" checked name="if-proxy-this-site"/>
+              <label for="this-auto"><!--span class="emoji">🔄(looks fat)</span--><svg
+                class="icon"
+                style="position: relative; top: 0.15em;"><use xlink:href="#icon-loop-round"></use></svg>&nbsp;авто</label>
+            </li>
+            <li><input id="this-yes" type="radio" name="if-proxy-this-site"/> <label for="this-yes">✔&nbsp;да</label></li>
+            <li><input id="this-no" type="radio" name="if-proxy-this-site"/> <label for="this-no">✘&nbsp;нет</label></li>
+          </ol>
+        </section>
+        <ul id="exc-mods"></ul>
 
       </section>
 
       <section data-for="acc-own-mods">
-        <ul id="own-proxies"></ul>
+        <ul id="own-mods"></ul>
       </section>
 
       <section data-for="acc-mods">
         <ul id="pac-mods"></ul>
       </section>
 
-			<section id="apply-mods-button" class="control-row hor-flex" style="margin-top: 0.2em">
-				<input type="button" value="Применить" id="apply-mods" disabled/>
-				<a href id="reset-mods">К изначальным!</a>
-			</section>
+      <section id="apply-mods-section" class="control-row hor-flex" style="margin-top: 0.2em">
+        <input type="button" value="Применить" id="apply-mods" disabled/>
+        <a href id="reset-mods">К изначальным!</a>
+      </section>
 
       <section data-for="acc-ntf">
         <header>Я <span style="color: #f93a17">❤</span> yведомления:</header>

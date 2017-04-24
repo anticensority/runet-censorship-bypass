@@ -1,13 +1,21 @@
 'use strict';
 
 const START = Date.now();
+{
 
-document.getElementById('pac-mods').onchange = function() {
+  const enableButton = function enablebutton() {
 
-  this.classList.add('changed');
-  document.getElementById('apply-mods').disabled = false;
+    this.classList.add('changed');
+    document.getElementById('apply-mods').disabled = false;
 
-};
+  };
+  ['pac-mods', 'own-mods'].forEach((id) => {
+
+    document.getElementById(id).onchange = enableButton;
+
+  });
+
+}
 
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOn(
@@ -131,7 +139,13 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         const inputs = document.querySelectorAll('input');
         for ( let i = 0; i < inputs.length; i++ ) {
-          inputs[i].disabled = val === 'on' ? false : true;
+          const input = inputs[i];
+          if (val === 'off') {
+            input.dataset.previousDisabledValue = input.disabled;
+            input.disabled = true;
+          } else {
+            input.disabled = input.dataset.previousDisabledValue === 'true';
+          }
         }
 
       };
@@ -176,18 +190,22 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       const appendInfoRow = (mountEl, conf, inputTypeName, inputId, htmlAfterLabel = '') => {
 
         mountEl.classList.add('info-row', 'hor-flex');
+        if (conf.ifDisabled) {
+          mountEl.title = 'В РАЗРАБОТКЕ!';
+        }
         mountEl.innerHTML = `
-          <input ${inputTypeName} id="${inputId}">
+          <input ${inputTypeName} id="${inputId}" ${conf.ifDisabled ? 'disabled' : ''}>
           <div class="label-container">
-            <label for="${inputId}"> ${conf.label}</label>
+            <label for="${inputId}">${conf.label}</label>
             ${htmlAfterLabel}
           </div>` + (conf.desc ? infoSign(conf.desc) : infoUrl(conf.url));
 
       };
 
-      {
-        const ul = document.querySelector('#list-of-providers');
-        const _firstChild = ul.firstChild;
+      { // PAC-PROVIDERS starts.
+
+        const ul = document.getElementById('list-of-providers');
+        const _firstChildOrNull = ul.firstChild;
         for(
           const provConf of antiCensorRu.getSortedEntriesForProviders()
         ) {
@@ -204,16 +222,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
               );
               return false;
             };
-          ul.insertBefore( li, _firstChild );
+          ul.insertBefore( li, _firstChildOrNull );
         }
         checkChosenProvider();
-      }
 
-      const radios = [].slice.apply(
-        document.querySelectorAll('[name=pacProvider]')
-      );
-      for(const radio of radios) {
-        radio.onclick = function(event) {
+        const radioClickHandler = function radioClickHandler(event) {
 
           if (
             event.target.id === (
@@ -240,7 +253,14 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           }
           return false;
         };
-      }
+
+        document.querySelectorAll('input[name=pacProvider]').forEach((radio) => {
+
+          radio.onclick = radioClickHandler;
+
+        });
+
+      } // PAC-PROVIDERS ends.
 
       // IF MINI
 
@@ -266,275 +286,337 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       { // KITCHEN PANELS starts.
 
         const pacKitchen = backgroundPage.apis.pacKitchen;
+        const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
+        const modKeyToLi = {};
+
+        const applyMods = function applyMods(newMods) {
+
+          conduct(
+            'Применяем настройки...',
+            (cb) => pacKitchen.keepCookedNowAsync(newMods, cb),
+            'Настройки применены.',
+            () => {
+
+              document.getElementById('apply-mods').disabled = true;
+
+            }
+          );
+
+        };
 
         { // EXCEPTIONS TAB starts.
 
-          const excEditor = document.getElementById('exc-editor');
+          { // EXC-MODS starts.
 
-          const validateHost = function validateHost(host) {
+            const emodsList = document.getElementById('exc-mods');
+            const _firstChildOrNull = emodsList.firstChild;
 
-            const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
-            if(!ValidHostnameRegex.test(host)) {
-              showErrors(new TypeError('Должно быть только доменное имя, без протокола, порта и пути. Попробуйте ещё раз.'));
-              return false;
-            }
-            return true;
+            for(const conf of pacKitchen.getOrderedConfigs('exceptions')) {
 
-          };
+              const key = conf.key;
+              const iddy = 'mods-' + camelToDash(conf.key);
+              const li = document.createElement('li');
+              appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+              emodsList.insertBefore( li, _firstChildOrNull );
+              modKeyToLi[key] = li;
+              li.querySelector('input').onclick = function() {
 
-          const labelIfProxied = '✔';
-          const labelIfNotProxied = '✘';
-          const labelIfAuto = '↻';
+                const oldMods = pacKitchen.getPacMods();
+                oldMods[key] =  this.checked;
+                applyMods(oldMods);
 
-          const addOption = function addOption(host, yesNoUndefined) {
-
-            const opt = document.createElement('option');
-            // `value` may be changed for hiding line in the tooltip.
-            opt.value = host;
-            opt.dataset.host = host;
-            switch(yesNoUndefined) {
-              case true:
-                opt.label = labelIfProxied;
-                break;
-              case false:
-                opt.label = labelIfNotProxied;
-                break;
-              default:
-                opt.label = labelIfAuto;
-            }
-            const editorHost = excEditor.value.trim();
-            if (host === editorHost) {
-              excList.insertBefore( opt, excList.firstChild );
-            } else {
-              excList.appendChild(opt);
-            }
-            return opt;
-
-          };
-
-          const thisYes = document.getElementById('this-yes');
-          const thisNo = document.getElementById('this-no');
-          const thisAuto = document.getElementById('this-auto');
-          const yesClass = 'if-yes';
-          const noClass = 'if-no';
-
-          function moveCursorIfNeeded() {
-
-            const nu = excEditor.dataset.moveCursorTo;
-            if(nu !== undefined) {
-              excEditor.setSelectionRange(nu, nu);
-              delete excEditor.dataset.moveCursorTo;
-            }
-
-          }
-
-          const hideOpt = (opt) => opt.value = '\n';
-          const unhideOptAndAddSpace = (opt) => opt.value = opt.dataset.host + ' ';
-
-          const excList = document.getElementById('exc-list');
-
-          excEditor.onkeydown = function(event) {
-
-            moveCursorIfNeeded();
-            if(event.key === 'Enter') {
-              // Hide all.
-              excList.childNodes.forEach( hideOpt );
-            }
-            return true;
-
-          };
-
-          const renderExceptionsPanelFromExcList = function renderExceptionsPanelFromExcList(event) {
-
-            // If triangle button on right of datalist input clicked.
-
-            let ifTriangleClicked = false;
-            const ifClick = event && event.type === 'click';
-
-            {
-              const maxIndentFromRightInPx = 15;
-              ifTriangleClicked = ifClick
-                && !excEditor.selectionStart && !excEditor.selectionEnd
-                && event.x > excEditor.getBoundingClientRect().right - maxIndentFromRightInPx;
-            }
-
-            const setInputValue = (newValue) => {
-
-              if (ifClick && !ifTriangleClicked) {
-                // Don't jerk cursor on simple clicks.
-                return;
-              }
-              // See bug in my comment to http://stackoverflow.com/a/32394157/521957
-              // First click on empty input may be still ignored.
-              const nu = excEditor.selectionStart + newValue.length - excEditor.value.length;
-              excEditor.value = newValue;
-              excEditor.dataset.moveCursorTo = nu;
-              window.setTimeout(moveCursorIfNeeded, 0);
+              };
 
             };
 
-            const originalHost = excEditor.value.trim();
-            const ifInit = !event;
-            const currentHost = ifTriangleClicked ? '' : (originalHost || (ifInit ? '' : ' '));
-            setInputValue(currentHost);
+          }// EXC-MODS ends.
 
-            let exactOpt = false;
-            let editedOpt = false;
-            excList.childNodes.forEach(
-              (opt) => {
+          { // EXC-EDITOR starts.
 
-                unhideOptAndAddSpace(opt);
+            const excEditor = document.getElementById('exc-editor');
 
-                if(opt.label === labelIfAuto) {
-                  editedOpt = opt;
+            const validateHost = function validateHost(host) {
+
+              const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+              if(!ValidHostnameRegex.test(host)) {
+                showErrors(new TypeError('Должно быть только доменное имя, без протокола, порта и пути. Попробуйте ещё раз.'));
+                return false;
+              }
+              return true;
+
+            };
+
+            const labelIfProxied = '✔';
+            const labelIfNotProxied = '✘';
+            const labelIfAuto = '↻';
+
+            const addOption = function addOption(host, yesNoUndefined) {
+
+              const opt = document.createElement('option');
+              // `value` may be changed for hiding line in the tooltip.
+              opt.value = host;
+              opt.dataset.host = host;
+              switch(yesNoUndefined) {
+                case true:
+                  opt.label = labelIfProxied;
+                  break;
+                case false:
+                  opt.label = labelIfNotProxied;
+                  break;
+                default:
+                  opt.label = labelIfAuto;
+              }
+              const editorHost = excEditor.value.trim();
+              if (host === editorHost) {
+                excList.insertBefore( opt, excList.firstChild );
+              } else {
+                excList.appendChild(opt);
+              }
+              return opt;
+
+            };
+
+            const thisYes = document.getElementById('this-yes');
+            const thisNo = document.getElementById('this-no');
+            const thisAuto = document.getElementById('this-auto');
+            const yesClass = 'if-yes';
+            const noClass = 'if-no';
+
+            function moveCursorIfNeeded() {
+
+              const nu = excEditor.dataset.moveCursorTo;
+              if(nu !== undefined) {
+                excEditor.setSelectionRange(nu, nu);
+                delete excEditor.dataset.moveCursorTo;
+              }
+
+            }
+
+            const hideOpt = (opt) => opt.value = '\n';
+            const unhideOptAndAddSpace = (opt) => opt.value = opt.dataset.host + ' ';
+
+            const excList = document.getElementById('exc-list');
+
+            excEditor.onkeydown = function(event) {
+
+              moveCursorIfNeeded();
+              if(event.key === 'Enter') {
+                // Hide all.
+                excList.childNodes.forEach( hideOpt );
+              }
+              return true;
+
+            };
+
+            const renderExceptionsPanelFromExcList = function renderExceptionsPanelFromExcList(event) {
+
+              // If triangle button on right of datalist input clicked.
+
+              let ifTriangleClicked = false;
+              const ifClick = event && event.type === 'click';
+
+              {
+                const maxIndentFromRightInPx = 15;
+                ifTriangleClicked = ifClick
+                  && !excEditor.selectionStart && !excEditor.selectionEnd
+                  && event.x > excEditor.getBoundingClientRect().right - maxIndentFromRightInPx;
+              }
+
+              const setInputValue = (newValue) => {
+
+                if (ifClick && !ifTriangleClicked) {
+                  // Don't jerk cursor on simple clicks.
                   return;
                 }
-                if (opt.dataset.host === originalHost) {
-                  exactOpt = opt;
+                // See bug in my comment to http://stackoverflow.com/a/32394157/521957
+                // First click on empty input may be still ignored.
+                const nu = excEditor.selectionStart + newValue.length - excEditor.value.length;
+                excEditor.value = newValue;
+                excEditor.dataset.moveCursorTo = nu;
+                window.setTimeout(moveCursorIfNeeded, 0);
+
+              };
+
+              const originalHost = excEditor.value.trim();
+              const ifInit = !event;
+              const currentHost = ifTriangleClicked ? '' : (originalHost || (ifInit ? '' : ' '));
+              setInputValue(currentHost);
+
+              let exactOpt = false;
+              let editedOpt = false;
+              excList.childNodes.forEach(
+                (opt) => {
+
+                  unhideOptAndAddSpace(opt);
+
+                  if(opt.label === labelIfAuto) {
+                    editedOpt = opt;
+                    return;
+                  }
+                  if (opt.dataset.host === originalHost) {
+                    exactOpt = opt;
+                  }
+
                 }
+              );
 
-              }
-            );
+              thisAuto.checked = true;
+              excEditor.parentNode.classList.remove(noClass, yesClass);
 
-            thisAuto.checked = true;
-            excEditor.parentNode.classList.remove(noClass, yesClass);
-
-            const ifInputEmpty = !originalHost;
-            if (ifTriangleClicked || ifInputEmpty) {
-              // Show all opts.
-              if (editedOpt) {
-                // Example of editedOpt.value: 'abcde ' <- Mind the space (see unhideOptAndAddSpace)!
-                const ifBackspacedOneChar = ifInputEmpty && editedOpt.value.length < 3;
-                if (ifBackspacedOneChar) {
-                  editedOpt.remove();
+              const ifInputEmpty = !originalHost;
+              if (ifTriangleClicked || ifInputEmpty) {
+                // Show all opts.
+                if (editedOpt) {
+                  // Example of editedOpt.value: 'abcde ' <- Mind the space (see unhideOptAndAddSpace)!
+                  const ifBackspacedOneChar = ifInputEmpty && editedOpt.value.length < 3;
+                  if (ifBackspacedOneChar) {
+                    editedOpt.remove();
+                  }
                 }
-              }
-              return true;
-            }
-
-            if (editedOpt) {
-              const ifEditedOptAlreadyExists = editedOpt.dataset.host === originalHost;
-              if(ifEditedOptAlreadyExists) {
-                hideOpt(editedOpt);
                 return true;
               }
-              // Not exact! Update!
-              editedOpt.remove();
-            }
 
-            if (!exactOpt) {
-              editedOpt = addOption(originalHost, undefined);
-              if (!ifClick) {
-                // New value was typed -- don't show tooltip.
-                hideOpt(editedOpt);
-              }
-              return true;
-            }
-
-            // Exact found!
-            excList.childNodes.forEach(hideOpt);
-            if(exactOpt.label === labelIfProxied) {
-              thisYes.checked = true;
-              excEditor.parentNode.classList.add(yesClass);
-            } else {
-              thisNo.checked = true;
-              excEditor.parentNode.classList.add(noClass);
-            }
-            return true;
-
-          };
-
-          excEditor.onclick = excEditor.oninput = renderExceptionsPanelFromExcList;
-
-          if (currentTab && !currentTab.url.startsWith('chrome')) {
-            excEditor.value = new URL(currentTab.url).hostname;
-          } else {
-            // Show placeholder.
-            excEditor.value = '';
-          }
-
-          { // Populate selector.
-
-            const pacMods = pacKitchen.getPacMods();
-            for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
-              addOption(host, pacMods.exceptions[host]);
-            }
-            renderExceptionsPanelFromExcList(); // Colorize input.
-
-          }
-
-          document.getElementById('exc-radio').onclick = function(event) {
-
-            /* ON CLICK */
-            if(event.target.tagName !== 'INPUT') {
-              // Only label on checkbox.
-              return true;
-            }
-
-            const host = excEditor.value.trim();
-
-            const pacMods = pacKitchen.getPacMods();
-            pacMods.exceptions = pacMods.exceptions || {};
-
-            let fixOptions;
-            const curOptOrNull = excList.querySelector(`[data-host="${host}"]`);
-
-            if (thisAuto.checked) {
-              delete pacMods.exceptions[host];
-              fixOptions = () => {
-                curOptOrNull && curOptOrNull.remove();
-              }
-            } else {
-              // YES or NO checked.
-              const ifYesClicked = thisYes.checked;
-              if (!validateHost(host)) {
-                return false;
-              }
-              if (ifYesClicked && !pacMods.filteredCustomsString) {
-                showErrors( new TypeError(
-                  'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ). Нет своих прокси, удовлетворяющих вашим требованиям.'
-                ));
-                return false;
-              }
-              //const ifNew = !(host in pacMods.exceptions);
-              pacMods.exceptions[host] = ifYesClicked;
-                // Change label.
-              fixOptions = () => {
-                if (curOptOrNull) {
-                  curOptOrNull.label = ifYesClicked ? labelIfProxied : labelIfNotProxied;
-                } else {
-                  addOption(host, ifYesClicked);
+              if (editedOpt) {
+                const ifEditedOptAlreadyExists = editedOpt.dataset.host === originalHost;
+                if(ifEditedOptAlreadyExists) {
+                  hideOpt(editedOpt);
+                  return true;
                 }
-              };
+                // Not exact! Update!
+                editedOpt.remove();
+              }
+
+              if (!exactOpt) {
+                editedOpt = addOption(originalHost, undefined);
+                if (!ifClick) {
+                  // New value was typed -- don't show tooltip.
+                  hideOpt(editedOpt);
+                }
+                return true;
+              }
+
+              // Exact found!
+              excList.childNodes.forEach(hideOpt);
+              if(exactOpt.label === labelIfProxied) {
+                thisYes.checked = true;
+                excEditor.parentNode.classList.add(yesClass);
+              } else {
+                thisNo.checked = true;
+                excEditor.parentNode.classList.add(noClass);
+              }
+              return true;
+
+            };
+
+            excEditor.onclick = excEditor.oninput = renderExceptionsPanelFromExcList;
+
+            if (currentTab && !currentTab.url.startsWith('chrome')) {
+              excEditor.value = new URL(currentTab.url).hostname;
+            } else {
+              // Show placeholder.
+              excEditor.value = '';
             }
 
-            conduct(
-              'Применяем исключения...',
-              (cb) => pacKitchen.keepCookedNowAsync(pacMods, cb),
-              'Исключения применены. Не забывайте о кэше!',
-              () => {
+            { // Populate selector.
 
-                fixOptions();
-                // Window may be closed before this line executes.
-                renderExceptionsPanelFromExcList();
-
+              const pacMods = pacKitchen.getPacMods();
+              for(const host of Object.keys(pacMods.exceptions || {}).sort()) {
+                addOption(host, pacMods.exceptions[host]);
               }
-            );
-            return false; // Don't check before operation is finished.
+              renderExceptionsPanelFromExcList(); // Colorize input.
 
-          };
+            }
+
+            document.getElementById('exc-radio').onclick = function(event) {
+
+              /* ON CLICK */
+              if(event.target.tagName !== 'INPUT') {
+                // Only label on checkbox.
+                return true;
+              }
+
+              const host = excEditor.value.trim();
+
+              const pacMods = pacKitchen.getPacMods();
+              pacMods.exceptions = pacMods.exceptions || {};
+
+              let fixOptions;
+              const curOptOrNull = excList.querySelector(`[data-host="${host}"]`);
+
+              if (thisAuto.checked) {
+                delete pacMods.exceptions[host];
+                fixOptions = () => {
+                  curOptOrNull && curOptOrNull.remove();
+                }
+              } else {
+                // YES or NO checked.
+                const ifYesClicked = thisYes.checked;
+                if (!validateHost(host)) {
+                  return false;
+                }
+                if (ifYesClicked && !pacMods.filteredCustomsString) {
+                  showErrors( new TypeError(
+                    'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ). Нет своих прокси, удовлетворяющих вашим требованиям.'
+                  ));
+                  return false;
+                }
+                //const ifNew = !(host in pacMods.exceptions);
+                pacMods.exceptions[host] = ifYesClicked;
+                  // Change label.
+                fixOptions = () => {
+                  if (curOptOrNull) {
+                    curOptOrNull.label = ifYesClicked ? labelIfProxied : labelIfNotProxied;
+                  } else {
+                    addOption(host, ifYesClicked);
+                  }
+                };
+              }
+
+              conduct(
+                'Применяем исключения...',
+                (cb) => pacKitchen.keepCookedNowAsync(pacMods, cb),
+                'Исключения применены. Не забывайте о кэше!',
+                () => {
+
+                  fixOptions();
+                  // Window may be closed before this line executes.
+                  renderExceptionsPanelFromExcList();
+
+                }
+              );
+              return false; // Don't check before operation is finished.
+
+            };
+
+          } // EXC-EDITOR ends.
 
         } // EXCEPTIONS TAB ends.
 
-        const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
+        { // PAC MODS TAB starts.
+
+          const modsList = document.getElementById('pac-mods');
+          const _firstChildOrNull = modsList.firstChild;
+
+          for(const conf of pacKitchen.getOrderedConfigs('general')) {
+
+            const key = conf.key;
+            const iddy = 'mods-' + camelToDash(conf.key);
+            const li = document.createElement('li');
+            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+            modsList.insertBefore( li, _firstChildOrNull );
+            modKeyToLi[key] = li;
+
+          };
+
+        } // PAC MODS TAB ends.
+
+        const customProxyStringKey = 'customProxyStringRaw';
+        const uiRaw = 'ui-proxy-string-raw';
 
         { // OWN PROXIES TAB starts.
 
-          const ownsList = document.getElementById('own-proxies');
-          const _firstChild = ownsList.firstChild;
-          const keyToLi = {};
-          const customProxyStringKey = 'customProxyStringRaw';
-          const uiRaw = 'ui-proxy-string-raw';
+          const ownsList = document.getElementById('own-mods');
+          const _firstChildOrNull = ownsList.firstChild;
 
           for(const conf of pacKitchen.getOrderedConfigs('ownProxies')) {
 
@@ -561,39 +643,26 @@ PROXY foobar.com:8080; # Not HTTP!">${conf.value || localStorage.getItem(uiRaw) 
               };
             }
 
-            ownsList.insertBefore( li, _firstChild );
+            ownsList.insertBefore( li, _firstChildOrNull );
+            modKeyToLi[key] = li;
 
           }
 
         } // OWN PROXIES TAB ends.
 
-        { // PAC MODS TAB starts.
+        { // APPLY MODS PANEL starts.
 
-          const modsList = document.getElementById('pac-mods');
-          const _firstChild = modsList.firstChild;
-          const keyToLi = {};
-
-          for(const conf of pacKitchen.getOrderedConfigs('general')) {
-
-            const key = conf.key;
-            const iddy = 'mods-' + camelToDash(conf.key);
-            const li = document.createElement('li');
-            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
-            keyToLi[key] = li;
-            modsList.insertBefore( li, _firstChild );
-
-          };
           document.getElementById('apply-mods').onclick = () => {
 
             const oldMods = pacKitchen.getPacMods();
-            for(const key of Object.keys(keyToLi)) {
-              oldMods[key] = keyToLi[key].querySelector('input').checked;
+            for(const key of Object.keys(modKeyToLi)) {
+              oldMods[key] = modKeyToLi[key].querySelector('input').checked;
             };
 
             {
               // OWN PROXY
 
-              const liPs = keyToLi[customProxyStringKey];
+              const liPs = modKeyToLi[customProxyStringKey];
               oldMods[customProxyStringKey]
                 = liPs.querySelector('input').checked
                   && liPs.querySelector('textarea').value.trim();
@@ -621,17 +690,7 @@ PROXY foobar.com:8080; # Not HTTP!">${conf.value || localStorage.getItem(uiRaw) 
               }
 
             }
-
-            conduct(
-              'Применяем настройки...',
-              (cb) => pacKitchen.keepCookedNowAsync(oldMods, cb),
-              'Настройки применены.',
-              () => {
-
-                document.getElementById('apply-mods').disabled = true;
-
-              }
-            );
+            applyMods(oldMods);
 
           };
 
@@ -653,9 +712,9 @@ PROXY foobar.com:8080; # Not HTTP!">${conf.value || localStorage.getItem(uiRaw) 
               () => window.close()
             );
 
-          };
+          }
 
-        } // PAC MODS TAB ends.
+        } // APPLY MODS PANEL ends.
 
       } // KITCHEN PANELS ends.
 
