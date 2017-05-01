@@ -5,13 +5,18 @@ const START = Date.now();
 
   const enableButton = function enablebutton() {
 
-    this.classList.add('changed');
     document.getElementById('apply-mods').disabled = false;
+
+  };
+
+  const onModChanged = function onModChanged(ev) {
+
+    enableButton();
 
   };
   ['pac-mods', 'own-mods'].forEach((id) => {
 
-    document.getElementById(id).onchange = enableButton;
+    document.getElementById(id).onchange = onModChanged;
 
   });
 
@@ -79,8 +84,8 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const currentProviderRadio = () => {
 
-        const id = antiCensorRu.getCurrentPacProviderKey() || 'none';
-        return document.getElementById(id);
+        const iddy = antiCensorRu.getCurrentPacProviderKey() || 'none';
+        return document.getElementById(iddy);
 
       };
       const checkChosenProvider = () => {
@@ -187,16 +192,25 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
       const infoUrl = (url) => `<a href="${url}" class="right-bottom-icon info-url">${infoIcon}</a>`;
 
-      const appendInfoRow = (mountEl, conf, inputTypeName, inputId, htmlAfterLabel = '') => {
+      const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p1) => '-' + p1.toLowerCase());
+      // const dashToCamel = (name) => name.replace(/-(.)/g, (_, p1) => p1.toUpperCase());
+
+      const appendInfoRow = (mountEl, conf, inputTypeAndName,
+        {
+          idPrefix = 'mods-',
+          ifDashify = true,
+          htmlAfterLabel = ''
+        } = {}) => {
 
         mountEl.classList.add('info-row', 'hor-flex');
         if (conf.ifDisabled) {
           mountEl.title = 'В РАЗРАБОТКЕ!';
         }
+        const iddy = idPrefix + ( ifDashify ? camelToDash(conf.key) : conf.key );
         mountEl.innerHTML = `
-          <input ${inputTypeName} id="${inputId}" ${conf.ifDisabled ? 'disabled' : ''}>
+          <input ${inputTypeAndName} id=${iddy} ${conf.ifDisabled ? 'disabled' : ''}>
           <div class="label-container">
-            <label for="${inputId}">${conf.label}</label>
+            <label for="${iddy}">${conf.label}</label>
             ${htmlAfterLabel}
           </div>` + (conf.desc ? infoSign(conf.desc) : infoUrl(conf.url));
 
@@ -210,10 +224,14 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
           const provConf of antiCensorRu.getSortedEntriesForProviders()
         ) {
           const li = document.createElement('li');
-          appendInfoRow(li, provConf, 'type="radio" name="pacProvider"', provConf.key, `
-            &nbsp;<a href class="link-button update-button"
-              id="update-${provConf.key}">[обновить]</a>
-          `);
+          appendInfoRow(li, provConf, 'type="radio" name="pacProvider"',
+            { idPrefix: '',
+              ifDashify: false,
+              htmlAfterLabel: `
+                &nbsp;<a href class="link-button update-button"
+                  id="update-${provConf.key}">[обновить]</a>`
+            }
+          );
           li.querySelector('.link-button').onclick =
             () => {
               conduct(
@@ -228,14 +246,14 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         const radioClickHandler = function radioClickHandler(event) {
 
+          const pacKey = event.target.id;
           if (
-            event.target.id === (
+            pacKey === (
               antiCensorRu.getCurrentPacProviderKey() || 'none'
             )
           ) {
             return false;
           }
-          const pacKey = event.target.id;
           if (pacKey === 'none') {
             conduct(
               'Отключение...',
@@ -252,6 +270,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             );
           }
           return false;
+
         };
 
         document.querySelectorAll('input[name=pacProvider]').forEach((radio) => {
@@ -286,7 +305,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       { // KITCHEN PANELS starts.
 
         const pacKitchen = backgroundPage.apis.pacKitchen;
-        const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p) => '-' + p.toLowerCase());
         const modKeyToLi = {};
 
         const applyMods = function applyMods(newMods) {
@@ -313,11 +331,11 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
             for(const conf of pacKitchen.getOrderedConfigs('exceptions')) {
 
-              const key = conf.key;
-              const iddy = 'mods-' + camelToDash(conf.key);
               const li = document.createElement('li');
-              appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+              appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`);
               emodsList.insertBefore( li, _firstChildOrNull );
+
+              const key = conf.key;
               modKeyToLi[key] = li;
               li.querySelector('input').onclick = function() {
 
@@ -599,12 +617,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           for(const conf of pacKitchen.getOrderedConfigs('general')) {
 
-            const key = conf.key;
-            const iddy = 'mods-' + camelToDash(conf.key);
             const li = document.createElement('li');
-            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`);
             modsList.insertBefore( li, _firstChildOrNull );
-            modKeyToLi[key] = li;
+            modKeyToLi[conf.key] = li;
 
           };
 
@@ -620,11 +636,10 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
           for(const conf of pacKitchen.getOrderedConfigs('ownProxies')) {
 
-            const key = conf.key;
-            const iddy = 'mods-' + camelToDash(conf.key);
             const li = document.createElement('li');
-            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`, iddy);
+            appendInfoRow(li, conf, `type="checkbox" ${conf.value ? 'checked' : ''}`);
 
+            const key = conf.key;
             const ifMultiline = key === customProxyStringKey;
             if (ifMultiline) {
               li.style.flexWrap = 'wrap';
