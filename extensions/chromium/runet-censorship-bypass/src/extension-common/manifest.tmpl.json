@@ -38,10 +38,10 @@
   },
   "browser_action": {
     "default_title": "Этот сайт благословлён | Версия ${version + versionSuffix}",
-    "default_popup": "/pages/choose-pac-provider/index.html"
+    "default_popup": "/pages/options/index.html"
   },
   "options_ui": {
-     "page": "/pages/choose-pac-provider/index.html",
+     "page": "/pages/options/index.html",
      "chrome_style": true
    }
 }
