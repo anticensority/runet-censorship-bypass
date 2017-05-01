@@ -10,7 +10,7 @@ This repo contains:
 [WebStore](https://chrome.google.com/webstore/detail/npgcnondjocldhldegnakemclmfkngch)
 | [Sources](https://github.com/ilyaigpetrov/anti-censorship-russia/tree/master/extensions/chromium/minimalistic-pac-setter)
 2. Proof of concept PAC-script generator based on https://github.com/zapret-info/z-i
-3. PAC-scripts performance analyses of scripts generated
+3. ~~PAC-scripts performance analyses of scripts generated~~ (doesn't take parse time into account)
 4. Based on the research of step 3 [the final PAC-generator][pac-generator] was written as a Google App Script in JavaScript which is triggered every two hours to generate and publish PAC-script on Google Drive (don't use direct URL without extension, please, URL will be periodically changed to counter abuse).
 
 [pac-generator]: https://script.google.com/d/18EG6_pPuSqzJaCU8ePzt_VfbvBI2maBIr5O8EMfktkBd5NNYKv8VvG4Y/edit?usp=sharing
