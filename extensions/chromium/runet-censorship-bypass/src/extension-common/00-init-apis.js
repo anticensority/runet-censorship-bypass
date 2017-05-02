@@ -125,16 +125,16 @@
 
         key = prefix + key;
         if (value === null) {
-          return localStorage.removeItem(key);
+          return window.localStorage.removeItem(key);
         }
         if (value === undefined) {
-          const item = localStorage.getItem(key);
+          const item = window.localStorage.getItem(key);
           return item && JSON.parse(item);
         }
         if (value instanceof Date) {
           throw new TypeError('Converting Date format to JSON is not supported.');
         }
-        localStorage.setItem(key, JSON.stringify(value));
+        window.localStorage.setItem(key, JSON.stringify(value));
 
       };
 
