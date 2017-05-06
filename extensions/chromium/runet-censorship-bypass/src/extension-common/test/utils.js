@@ -15,7 +15,7 @@ Mocha.describe('window.utils', function () {
 
   });
 
-  Mocha.it('exports as global', function () {
+  Mocha.it('is exported as global', function () {
 
     CachelessRequire(initApis);
     Chai.expect(window.utils, 'to be exported as global').to.exist;
