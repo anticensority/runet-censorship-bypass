@@ -104,9 +104,12 @@
 
   const getCurrentConfigs = function getCurrentConfigs() {
 
-    return kitchenState(modsKey);
+    const oldMods = kitchenState(modsKey);
+    if (oldMods) {
+      return oldMods;
+    }
 
-    // In case of migration.
+    // In case of migration or first install.
     const [err, mods, ...warns] = createPacModifiers( kitchenState(modsKey) );
     if (err) {
       throw err;

@@ -18,8 +18,8 @@ Mocha.describe('window.utils', function () {
   Mocha.it('exports as global', function () {
 
     CachelessRequire(initApis);
-    Chai.assert.ok(window.utils, 'exported to globals');
-    Chai.assert.isNotOk(window.apis.version.ifMini, 'is not MINI version');
+    Chai.expect(window.utils, 'to be exported as global').to.exist;
+    Chai.expect(window.apis.version.ifMini, 'to be marked as not MINI version by default').to.be.false;
 
   });
 
