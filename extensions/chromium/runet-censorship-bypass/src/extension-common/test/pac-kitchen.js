@@ -24,7 +24,10 @@ Mocha.describe('window.apis.pacKitchen', function () {
   Mocha.it('is evaluated and defined', function () {
 
     CachelessRequire('../35-pac-kitchen-api.js');
-    Chai.assert.ok(window.apis.pacKitchen, 'exports to globals');
+    Chai.expect(window.apis.pacKitchen, 'to be exported as global').to.exist;
+
+    const mods = window.apis.pacKitchen.getPacMods();
+    Chai.expect(mods, 'expose default configs on first run').to.exist;
 
   });
 
