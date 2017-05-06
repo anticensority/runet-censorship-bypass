@@ -3,7 +3,7 @@
 const Chai = require('chai');
 const Mocha = require('mocha');
 
-const MyRequire = require('_project-root/tools/cacheless-require')(module);
+const CachelessRequire = require('_project-root/tools/cacheless-require')(module);
 
 Mocha.describe('window.utils', function () {
 
@@ -17,7 +17,7 @@ Mocha.describe('window.utils', function () {
 
   Mocha.it('exports as global', function () {
 
-    MyRequire(initApis);
+    CachelessRequire(initApis);
     Chai.assert.ok(window.utils, 'exported to globals');
     Chai.assert.isNotOk(window.apis.version.ifMini, 'is not MINI version');
 

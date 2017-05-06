@@ -5,7 +5,7 @@ const Storage = require('_project-root/tools/sinon-storage');
 const Chai = require('chai');
 const Mocha = require('mocha');
 
-const MyRequire = require('_project-root/tools/cacheless-require')(module);
+const CachelessRequire = require('_project-root/tools/cacheless-require')(module);
 
 Mocha.describe('window.apis.pacKitchen', function () {
 
@@ -17,13 +17,13 @@ Mocha.describe('window.apis.pacKitchen', function () {
       chrome: Chrome,
       localStorage: new Storage(),
     };
-    MyRequire('../00-init-apis.js');
+    CachelessRequire('../00-init-apis.js');
 
   });
 
   Mocha.it('is evaluated and defined', function () {
 
-    MyRequire('../35-pac-kitchen-api.js');
+    CachelessRequire('../35-pac-kitchen-api.js');
     Chai.assert.ok(window.apis.pacKitchen, 'exports to globals');
 
   });
