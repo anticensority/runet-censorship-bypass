@@ -52,13 +52,16 @@ gulp.task('clean', function() {
 
 const contexts = require('./src/templates-data').contexts;
 
+const woTests = ['!./src/**/test', '!./src/**/test/**/*'];
+const srcWoTests = ['./src/extension-common/**/*', ...woTests];
+
 gulp.task('_cp-common', ['clean'], function() {
 
-  gulp.src(['./src/extension-common/**/*'])
+  gulp.src(srcWoTests)
     .pipe(templatePlugin(contexts.mini))
     .pipe(gulp.dest('./build/extension-mini'))
 
-  gulp.src(['./src/extension-common/**/*'])
+  gulp.src(srcWoTests)
     .pipe(templatePlugin(contexts.full))
     .pipe(gulp.dest('./build/extension-full'));
 
@@ -66,7 +69,7 @@ gulp.task('_cp-common', ['clean'], function() {
 
 gulp.task('_cp-mini', ['_cp-common'], function() {
 
-  gulp.src(['./src/extension-mini/**/*'])
+  gulp.src(['./src/extension-mini/**/*', ...woTests])
     .pipe(templatePlugin(contexts.mini))
     .pipe(gulp.dest('./build/extension-mini'));
 
@@ -74,7 +77,7 @@ gulp.task('_cp-mini', ['_cp-common'], function() {
 
 gulp.task('_cp-full', ['_cp-common'], function() {
 
-  gulp.src(['./src/extension-full/**/*'])
+  gulp.src(['./src/extension-full/**/*', ...woTests])
     .pipe(templatePlugin(contexts.full))
     .pipe(gulp.dest('./build/extension-full'));
 

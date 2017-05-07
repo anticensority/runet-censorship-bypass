@@ -104,7 +104,14 @@
 
   const getCurrentConfigs = function getCurrentConfigs() {
 
-    const [err, mods, ...warns] = createPacModifiers( kitchenState(modsKey) );
+    const oldMods = kitchenState(modsKey);
+    if (oldMods) {
+      // No migration!
+      return oldMods;
+    }
+
+    // In case of first install.
+    const [err, mods, ...warns] = createPacModifiers();
     if (err) {
       throw err;
     }
@@ -148,7 +155,6 @@
 
       });
 
-    console.log('Input mods:', mods);
     const self = {};
     Object.assign(self, getDefaults(), mods);
     self.ifNoMods = ifNoMods;
