@@ -52,16 +52,17 @@ gulp.task('clean', function() {
 
 const contexts = require('./src/templates-data').contexts;
 
-const woTests = ['!./src/**/test', '!./src/**/test/**/*'];
-const srcWoTests = ['./src/extension-common/**/*', ...woTests];
+const excFolder = (name) => [`!./src/**/${name}`, `!./src/**/${name}/**/*`];
+const excluded = [ ...excFolder('test') , ...excFolder('node_modules'), ...excFolder('src') ];
+const commonWoTests = ['./src/extension-common/**/*', ...excluded];
 
 gulp.task('_cp-common', ['clean'], function() {
 
-  gulp.src(srcWoTests)
+  gulp.src(commonWoTests)
     .pipe(templatePlugin(contexts.mini))
     .pipe(gulp.dest('./build/extension-mini'))
 
-  gulp.src(srcWoTests)
+  gulp.src(commonWoTests)
     .pipe(templatePlugin(contexts.full))
     .pipe(gulp.dest('./build/extension-full'));
 
@@ -69,7 +70,7 @@ gulp.task('_cp-common', ['clean'], function() {
 
 gulp.task('_cp-mini', ['_cp-common'], function() {
 
-  gulp.src(['./src/extension-mini/**/*', ...woTests])
+  gulp.src(['./src/extension-mini/**/*', ...excluded])
     .pipe(templatePlugin(contexts.mini))
     .pipe(gulp.dest('./build/extension-mini'));
 
@@ -77,7 +78,7 @@ gulp.task('_cp-mini', ['_cp-common'], function() {
 
 gulp.task('_cp-full', ['_cp-common'], function() {
 
-  gulp.src(['./src/extension-full/**/*', ...woTests])
+  gulp.src(['./src/extension-full/**/*', ...excluded])
     .pipe(templatePlugin(contexts.full))
     .pipe(gulp.dest('./build/extension-full'));
 
