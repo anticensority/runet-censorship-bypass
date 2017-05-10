@@ -21,7 +21,7 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
 
       const {keys, values} = Object.keys(context).reduce( (acc, key) => {
 
-	const value = context[key];
+  const value = context[key];
         acc.keys.push(key);
         acc.values.push(value);
         return acc;
