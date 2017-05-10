@@ -1,0 +1,24 @@
+{
+  "name": "hello-react",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-react": "^6.24.1",
+    "babili-webpack-plugin": "^0.0.11",
+    "flow-bin": "^0.45.0",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4",
+    "webpack": "^2.5.1"
+  },
+  "scripts": {
+    "check": "flow status",
+    "build:prod":   "webpack --define process.env.NODE_ENV=\"'production'\" --env=prod",
+    "build:dev:nocomp": "webpack --define process.env.NODE_ENV=\"'production'\" --env=dev",
+    "build:dev":    "webpack --debug --devtool source-map --output-pathinfo --env=dev",
+    "build": "npm run build:dev"
+  }
+}
