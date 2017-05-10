@@ -66,9 +66,10 @@ Mocha.describe('window.apis.pacKitchen', function () {
 
   Mocha.it('is installed (by modifying `chrome.proxy.settings.set`)', function () {
 
+    const originalSet = chrome.proxy.settings.set;
     CachelessRequire('../35-pac-kitchen-api.js');
     Chai.expect(originalSet.notCalled, 'original set not to be called during install').to.be.true;
-    //Chai.expect(originalSet, 'settings.set to be modified').not.to.be.equal(window.chrome.proxy.settings.set);
+    Chai.expect(originalSet, 'settings.set to be modified during install').not.to.be.equal(chrome.proxy.settings.set);
 
   });
 
