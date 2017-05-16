@@ -1,15 +1,70 @@
 // @flow
-import React from 'react';
-import ReactDOM from 'react-dom';
 
-let x:string; // webpack/babel must remove type here!
-x = 'Search me in the compiled bundle!';
+import Inferno from 'inferno';
+import Component from 'inferno-component';
+import createElement from 'inferno-create-element';
 
-let t:string;
-t = 12345; // Flow must detect error here!
+import { createStore } from 'redux';
 
-// webpack/babel must transpile JSX to JS below:
-ReactDOM.render(
-  <h1>Hello from React WITH BABEL</h1>,
-  document.getElementById('root')
+import css from 'csjs-inject';
+import appendGlobalCss from './globalCss';
+
+import getApp from './components/App';
+/*
+       #list-of-notifiers {
+          margin-left: 0.4em;
+        }
+*/
+
+chrome.runtime.getBackgroundPage( (backgroundPage) =>
+  backgroundPage.apis.errorHandlers.installListenersOn(
+    window, 'PUP', async() => {
+
+      let theState;
+      {
+        const apis = backgroundPage.apis;
+
+        theState = {
+          utils: backgroundPage.utils,
+          antiCensorRu: backgroundPage.apis.antiCensorRu,
+          errorHandlers: apis.errorHandlers,
+          flags: {
+            /* Shortcuts to boolean values. */
+            ifNotControlled: !apis.errorHandlers.ifControllable,
+            ifMini: apis.version.ifMini,
+          },
+          status: 'Хорошего настроения Вам!',
+        };
+      }
+
+      if (theState.flags.ifMini) {
+        document.documentElement.classList.add('ifVersionMini');
+      }
+
+      // IF INSIDE OPTIONS TAB
+
+      const currentTab = await new Promise(
+        (resolve) => chrome.tabs.query(
+          {active: true, currentWindow: true},
+          ([tab]) => resolve(tab)
+        )
+      );
+
+      theState.flags.ifInsideOptionsPage = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=');
+
+      // STATE DEFINED, COMPOSE.
+
+      appendGlobalCss(document, theState);
+
+      Inferno.render(
+        createElement(getApp(theState), theState),
+        document.getElementById('app-root'),
+      );
+      // READY TO RENDER
+
+      document.documentElement.style.display = 'initial';
+
+    }
+  )
 );
+
