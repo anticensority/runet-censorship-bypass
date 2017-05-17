@@ -45,22 +45,6 @@ export default function getPacChooser(...args) {
 
   `;
 
-  // UTILS START.
-
-  const currentProviderRadio = () => {
-
-    const iddy = antiCensorRu.getCurrentPacProviderKey() || 'none';
-    return document.getElementById(iddy);
-
-  };
-  const checkChosenProvider = () => {
-
-    currentProviderRadio().checked = true;
-
-  };
-
-  // UTILS END.
-
   class LastUpdateDate extends Component {
 
     constructor(props) {
@@ -115,6 +99,54 @@ export default function getPacChooser(...args) {
 
   return class PacChooser extends Component {
 
+    constructor(props) {
+
+      super();
+      this.state = {
+        chosenPacName: 'none',
+      };
+
+    }
+
+    getCurrentProviderId() {
+
+      return this.props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none';
+
+    }
+
+    radioClickHandler(event) {
+
+      const checkChosenProvider = () => 
+        this.setState({ chosenPacName: this.getCurrentProviderId() });
+
+      const pacKey = event.target.id;
+      if (
+        pacKey === (
+          this.props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none'
+        )
+      ) {
+        return false;
+      }
+      if (pacKey === 'none') {
+        this.props.funs.conduct(
+          'Отключение...',
+          (cb) => this.props.apis.antiCensorRu.clearPacAsync(cb),
+          'Отключено.',
+          () => this.setState({ chosenPacName: 'none' }),
+          checkChosenProvider
+        );
+      } else {
+        this.props.funs.conduct(
+          'Установка...',
+          (cb) => this.props.apis.antiCensorRu.installPacAsync(pacKey, cb),
+          'PAC-скрипт установлен.',
+          checkChosenProvider
+        );
+      }
+      return false;
+
+    }
+
     render(props) {
 
       const updatePac = function updatePac() {
@@ -125,7 +157,7 @@ export default function getPacChooser(...args) {
         );
       };
 
-      const checkedIddy = props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none';
+      const iddyToCheck = this.getCurrentProviderId();
       return (
         <div>
           {props.flags.ifInsideOptionsPage && (<header>PAC-скрипт:</header>)}
@@ -133,16 +165,23 @@ export default function getPacChooser(...args) {
             {
               props.apis.antiCensorRu.getSortedEntriesForProviders().map((provConf) =>
                 (<InfoLi
+                  onClick={this.radioClickHandler.bind(this)}
                   conf={provConf}
                   type="radio"
                   name="pacProvider"
-                  checked={checkedIddy === provConf.key}
+                  checked={iddyToCheck === provConf.key}
                 >
                   &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>
                 </InfoLi>)
               )
             }
-            <InfoLi type="radio" name="pacProvider" conf={{key: 'none', label: 'Отключить'}} checked={checkedIddy === 'none'}/>
+            <InfoLi
+              onClick={this.radioClickHandler.bind(this)}
+              type="radio"
+              name="pacProvider"
+              conf={{key: 'none', label: 'Отключить'}}
+              checked={iddyToCheck === 'none'}
+            />
           </ul>
           <div id="updateMessage" class="horFlex" style="align-items: center">
             { createElement(LastUpdateDate, props) }

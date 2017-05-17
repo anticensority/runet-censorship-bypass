@@ -107,7 +107,7 @@ export default function getInfoRow() {
       const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
       return (
         <li class={scopedCss.infoRow + ' horFlex'}>
-          <input type={props.type} name={props.name} checked={props.checked} id={iddy} />
+          <input type={props.type} name={props.name} checked={props.checked} id={iddy} onClick={props.onClick}/>
           <div class={scopedCss.labelContainer}>
             <label for={iddy}>{props.conf.label}</label>
             {props.children}
