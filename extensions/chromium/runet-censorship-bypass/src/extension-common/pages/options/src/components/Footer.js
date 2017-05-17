@@ -6,24 +6,24 @@ export default function getFooter() {
 
   const scopedCss = css`
 
-    #statusRow {
+    .statusRow {
       padding: 0 0.3em 1em;
     }
-    #status {
+    .status {
       display: inline-block;
     }
-
     .controlRow {
       margin: 1em 0 1em 0;
     }
+
   `;
 
   return function (props) {
 
     return (
       <div class="horPadded">
-        <section id="statusRow">
-          <div id="status" style="will-change: contents">{props.status}</div>
+        <section class={scopedCss.statusRow}>
+          <div clss={scopedCss.status} style="will-change: contents">{props.status}</div>
         </section>
 
         <footer class={scopedCss.controlRow + ' horFlex nowrap'}>

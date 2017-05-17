@@ -1,5 +1,6 @@
 import Inferno from 'inferno';
 import Component from 'inferno-component';
+import createElement from 'inferno-create-element';
 import css from 'csjs-inject';
 
 import getInfoLi from './InfoLi';
@@ -103,55 +104,48 @@ export default function getPacChooser(...args) {
 
     render(props) {
 
-      const date = this.getDate(props.antiCensorRu);
+      const date = this.getDate(props.apis.antiCensorRu);
       return (<div>Обновлялись: <span class="updateDate" title={date.title}>{ date.text }</span></div>);
 
     }
 
   }
 
-  const updatePac = function updatePac() {
-    conduct(
-      'Обновляем...', (cb) => antiCensorRu.syncWithPacProviderAsync(cb),
-      'Обновлено.'
-    );
-    return false;
-  };
-
   const InfoLi = getInfoLi(...args);
-
-  function emit(e) {
-
-    const event = new Event('dick');
-    e.target.dispatchEvent(event);
-
-  }
 
   return class PacChooser extends Component {
 
     render(props) {
 
-      const checkedIddy = props.antiCensorRu.getCurrentPacProviderKey() || 'none';
+      const updatePac = function updatePac() {
+        props.funs.conduct(
+          'Обновляем...',
+          (cb) => props.apis.antiCensorRu.syncWithPacProviderAsync(cb),
+          'Обновлено.'
+        );
+      };
+
+      const checkedIddy = props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none';
       return (
         <div>
           {props.flags.ifInsideOptionsPage && (<header>PAC-скрипт:</header>)}
           <ul>
             {
-              props.antiCensorRu.getSortedEntriesForProviders().map((provConf) =>
+              props.apis.antiCensorRu.getSortedEntriesForProviders().map((provConf) =>
                 (<InfoLi
                   conf={provConf}
                   type="radio"
                   name="pacProvider"
                   checked={checkedIddy === provConf.key}
                 >
-                  &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); emit(evt) }}>[обновить]</a>
+                  &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>
                 </InfoLi>)
               )
             }
             <InfoLi type="radio" name="pacProvider" conf={{key: 'none', label: 'Отключить'}} checked={checkedIddy === 'none'}/>
           </ul>
           <div id="updateMessage" class="horFlex" style="align-items: center">
-            <LastUpdateDate antiCensorRu={props.antiCensorRu}/>
+            { createElement(LastUpdateDate, props) }
             <div class={scopedCss.fullLineHeight}>
               {
                 props.flags.ifMini
