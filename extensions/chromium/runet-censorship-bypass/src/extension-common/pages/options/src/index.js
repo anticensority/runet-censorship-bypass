@@ -26,14 +26,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
         theState = {
           utils: backgroundPage.utils,
-          antiCensorRu: backgroundPage.apis.antiCensorRu,
-          errorHandlers: apis.errorHandlers,
+          apis: backgroundPage.apis,
           flags: {
             /* Shortcuts to boolean values. */
             ifNotControlled: !apis.errorHandlers.ifControllable,
             ifMini: apis.version.ifMini,
           },
-          status: 'Хорошего настроения Вам!',
         };
       }
 

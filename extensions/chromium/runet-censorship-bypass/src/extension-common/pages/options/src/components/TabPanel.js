@@ -25,6 +25,9 @@ export default function getTabsPannel({ flags }) {
     .underlined {
       border-bottom: 1px solid var(--cr-options-headline);
     }
+    :root.ifInsideOptionsPage .navLabels {
+      display: none;
+    }
 
     /* HIDE starts. */
 
@@ -113,7 +116,6 @@ export default function getTabsPannel({ flags }) {
     constructor(props) {
 
       super(props);
-      console.log('CONSTRUCTOR');
       this.state = {
         chosenTabIndex: 0,
       };
@@ -126,7 +128,6 @@ export default function getTabsPannel({ flags }) {
         if (/^#tab(\d+)$/.test(window.location.hash)) {
           const inputIndex = RegExp.$1;
           if (inputIndex < this.props.tabs.length) {
-            console.log('SET STATE');
             this.setState({chosenTabIndex: inputIndex});
           }
         }
@@ -137,6 +138,9 @@ export default function getTabsPannel({ flags }) {
 
       return (<div ref={(dom) => {
 
+                if (!dom) {
+                  return /* Unmounting. */;
+                }
                 const target = dom.querySelector(`.${scopedCss.mainNav} *:target`);
                 if (target) {
                   const tabIndex = parseInt(target.id.replace('tab', ''));

@@ -98,12 +98,11 @@ export default function getInfoRow() {
 
     render(props) {
 
-      // Object.assign is left-associative, let's make it right.
-      Object.assign(props, Object.assign({
+      props = Object.assign({}, {
         idPrefix: '',
         ifDashify: false,
         htmlAfterLabel: '',
-      }, props));
+      }, props);
 
       const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
       return (
