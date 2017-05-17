@@ -137,8 +137,8 @@ export default function getApp(theState) {
 
       props = Object.assign({}, props, {
         funs: {
-          setStatusTo: this.setStatusTo,
-          conduct: this.conduct,
+          setStatusTo: this.setStatusTo.bind(this),
+          conduct: this.conduct.bind(this),
         },
       });
 

@@ -12,7 +12,7 @@ export default function append(document, props) {
       --cr-icon-selected: #d7d7d7;
       --cr-popup-border: #bababa;
       --cr-grey-panel: #f2f2f2;
-      max-width: 28em;
+      max-width: 24em;
     }
 
     /* BASE ELEMENTS */
