@@ -1,11 +1,7 @@
 // @flow
 
-//import mComponent from 'microcomponent';
-//import html from 'bel';
 import css from 'csjs-inject';
-
 import Inferno from 'inferno';
-import Component from 'inferno-component';
 
 export default function getNotControlledWarning({ flags }) {
 
@@ -34,22 +30,12 @@ export default function getNotControlledWarning({ flags }) {
     }
   `;
 
-  return class NotControlledWarning extends Component {
+  return function NotControlledWarning(props) {
 
-    constructor(props) {
+    return (
+      <section class={cssClasses.warningContainer + " horPadded"} dangerouslySetInnerHTML={{ __html: props.utils.messages.whichExtensionHtml() }} />
+    );
 
-      super(props);
-
-    }
-
-    render(props) {
-
-      return (
-        <section class={cssClasses.warningContainer + " horPadded"} dangerouslySetInnerHTML={{ __html: props.utils.messages.whichExtensionHtml() }} />
-      );
-
-    }
-
-  };
+  }
 
 }

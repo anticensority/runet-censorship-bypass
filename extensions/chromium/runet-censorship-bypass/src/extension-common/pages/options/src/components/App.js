@@ -26,12 +26,6 @@ export default function getApp(theState) {
 
     }
 
-    componentDidMount() {
-
-      this.showErrors({ message: 'PANIC!' });
-
-    }
-
     setStatusTo(msg) {
 
       this.setState(
@@ -140,6 +134,7 @@ export default function getApp(theState) {
           setStatusTo: this.setStatusTo.bind(this),
           conduct: this.conduct.bind(this),
         },
+        areInputsDisabled: this.state.areInputsDisabled,
       });
 
       return createElement('div', null, [
