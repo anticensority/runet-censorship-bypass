@@ -7,6 +7,7 @@ import getNotControlledWarning from './NotControlledWarning';
 import getTabPanel from './TabPanel';
 import getPacChooser from './PacChooser';
 import getNotifications from './Notifications';
+import getExceptions from './Exceptions';
 
 import getFooter from './Footer';
 
@@ -14,8 +15,11 @@ export default function getApp(theState) {
 
   const NotControlledWarning = getNotControlledWarning(theState);
   const TabPanel = getTabPanel(theState);
+
   const PacChooser = getPacChooser(theState);
   const Notifications = getNotifications(theState);
+  const Exceptions = getExceptions(theState);
+
   const Footer = getFooter(theState);
 
   return class App extends Component {
@@ -44,7 +48,7 @@ export default function getApp(theState) {
 
       const warningHtml = warns
         .map(
-          (w) => w && w.messageHtml || ''
+          (w) => w && w.message || ''
         )
         .filter( (m) => m )
         .map( (m) => '✘ ' + m )
@@ -104,7 +108,7 @@ export default function getApp(theState) {
 
         warns = warns.filter( (w) => w );
         if (err || warns.length) {
-          showErrors(err, ...warns);
+          this.showErrors(err, ...warns);
         } else {
           this.setStatusTo(afterStatus);
         }
@@ -119,12 +123,13 @@ export default function getApp(theState) {
 
     }
 
-    render(props) {
+    render(originalProps) {
 
-      props = Object.assign({}, props, {
+      const props = Object.assign({}, originalProps, {
         funs: {
           setStatusTo: this.setStatusTo.bind(this),
           conduct: this.conduct.bind(this),
+          showErrors: this.showErrors.bind(this),
         },
         ifInputsDisabled: this.state.ifInputsDisabled,
       });
@@ -139,7 +144,7 @@ export default function getApp(theState) {
             },
             {
               label: 'Исключения',
-              content: "Exceptions().render(this.props)",
+              content: createElement(Exceptions, props),
             },
             {
               label: 'Свои прокси',

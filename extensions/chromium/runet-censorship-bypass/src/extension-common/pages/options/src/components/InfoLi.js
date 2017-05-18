@@ -9,6 +9,9 @@ export default function getInfoRow() {
     .labelContainer {
       flex-grow: 9;
       padding-left: 0.3em;
+      /* Vertical align to middle. */
+      align-self: flex-end;
+      line-height: 100%;
     }
 
     /* INFO SIGNS */
@@ -122,7 +125,8 @@ export default function getInfoRow() {
               <div class={scopedCss.tooltip} dangerouslySetInnerHTML={{__html: props.conf.desc}}/>
             </div>)
           : (props.conf.url
-              && (<a href={props.conf.url} class={[scopedCss.rightBottomIcon, scopedCss.infoUrl].join(' ')}><InfoIcon /></a>)
+              ? (<a href={props.conf.url} class={[scopedCss.rightBottomIcon, scopedCss.infoUrl].join(' ')}><InfoIcon /></a>)
+              : (<span>&nbsp;</span>) // Affects vertical align of flexbox items.
             )
         }
       </li>

@@ -34,6 +34,7 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
       );
 
       theState.flags.ifInsideOptionsPage = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=');
+      theState.currentTab = currentTab;
 
       // STATE DEFINED, COMPOSE.
 
