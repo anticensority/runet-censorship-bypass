@@ -122,7 +122,7 @@ export default function getPacChooser(theState) {
                   type="radio"
                   name="pacProvider"
                   checked={iddyToCheck === provConf.key}
-                  disabled={props.areInputsDisabled}
+                  disabled={props.ifInputsDisabled}
                 >
                   &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>
                 </InfoLi>)
@@ -134,7 +134,7 @@ export default function getPacChooser(theState) {
               name="pacProvider"
               conf={{key: 'none', label: 'Отключить'}}
               checked={iddyToCheck === 'none'}
-              disabled={props.areInputsDisabled}
+              disabled={props.ifInputsDisabled}
             />
           </ul>
           <div id="updateMessage" class="horFlex" style="align-items: center">

@@ -3,8 +3,11 @@ import Component from 'inferno-component';
 import createElement from 'inferno-create-element';
 
 import getNotControlledWarning from './NotControlledWarning';
+
 import getTabPanel from './TabPanel';
 import getPacChooser from './PacChooser';
+import getNotifications from './Notifications';
+
 import getFooter from './Footer';
 
 export default function getApp(theState) {
@@ -12,6 +15,7 @@ export default function getApp(theState) {
   const NotControlledWarning = getNotControlledWarning(theState);
   const TabPanel = getTabPanel(theState);
   const PacChooser = getPacChooser(theState);
+  const Notifications = getNotifications(theState);
   const Footer = getFooter(theState);
 
   return class App extends Component {
@@ -21,7 +25,7 @@ export default function getApp(theState) {
       super(props);
       this.state = {
         status: 'Загрузка...',
-        areInputsDisabled: false,
+        ifInputsDisabled: false,
       };
 
     }
@@ -84,20 +88,8 @@ export default function getApp(theState) {
     switchInputs(val) {
 
       this.setState({
-        areInputsDisabled: val === 'off' ? true : false,
+        ifInputsDisabled: val === 'off' ? true : false,
       });
-      /*
-      const inputs = document.querySelectorAll('input');
-      for ( let i = 0; i < inputs.length; i++ ) {
-        const input = inputs[i];
-        if (val === 'off') {
-          input.dataset.previousDisabledValue = input.disabled;
-          input.disabled = true;
-        } else {
-          input.disabled = input.dataset.previousDisabledValue === 'true';
-        }
-      }
-      */
 
     }
 
@@ -134,11 +126,11 @@ export default function getApp(theState) {
           setStatusTo: this.setStatusTo.bind(this),
           conduct: this.conduct.bind(this),
         },
-        areInputsDisabled: this.state.areInputsDisabled,
+        ifInputsDisabled: this.state.ifInputsDisabled,
       });
 
       return createElement('div', null, [
-        createElement(NotControlledWarning, props),
+        ...( props.flags.ifNotControlled ? [createElement(NotControlledWarning, props)] : [] ),
         createElement(TabPanel, {
           tabs:[
             {
@@ -159,7 +151,7 @@ export default function getApp(theState) {
             },
             {
               label: 'Уведомления',
-              content: "Notifications().render(this.props)",
+              content: createElement(Notifications, props),
             }
           ]
         }),

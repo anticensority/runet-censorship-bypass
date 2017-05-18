@@ -118,39 +118,19 @@ export default function getTabsPannel({ flags }) {
       };
 
     }
-    componentDidMount() {
 
-      window.addEventListener('hashchange', () => {
-
-        if (/^#tab(\d+)$/.test(window.location.hash)) {
-          const inputIndex = RegExp.$1;
-          if (inputIndex < this.props.tabs.length) {
-            this.setState({chosenTabIndex: inputIndex});
-          }
-        }
-      });
-
-    }
     render(props) {
 
-      return (<div ref={(dom) => {
-
-                if (!dom) {
-                  return /* Unmounting. */;
-                }
-                const target = dom.querySelector(`.${scopedCss.mainNav} *:target`);
-                if (target) {
-                  const tabIndex = parseInt(target.id.replace('tab', ''));
-                  dom.querySelector(`#radioLabel${tabIndex}`).checked = true;
-                  dom.querySelector(`#radioTab${tabIndex}`).checked = true;
-                }
-
-              }}>
+      return (
+        <div>
           <nav class={scopedCss.navLabels + ' hiddenForOptionsPage'}>
             <ul class='horizontalList'>
               {
                 props.tabs.map((tab, index) =>
-                  (<li><input type="radio" name="selectedTabLabel" id={'radioLabel' + index} checked={this.state.chosenTabIndex === index} class="off"/><label onClick={() => (window.location.hash = `tab${index}`)} for={'radioLabel' + index} class={scopedCss.navLabel}>{tab.label}</label></li>)
+                  (<li>
+                    <input type="radio" name="selectedTabLabel" id={'radioLabel' + index} checked={this.state.chosenTabIndex === index} class="off"/>
+                    <label onClick={() => this.setState({chosenTabIndex: index})} for={'radioLabel' + index} class={scopedCss.navLabel}>{tab.label}</label>
+                  </li>)
                 )
               }
             </ul>
@@ -159,7 +139,13 @@ export default function getTabsPannel({ flags }) {
 
           <nav class={'horPadded ' + scopedCss.mainNav}>
             {
-              props.tabs.map((tab, index) => (<div><input type="radio" name="selectedTab" id={'radioTab' + index} checked={this.state.chosenTabIndex === index} class="off"/><section id={'tab' + index} class={scopedCss.tabContainer}>{tab.content}</section></div>))
+              props.tabs.map((tab, index) => (
+                  <div>
+                    <input type="radio" name="selectedTab" id={'radioTab' + index} checked={this.state.chosenTabIndex === index} class="off"/>
+                    <section id={'tab' + index} class={scopedCss.tabContainer}>{tab.content}</section>
+                  </div>
+                )
+              )
             }
           </nav>
           <hr/>

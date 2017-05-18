@@ -5,12 +5,6 @@ import createElement from 'inferno-create-element';
 import appendGlobalCss from './globalCss';
 import getApp from './components/App';
 
-/*
-       #list-of-notifiers {
-          margin-left: 0.4em;
-        }
-*/
-
 chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOn(
     window, 'PUP', async() => {
@@ -28,10 +22,6 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
             ifMini: apis.version.ifMini,
           },
         };
-      }
-
-      if (theState.flags.ifMini) {
-        document.documentElement.classList.add('ifVersionMini');
       }
 
       // IF INSIDE OPTIONS TAB
