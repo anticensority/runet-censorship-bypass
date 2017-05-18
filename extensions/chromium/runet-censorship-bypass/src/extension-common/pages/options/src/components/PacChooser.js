@@ -32,7 +32,8 @@ export default function getPacChooser(theState) {
     input:checked + div .updateButton {
       visibility: inherit;
     }
-    label[for="onlyOwnSites"] + .updateButton {
+    label[for="onlyOwnSites"] + .updateButton,
+    label[for="none"] + .updateButton {
       display: none;
     }
     #none:checked + div label[for="none"] {
@@ -115,7 +116,7 @@ export default function getPacChooser(theState) {
           {props.flags.ifInsideOptionsPage && (<header>PAC-скрипт:</header>)}
           <ul>
             {
-              props.apis.antiCensorRu.getSortedEntriesForProviders().map((provConf) =>
+              [...props.apis.antiCensorRu.getSortedEntriesForProviders(), {key: 'none', label: 'Отключить'}].map((provConf) =>
                 (<InfoLi
                   onClick={this.radioClickHandler.bind(this)}
                   conf={provConf}
@@ -127,15 +128,15 @@ export default function getPacChooser(theState) {
                   &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>
                 </InfoLi>)
               )
-            }
-            <InfoLi
+            /*<InfoLi
               onClick={this.radioClickHandler.bind(this)}
               type="radio"
               name="pacProvider"
               conf={{key: 'none', label: 'Отключить'}}
               checked={iddyToCheck === 'none'}
               disabled={props.ifInputsDisabled}
-            />
+            />*/
+            }
           </ul>
           <div id="updateMessage" class="horFlex" style="align-items: center">
             { createElement(LastUpdateDate, props) }
