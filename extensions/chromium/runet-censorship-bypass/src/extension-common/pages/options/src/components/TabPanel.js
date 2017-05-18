@@ -1,6 +1,3 @@
-//import mComponent from 'microcomponent';
-//import html from 'bel';
-
 import Inferno, { linkEvent } from 'inferno';
 import Component from 'inferno-component';
 import css from 'csjs-inject';
@@ -99,8 +96,8 @@ export default function getTabsPannel({ flags }) {
       {
         visibility: initial;
       }
-      .navLabels li:after {
-        content: '\\a0';
+      .navLabels li {
+        margin: 0 0.125em; /* 1.5px */
       }
 
     /* LABELS ends. */

@@ -1,15 +1,10 @@
 // @flow
 
 import Inferno from 'inferno';
-import Component from 'inferno-component';
 import createElement from 'inferno-create-element';
-
-import { createStore } from 'redux';
-
-import css from 'csjs-inject';
 import appendGlobalCss from './globalCss';
-
 import getApp from './components/App';
+
 /*
        #list-of-notifiers {
           margin-left: 0.4em;

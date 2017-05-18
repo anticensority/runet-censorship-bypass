@@ -3,9 +3,10 @@ import Component from 'inferno-component';
 import createElement from 'inferno-create-element';
 import css from 'csjs-inject';
 
+import getLastUpdateDate from './LastUpdateDate';
 import getInfoLi from './InfoLi';
 
-export default function getPacChooser(...args) {
+export default function getPacChooser(theState) {
 
   const scopedCss = css`
     /* OTHER VERSION */
@@ -45,57 +46,8 @@ export default function getPacChooser(...args) {
 
   `;
 
-  class LastUpdateDate extends Component {
-
-    constructor(props) {
-
-      super(props);
-      chrome.storage.onChanged.addListener(
-        (changes) => changes.lastPacUpdateStamp.newValue && this.forceUpdate()
-      );
-
-    }
-
-    getDate(antiCensorRu) {
-
-      let dateForUser = 'никогда';
-      if( antiCensorRu.lastPacUpdateStamp ) {
-        let diff = Date.now() - antiCensorRu.lastPacUpdateStamp;
-        let units = 'мс';
-        const gauges = [
-          [1000, 'с'],
-          [60, 'мин'],
-          [60, 'ч'],
-          [24, 'дн'],
-          [7, ' недель'],
-          [4, ' месяцев'],
-        ];
-        for(const g of gauges) {
-          const diffy = Math.floor(diff / g[0]);
-          if (!diffy)
-            break;
-          diff = diffy;
-          units = g[1];
-        }
-        dateForUser = diff + units + ' назад';
-      }
-      return {
-        text: `${dateForUser} / ${antiCensorRu.pacUpdatePeriodInMinutes/60}ч`,
-        title: new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU'),
-      };
-
-    }
-
-    render(props) {
-
-      const date = this.getDate(props.apis.antiCensorRu);
-      return (<div>Обновлялись: <span class="updateDate" title={date.title}>{ date.text }</span></div>);
-
-    }
-
-  }
-
-  const InfoLi = getInfoLi(...args);
+  const LastUpdateDate = getLastUpdateDate(theState);
+  const InfoLi = getInfoLi(theState);
 
   return class PacChooser extends Component {
 
@@ -170,6 +122,7 @@ export default function getPacChooser(...args) {
                   type="radio"
                   name="pacProvider"
                   checked={iddyToCheck === provConf.key}
+                  disabled={props.areInputsDisabled}
                 >
                   &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>
                 </InfoLi>)
@@ -181,6 +134,7 @@ export default function getPacChooser(...args) {
               name="pacProvider"
               conf={{key: 'none', label: 'Отключить'}}
               checked={iddyToCheck === 'none'}
+              disabled={props.areInputsDisabled}
             />
           </ul>
           <div id="updateMessage" class="horFlex" style="align-items: center">

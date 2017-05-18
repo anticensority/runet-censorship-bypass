@@ -1,6 +1,5 @@
 import Inferno from 'inferno';
 import css from 'csjs-inject';
-import Component from 'inferno-component';
 
 export default function getFooter() {
 
@@ -27,7 +26,7 @@ export default function getFooter() {
         </section>
 
         <footer class={scopedCss.controlRow + ' horFlex nowrap'}>
-          <input type="button" value="Готово" onClick={() => window.close()} />
+          <input type="button" value="Готово" disabled={props.areInputsDisabled} onClick={() => window.close()} />
           <a href="../troubleshoot/index.html">
             Проблемы?
           </a>

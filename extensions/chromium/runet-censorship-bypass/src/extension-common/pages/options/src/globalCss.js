@@ -1,4 +1,4 @@
-export default function append(document, props) {
+export default function append(document, { flags }) {
 
   // innerText converts \n to <br>, so:
   document.head.querySelector('style').innerHTML = `
@@ -12,7 +12,7 @@ export default function append(document, props) {
       --cr-icon-selected: #d7d7d7;
       --cr-popup-border: #bababa;
       --cr-grey-panel: #f2f2f2;
-      max-width: 24em;
+      ${ flags.ifInsideOptionsPage ? '' : 'max-width: 24em;' }
     }
 
     /* BASE ELEMENTS */
@@ -68,7 +68,7 @@ export default function append(document, props) {
 
     /* IF INSIDE OPTIONS */
     ${
-      props.flags.ifInsideOptionsPage
+      flags.ifInsideOptionsPage
         ? `
 
             ul, ol {

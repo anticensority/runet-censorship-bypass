@@ -1,5 +1,4 @@
 import Inferno from 'inferno';
-import Component from 'inferno-component';
 import css from 'csjs-inject';
 
 export default function getInfoRow() {
@@ -83,8 +82,7 @@ export default function getInfoRow() {
   const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p1) => '-' + p1.toLowerCase());
   // const dashToCamel = (name) => name.replace(/-(.)/g, (_, p1) => p1.toUpperCase());
 
-
-  const InfoIcon = function InfoIcom(props) {
+  const InfoIcon = function InfoIcon(props) {
 
       return (
         <svg class="icon" style="position: relative; top: 0.08em">$
@@ -94,38 +92,41 @@ export default function getInfoRow() {
 
   };
 
-  return class InfoRow extends Component {
+  return function InfoRow(props) {
 
-    render(props) {
+    props = Object.assign({}, {
+      idPrefix: '',
+      ifDashify: false,
+      htmlAfterLabel: '',
+    }, props);
 
-      props = Object.assign({}, {
-        idPrefix: '',
-        ifDashify: false,
-        htmlAfterLabel: '',
-      }, props);
-
-      const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
-      return (
-        <li class={scopedCss.infoRow + ' horFlex'}>
-          <input type={props.type} name={props.name} checked={props.checked} id={iddy} onClick={props.onClick}/>
-          <div class={scopedCss.labelContainer}>
-            <label for={iddy}>{props.conf.label}</label>
-            {props.children}
-          </div>
-          {props.conf.desc
-            ? (
-              <div class={scopedCss.desc}>
-                <InfoIcon />
-                <div class={scopedCss.tooltip} dangerouslySetInnerHTML={{__html: props.conf.desc}}/>
-              </div>)
-            : (props.conf.url
-                && (<a href={props.conf.url} class={[scopedCss.rightBottomIcon, scopedCss.infoUrl].join(' ')}><InfoIcon /></a>)
-              )
-          }
-        </li>
-      );
-
-    }
+    const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
+    return (
+      <li class={scopedCss.infoRow + ' horFlex'}>
+        <input
+          type={props.type}
+          name={props.name}
+          checked={props.checked}
+          id={iddy}
+          onClick={props.onClick}
+          disabled={props.disabled}
+        />
+        <div class={scopedCss.labelContainer}>
+          <label for={iddy}>{props.conf.label}</label>
+          {props.children}
+        </div>
+        {props.conf.desc
+          ? (
+            <div class={scopedCss.desc}>
+              <InfoIcon />
+              <div class={scopedCss.tooltip} dangerouslySetInnerHTML={{__html: props.conf.desc}}/>
+            </div>)
+          : (props.conf.url
+              && (<a href={props.conf.url} class={[scopedCss.rightBottomIcon, scopedCss.infoUrl].join(' ')}><InfoIcon /></a>)
+            )
+        }
+      </li>
+    );
 
   };
 
