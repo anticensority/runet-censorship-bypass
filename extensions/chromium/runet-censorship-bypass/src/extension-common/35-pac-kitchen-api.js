@@ -105,13 +105,14 @@
   const getCurrentConfigs = function getCurrentConfigs() {
 
     const oldMods = kitchenState(modsKey);
-    if (oldMods) {
+    /*if (oldMods) {
       // No migration!
       return oldMods;
-    }
+    }*/
 
-    // In case of first install.
-    const [err, mods, ...warns] = createPacModifiers();
+    // Client may expect mods.included and mods.excluded!
+    // On first install they are not defined.
+    const [err, mods, ...warns] = createPacModifiers(oldMods);
     if (err) {
       throw err;
     }
