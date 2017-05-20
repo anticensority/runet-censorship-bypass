@@ -12,7 +12,7 @@
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
-  const getDefaultConfigs () => {// Configs user may mutate them and we don't care!
+  const getDefaultConfigs = () => ({// Configs user may mutate them and we don't care!
 
     ifProxyHttpsUrlsOnly: {
       dflt: false,
@@ -88,7 +88,7 @@
       order: 9,
     },
 
-  };
+  });
 
   const getDefaults = function getDefaults() {
 
