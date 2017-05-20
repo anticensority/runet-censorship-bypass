@@ -3,27 +3,13 @@ import Component from 'inferno-component';
 import createElement from 'inferno-create-element';
 
 import getNotControlledWarning from './NotControlledWarning';
-
-import getTabPanel from './TabPanel';
-import getPacChooser from './PacChooser';
-import getNotifications from './Notifications';
-import getExceptions from './Exceptions';
-import getModList from './ModList';
-import getProxyEditor from './ProxyEditor';
-
+import getMain from './Main';
 import getFooter from './Footer';
 
 export default function getApp(theState) {
 
   const NotControlledWarning = getNotControlledWarning(theState);
-  const TabPanel = getTabPanel(theState);
-
-  const PacChooser = getPacChooser(theState);
-  const Notifications = getNotifications(theState);
-  const Exceptions = getExceptions(theState);
-  const ModList = getModList(theState);
-  const ProxyEditor = getProxyEditor(theState);
-
+  const Main = getMain(theState);
   const Footer = getFooter(theState);
 
   return class App extends Component {
@@ -140,43 +126,7 @@ export default function getApp(theState) {
 
       return createElement('div', null, [
         ...( props.flags.ifNotControlled ? [createElement(NotControlledWarning, props)] : [] ),
-        // WARNIGN ENDS.
-        createElement(TabPanel, {
-          tabs: [
-            {
-              label: 'PAC-скрипт',
-              content: createElement(PacChooser, props),
-            },
-            {
-              label: 'Исключения',
-              content: createElement(Exceptions, props),
-            },
-            {
-              label: 'Свои прокси',
-              content: createElement(
-                ModList,
-                Object.assign({}, props, {
-                  category: 'ownProxies',
-                  modToChildren: {
-                    customProxyStringRaw: createElement(ProxyEditor),
-                  },
-                })
-              ),
-            },
-            {
-              label: 'Модификаторы',
-              content: createElement(
-                ModList,
-                Object.assign({}, props, {category: 'general'})
-              ),
-            },
-            {
-              label: 'Уведомления',
-              content: createElement(Notifications, props),
-            },
-          ],
-        }),
-        // FOOTER.
+        createElement(Main, props),
         createElement(Footer, Object.assign({ status: this.state.status }, props)),
       ]);
 
