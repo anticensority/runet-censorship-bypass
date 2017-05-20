@@ -115,7 +115,7 @@ export default function getInfoRow() {
           disabled={props.disabled}
         />
         <div class={scopedCss.labelContainer}>
-          <label for={iddy}>{props.conf.label}</label>
+          <label for={iddy} dangerouslySetInnerHTML={{__html: props.conf.label}}></label>
           {props.children}
         </div>
         {props.conf.desc
