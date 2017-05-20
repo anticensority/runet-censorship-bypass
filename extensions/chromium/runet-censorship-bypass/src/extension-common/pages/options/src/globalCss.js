@@ -1,7 +1,7 @@
 export default function append(document, { flags }) {
 
   // innerText converts \n to <br>, so:
-  document.head.querySelector('style').innerHTML = `
+  document.querySelector('style').innerHTML = `
     /* GLOBAL VARIABLES */
 
     :root {

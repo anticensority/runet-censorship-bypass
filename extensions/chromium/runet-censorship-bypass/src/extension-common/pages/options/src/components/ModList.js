@@ -41,7 +41,7 @@ export default function getModList(theState) {
           </ul>
           {createElement(ApplyMods, Object.assign({}, props,
             {
-              disabled: !this.state.ifChangesStashed,
+              disabled: !this.state.ifChangesStashed || props.ifInputsDisabled,
               onClick: () => {
 
                 const oldMods = this.props.apis.pacKitchen.getPacMods();

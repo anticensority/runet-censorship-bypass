@@ -2,7 +2,7 @@ import Inferno, { linkEvent } from 'inferno';
 import Component from 'inferno-component';
 import css from 'csjs-inject';
 
-export default function getTabPannel({ flags }) {
+export default function getTabPannel({ flags, baseCss }) {
 
   const scopedCss = css`
 
@@ -18,19 +18,17 @@ export default function getTabPannel({ flags }) {
     :root.ifInsideOptionsPage .tabContainer {
       padding-bottom: 0.6em;
     }
-    :root.ifInsideOptionsPage .tabContainer:not(:last-child),
-    .underlined {
+    :root.ifInsideOptionsPage nav.mainNav > div:not(:last-child) {
       border-bottom: 1px solid var(--cr-options-headline);
     }
+
     :root.ifInsideOptionsPage .navLabels {
       display: none;
     }
 
     /* HIDE starts. */
 
-      :root:not(.ifInsideOptionsPage) .mainNav input:not(:checked) + section,
-      /* One button shared between two sections: */
-      :root:not(.ifInsideOptionsPage) .mainNav input:not(:checked) + #apply-mods-section
+      :root:not(.ifInsideOptionsPage) .mainNav input:not(:checked) + section
       {
         /* Hide, but preclude width resizes. */
         height: 0px !important;
@@ -45,9 +43,7 @@ export default function getTabPannel({ flags }) {
         transform: scaleY(0) !important;
       }
 
-      :root:not(.ifInsideOptionsPage) .mainNav input:not(:checked) + section *,
-      /* One button shared between two sections: */
-      :root:not(.ifInsideOptionsPage) .mainNav #apply-mods-section * // TODO
+      :root:not(.ifInsideOptionsPage) .mainNav input:not(:checked) + section *
       {
         margin-top: 0 !important;
         margin-bottom: 0 !important;

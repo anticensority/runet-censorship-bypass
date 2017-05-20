@@ -33,8 +33,13 @@ export default function getExceptions(theState) {
 
       };
 
-      return (
-        <div>
+      return props.flags.ifInsideOptionsPage
+        ? (
+        <div class="nowrap">
+          Редактор исключений доступен только для <a href="chrome://newtab">вкладок</a>.
+        </div>)
+        :
+        (<div>
           {createElement(ExcEditor, props)}
           <ul id="excMods">
             {
@@ -53,9 +58,6 @@ export default function getExceptions(theState) {
 
                   }}
                 />;
-
-                //const key = conf.key;
-                //modKeyToLi[key] = li;
 
               })
             }
