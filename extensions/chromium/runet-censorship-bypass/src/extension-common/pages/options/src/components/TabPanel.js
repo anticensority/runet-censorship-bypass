@@ -2,7 +2,7 @@ import Inferno, { linkEvent } from 'inferno';
 import Component from 'inferno-component';
 import css from 'csjs-inject';
 
-export default function getTabsPannel({ flags }) {
+export default function getTabPannel({ flags }) {
 
   const scopedCss = css`
 
@@ -123,7 +123,7 @@ export default function getTabsPannel({ flags }) {
 
       return (
         <div>
-          <nav class={scopedCss.navLabels + ' hiddenForOptionsPage'}>
+          <nav class={scopedCss.navLabels}>
             <ul class='horizontalList'>
               {
                 props.tabs.map((tab, index) =>

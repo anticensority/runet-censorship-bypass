@@ -8,7 +8,8 @@ import getTabPanel from './TabPanel';
 import getPacChooser from './PacChooser';
 import getNotifications from './Notifications';
 import getExceptions from './Exceptions';
-import getMods from './Mods';
+import getModList from './ModList';
+import getProxyEditor from './ProxyEditor';
 
 import getFooter from './Footer';
 
@@ -20,7 +21,8 @@ export default function getApp(theState) {
   const PacChooser = getPacChooser(theState);
   const Notifications = getNotifications(theState);
   const Exceptions = getExceptions(theState);
-  const Mods = getMods(theState);
+  const ModList = getModList(theState);
+  const ProxyEditor = getProxyEditor(theState);
 
   const Footer = getFooter(theState);
 
@@ -138,8 +140,9 @@ export default function getApp(theState) {
 
       return createElement('div', null, [
         ...( props.flags.ifNotControlled ? [createElement(NotControlledWarning, props)] : [] ),
+        // WARNIGN ENDS.
         createElement(TabPanel, {
-          tabs:[
+          tabs: [
             {
               label: 'PAC-скрипт',
               content: createElement(PacChooser, props),
@@ -150,18 +153,30 @@ export default function getApp(theState) {
             },
             {
               label: 'Свои прокси',
-              content: "OwnProxies().render(this.props)",
+              content: createElement(
+                ModList,
+                Object.assign({}, props, {
+                  category: 'ownProxies',
+                  modToChildren: {
+                    customProxyStringRaw: createElement(ProxyEditor),
+                  },
+                })
+              ),
             },
             {
               label: 'Модификаторы',
-              content: createElement(Mods, props),
+              content: createElement(
+                ModList,
+                Object.assign({}, props, {category: 'general'})
+              ),
             },
             {
               label: 'Уведомления',
               content: createElement(Notifications, props),
-            }
-          ]
+            },
+          ],
         }),
+        // FOOTER.
         createElement(Footer, Object.assign({ status: this.state.status }, props)),
       ]);
 
@@ -169,4 +184,4 @@ export default function getApp(theState) {
 
   }
 
-};;
+};
