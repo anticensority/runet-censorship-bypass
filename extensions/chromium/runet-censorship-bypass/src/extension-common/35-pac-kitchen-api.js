@@ -12,8 +12,7 @@
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
-  // Don't keep objects in defaults or at least freeze them!
-  const configs = {
+  const getDefaultConfigs () => {// Configs user may mutate them and we don't care!
 
     ifProxyHttpsUrlsOnly: {
       dflt: false,
@@ -93,6 +92,7 @@
 
   const getDefaults = function getDefaults() {
 
+    const configs = getDefaultConfigs();
     return Object.keys(configs).reduce((acc, key) => {
 
       acc[key] = configs[key].dflt;
@@ -123,6 +123,7 @@
   const getOrderedConfigsForUser = function getOrderedConfigs(category) {
 
     const pacMods = getCurrentConfigs();
+    const configs = getDefaultConfigs();
     return Object.keys(configs)
       .sort((keyA, keyB) => configs[keyA].order - configs[keyB].order)
       .reduce((arr, key) => {
@@ -144,6 +145,7 @@
   const createPacModifiers = function createPacModifiers(mods = {}) {
 
     mods = mods || {}; // null?
+    const configs = getDefaultConfigs();
     const ifNoMods = Object.keys(configs)
       .every((dProp) => {
 
