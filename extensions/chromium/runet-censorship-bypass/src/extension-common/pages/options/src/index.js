@@ -15,7 +15,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
 
         theState = {
           utils: bgWindow.utils,
-          apis: bgWindow.apis,
+          apis: apis,
           flags: {
             /* Shortcuts to boolean values. */
             ifNotControlled: !apis.errorHandlers.ifControllable,

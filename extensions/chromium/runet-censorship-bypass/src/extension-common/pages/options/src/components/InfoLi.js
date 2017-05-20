@@ -1,7 +1,7 @@
 import Inferno from 'inferno';
 import css from 'csjs-inject';
 
-export default function getInfoRow() {
+export default function getInfoLi() {
 
   const scopedCss = css`
     /* CONTROL RAW = BUTTON + LINK */
@@ -23,6 +23,7 @@ export default function getInfoRow() {
 
     .infoRow {
       position: relative;
+      flex-wrap: wrap;
     }
     .rightBottomIcon {
       margin-left: 0.1em;
@@ -80,6 +81,16 @@ export default function getInfoRow() {
       left: 75%;
       width: calc(25% + 0.6em);
     }
+
+    /* CHILDREN */
+
+    input:not(:checked) ~ .children {
+      display: none;
+    }
+    .children {
+      flex-grow: 9999;
+    }
+
   `;
 
   const camelToDash = (name) => name.replace(/([A-Z])/g, (_, p1) => '-' + p1.toLowerCase());
@@ -95,12 +106,11 @@ export default function getInfoRow() {
 
   };
 
-  return function InfoRow(props) {
+  return function InfoLi(props) {
 
     props = Object.assign({}, {
       idPrefix: '',
       ifDashify: false,
-      htmlAfterLabel: '',
     }, props);
 
     const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
@@ -116,7 +126,7 @@ export default function getInfoRow() {
         />
         <div class={scopedCss.labelContainer}>
           <label for={iddy} dangerouslySetInnerHTML={{__html: props.conf.label}}></label>
-          {props.children}
+          &nbsp;{props.nodeAfterLabel}
         </div>
         {props.conf.desc
           ? (
@@ -129,6 +139,7 @@ export default function getInfoRow() {
               : (<span>&nbsp;</span>) // Affects vertical align of flexbox items.
             )
         }
+        {props.children && (<div class={scopedCss.children}>{props.children}</div>)}
       </li>
     );
 

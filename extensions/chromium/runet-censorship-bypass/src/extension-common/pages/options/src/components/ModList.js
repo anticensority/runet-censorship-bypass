@@ -1,29 +1,22 @@
 import Inferno from 'inferno';
 import Component from 'inferno-component';
 import createElement from 'inferno-create-element';
-import css from 'csjs-inject';
 
 import getInfoLi from './InfoLi';
 import getApplyMods from './ApplyMods';
 
-export default function getMods(theState) {
+export default function getModList(theState) {
 
   const InfoLi = getInfoLi(theState);
   const ApplyMods = getApplyMods(theState);
 
-  return class Mods extends Component {
-
-    getOrderedConfigs() {
-
-      return this.props.apis.pacKitchen.getOrderedConfigs('general');
-
-    }
+  return class ModList extends Component {
 
     constructor(props) {
 
       super(props);
       this.state = {
-        orderedConfigs: this.getOrderedConfigs(),
+        orderedConfigs: props.apis.pacKitchen.getOrderedConfigs(props.category),
         ifChangesStashed: false,
       };
 
@@ -42,7 +35,7 @@ export default function getMods(theState) {
                 newConfigs[index].value = !newConfigs[index].value;
                 this.setState({orderedConfigs: newConfigs});
 
-              }}/>
+              }}>{props.modToChildren && props.modToChildren[conf.key]}</InfoLi>
             )
           }
           </ul>

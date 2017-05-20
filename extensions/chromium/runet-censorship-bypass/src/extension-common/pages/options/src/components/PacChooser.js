@@ -124,18 +124,9 @@ export default function getPacChooser(theState) {
                   name="pacProvider"
                   checked={iddyToCheck === provConf.key}
                   disabled={props.ifInputsDisabled}
-                >
-                  &nbsp;<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>
-                </InfoLi>)
+                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>}
+                />)
               )
-            /*<InfoLi
-              onClick={this.radioClickHandler.bind(this)}
-              type="radio"
-              name="pacProvider"
-              conf={{key: 'none', label: 'Отключить'}}
-              checked={iddyToCheck === 'none'}
-              disabled={props.ifInputsDisabled}
-            />*/
             }
           </ul>
           <div id="updateMessage" class="horFlex" style="align-items: center">
