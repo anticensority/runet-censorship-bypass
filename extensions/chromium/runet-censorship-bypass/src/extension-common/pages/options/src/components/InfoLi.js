@@ -123,6 +123,8 @@ export default function getInfoLi() {
           id={iddy}
           onClick={props.onClick}
           disabled={props.disabled}
+          data-category={props['data-category']}
+          data-index={props['data-index']}
         />
         <div class={scopedCss.labelContainer}>
           <label for={iddy} dangerouslySetInnerHTML={{__html: props.conf.label}}></label>
