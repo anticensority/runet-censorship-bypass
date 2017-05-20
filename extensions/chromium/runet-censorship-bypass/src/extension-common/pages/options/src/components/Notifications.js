@@ -15,7 +15,7 @@ export default function getPacChooser(theState) {
 
     return (
       <section>
-        <header>Я <span style="color: #f93a17">❤</span> yведомления:</header>
+        <header>Я <span class="emoji" style="color: #f93a17">❤</span> yведомления:</header>
         <ul class={scopedCss.listOfNotifiers}>
         {
           Array.from(props.apis.errorHandlers.getEventsMap()).map(([ntfId, ntfName]) => {
