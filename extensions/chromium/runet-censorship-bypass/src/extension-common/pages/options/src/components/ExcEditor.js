@@ -331,8 +331,13 @@ export default function getExcEditor(theState) {
                     class="icon"
                     style="position: relative; top: 0.15em;"><use xlink:href="#iconLoopRound"></use></svg>&nbsp;авто</label>
             </li>
-            <li><input id="this-yes" type="radio" name="if-proxy-this-site" checked={inputProxyingState === true} onClick={onradio}/>{' '}<label for="this-yes">✔&nbsp;да</label></li>
-            <li><input id="this-no" type="radio" name="if-proxy-this-site" checked={inputProxyingState === false} onClick={onradio}/>{' '}<label for="this-no">✘&nbsp;нет</label></li>
+            <li>
+              <input id="this-yes" type="radio" name="if-proxy-this-site" checked={inputProxyingState === true} onClick={onradio}/>
+              {' '}<label for="this-yes" style="color: black">✔&nbsp;да</label>
+            </li>
+            <li>
+              <input id="this-no" type="radio" name="if-proxy-this-site" checked={inputProxyingState === false} onClick={onradio}/>
+              {' '}<label for="this-no" style="color: black">✘&nbsp;нет</label></li>
           </ol>
         </section>
       );
