@@ -20,12 +20,12 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
 
 # ПРОКСИРОВАТЬ:
 
-${mods.included.join('\n')}
+${(mods.included || []).join('\n')}
 
 ===============================
 # НЕ ПРОКСИРОВАТЬ:
 
-${mods.excluded.join('\n')}`;
+${(mods.excluded || []).join('\n')}`;
 
         status.innerText = 'Успешно загружено!';
 
