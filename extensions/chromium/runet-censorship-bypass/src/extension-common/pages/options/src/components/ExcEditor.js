@@ -243,7 +243,6 @@ export default function getExcEditor(theState) {
             if (ifBackspacedOneChar) {
               removeEditedHost();
             }
-            //
           }
           return true;
         }

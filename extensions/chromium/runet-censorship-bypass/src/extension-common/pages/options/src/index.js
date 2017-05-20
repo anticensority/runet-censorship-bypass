@@ -5,22 +5,23 @@ import createElement from 'inferno-create-element';
 import appendGlobalCss from './globalCss';
 import getApp from './components/App';
 
-chrome.runtime.getBackgroundPage( (backgroundPage) =>
-  backgroundPage.apis.errorHandlers.installListenersOn(
+chrome.runtime.getBackgroundPage( (bgWindow) =>
+  bgWindow.apis.errorHandlers.installListenersOn(
     window, 'PUP', async() => {
 
       let theState;
       {
-        const apis = backgroundPage.apis;
+        const apis = bgWindow.apis;
 
         theState = {
-          utils: backgroundPage.utils,
-          apis: backgroundPage.apis,
+          utils: bgWindow.utils,
+          apis: bgWindow.apis,
           flags: {
             /* Shortcuts to boolean values. */
             ifNotControlled: !apis.errorHandlers.ifControllable,
             ifMini: apis.version.ifMini,
           },
+          bgWindow,
         };
       }
 

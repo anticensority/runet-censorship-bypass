@@ -8,6 +8,7 @@ import getTabPanel from './TabPanel';
 import getPacChooser from './PacChooser';
 import getNotifications from './Notifications';
 import getExceptions from './Exceptions';
+import getMods from './Mods';
 
 import getFooter from './Footer';
 
@@ -19,6 +20,7 @@ export default function getApp(theState) {
   const PacChooser = getPacChooser(theState);
   const Notifications = getNotifications(theState);
   const Exceptions = getExceptions(theState);
+  const Mods = getMods(theState);
 
   const Footer = getFooter(theState);
 
@@ -152,7 +154,7 @@ export default function getApp(theState) {
             },
             {
               label: 'Модификаторы',
-              content: "Modificators().render(this.props)",
+              content: createElement(Mods, props),
             },
             {
               label: 'Уведомления',
