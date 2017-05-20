@@ -3,6 +3,7 @@
 import Inferno from 'inferno';
 import createElement from 'inferno-create-element';
 import appendGlobalCss from './globalCss';
+import css from 'csjs-inject';
 import getApp from './components/App';
 
 chrome.runtime.getBackgroundPage( (bgWindow) =>
@@ -40,6 +41,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
       // STATE DEFINED, COMPOSE.
 
       appendGlobalCss(document, theState);
+      // Extendable css classes.
 
       Inferno.render(
         createElement(getApp(theState), theState),
