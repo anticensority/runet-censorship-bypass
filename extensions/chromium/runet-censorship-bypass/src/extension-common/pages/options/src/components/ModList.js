@@ -11,7 +11,13 @@ export default function getModList(theState) {
       <ol onChange={props.onChange}>
       {
         props.orderedConfigs.map((conf, index) => (
-          <InfoLi conf={conf} type='checkbox' checked={conf.value} key={index} data-category={conf.category} data-index={index} onClick={props.onClick}>
+          <InfoLi
+            conf={conf}
+            type='checkbox'
+            checked={conf.value}
+            key={index}
+            onClick={() => props.onClick({targetConf: conf, targetIndex: index})}
+          >
             {props.childrenOfMod && props.childrenOfMod[conf.key]}
           </InfoLi>)
         )

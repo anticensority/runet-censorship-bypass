@@ -62,18 +62,16 @@ export default function getMain(theState) {
 
     }
 
-    handleModCheck(that, event) {
+    handleModCheck(that, {targetConf, targetIndex}) {
 
-      const checkbox = event.target;
-      const [tCat, tIndex] = [checkbox.dataset.category, parseInt(checkbox.dataset.index)];
       const oldCats = that.state.catToOrderedMods;
       const newCats = Object.keys(that.state.catToOrderedMods).reduce((acc, cat) => {
 
-        if (cat !== tCat) {
+        if (cat !== targetConf.category) {
           acc[cat] = oldCats[cat];
         } else {
           acc[cat] = oldCats[cat].map(
-            (conf, index) => tIndex === index
+            (conf, index) => targetIndex === index
               ? Object.assign({}, conf, {value: !conf.value})
               : conf
           );
@@ -103,7 +101,8 @@ export default function getMain(theState) {
 
       const modsHandlers = {
         onChange: linkEvent(this, this.handleModChange),
-        onClick: linkEvent(this, this.handleModCheck),
+        //onClick: linkEvent(this, this.handleModCheck),
+        onClick: (...args) => this.handleModCheck(this, ...args),
       };
 
       return createElement(TabPanel, {
