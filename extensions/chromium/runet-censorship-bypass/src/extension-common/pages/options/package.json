@@ -13,7 +13,7 @@
     "concat-stream": "^1.6.0",
     "csjs-inject": "^1.0.1",
     "flow-bin": "^0.45.0",
-    "inferno": "^3.1.2",
+    "inferno": "^3.2.0",
     "inferno-component": "^3.1.2",
     "inferno-create-element": "^3.1.2",
     "webpack": "^2.5.1"
