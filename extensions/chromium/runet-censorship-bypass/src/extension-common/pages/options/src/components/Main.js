@@ -101,7 +101,6 @@ export default function getMain(theState) {
 
       const modsHandlers = {
         onChange: linkEvent(this, this.handleModChange),
-        //onClick: linkEvent(this, this.handleModCheck),
         onClick: (...args) => this.handleModCheck(this, ...args),
       };
 
