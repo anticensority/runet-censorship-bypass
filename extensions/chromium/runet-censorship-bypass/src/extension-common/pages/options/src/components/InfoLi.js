@@ -135,7 +135,7 @@ export default function getInfoLi() {
               <div class={scopedCss.tooltip} dangerouslySetInnerHTML={{__html: props.conf.desc}}/>
             </div>)
           : (props.conf.url
-              ? (<a href={props.conf.url} class={[scopedCss.rightBottomIcon, scopedCss.infoUrl].join(' ')}><InfoIcon /></a>)
+              ? (<a href={props.conf.url} class={[scopedCss.rightBottomIcon, scopedCss.infoUrl].join(' ')} title="Открыть документацию"><InfoIcon /></a>)
               : (<span>&nbsp;</span>) // Affects vertical align of flexbox items.
             )
         }
