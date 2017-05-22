@@ -62,8 +62,10 @@ export default function getMain(theState) {
 
     }
 
-    handleModCheck(that, {targetConf, targetIndex}) {
+    handleModCheck(that, {targetConf, targetIndex, targetChildren}) {
 
+      console.log('CHHHH', targetChildren);
+      window.foo = targetChildren
       const oldCats = that.state.catToOrderedMods;
       const newCats = Object.keys(that.state.catToOrderedMods).reduce((acc, cat) => {
 
@@ -72,7 +74,7 @@ export default function getMain(theState) {
         } else {
           acc[cat] = oldCats[cat].map(
             (conf, index) => targetIndex === index
-              ? Object.assign({}, conf, {value: !conf.value})
+              ? Object.assign({}, conf, {value: !targetConf.value})
               : conf
           );
         }
@@ -123,7 +125,7 @@ export default function getMain(theState) {
               Object.assign({}, props, {
                 orderedConfigs: this.state.catToOrderedMods['ownProxies'],
                 childrenOfMod: {
-                  customProxyStringRaw: createElement(ProxyEditor),
+                  customProxyStringRaw: createElement(ProxyEditor, props),
                 },
               }, modsHandlers)
             ),
