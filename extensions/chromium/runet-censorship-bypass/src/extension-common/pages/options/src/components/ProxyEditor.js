@@ -41,6 +41,7 @@ export default function getProxyEditor(theState) {
       width: 100%;
     }
 
+    table.editor input[type="submit"],
     table.editor button {
       min-width: 0;
       min-height: 0;
@@ -48,7 +49,7 @@ export default function getProxyEditor(theState) {
       padding: 0;
       border: none;
     }
-    table.editor button.add {
+    table.editor .add {
       font-weight: 800;	
     }
     table.editor button.export {
@@ -92,82 +93,94 @@ export default function getProxyEditor(theState) {
       super(props);
       this.state = {
         proxyStringRaw: localStorage.getItem(uiRaw) || '',
-        ifExportView: false,
+        ifExportMode: false,
       };
-      props.funs.setStatusTo('Hello from editor!');
+     // props.funs.setStatusTo('Hello from editor!');
 
       this.switchBtn = (
         <button
           class={'emoji' + ' ' + scopedCss.export}
           title="импорт/экспорт"
-          onClick={linkEvent(this, this.handleViewSwitch)}
+          onClick={linkEvent(this, this.handleModeSwitch)}
         >⇄</button>
       );
 
     }
 
-    handleViewSwitch(that) {
+    handleModeSwitch(that) {
       
-      that.setState({ ifExportView: !that.state.ifExportView });
+      that.setState({ ifExportMode: !that.state.ifExportMode });
+
+    }
+    handleAdd(that) {
+
+      
 
     }
 
     render(props) {
 
-      return !this.state.ifExportView ? (
-        <table class={scopedCss.editor}>
-          <thead>
-            <tr>
-              <th>протокол</th> <th>домен</th> <th>порт</th> <th>{this.switchBtn}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class={scopedCss.noPad}>
-                <select reqiured class={scopedCss.noPad}>
-                  <option value="PROXY">HTTP/PROXY</option>
-                  <option value="HTTPS" selected>HTTPS</option>
-                  <option value="SOCKS4">SOCKS4</option>
-                  <option value="SOCKS5">SOCKS5</option>
-                  <option value="SOCKS">SOCKS</option>
-                </select>
-              </td>
-              <td class={scopedCss.leftPadded}>
-                <input type="url" placeholder="89.140.125.17" class={scopedCss.noPad}/>
-              </td>
-              <td class={scopedCss.leftPadded}>
-                <input type="number" placeholder="9150" min="0" step="1" max="65535" class={scopedCss.noPad} style="min-width: 4em"/>
-              </td>
-              <td>
-                <button class={''} title="Повысить приоритет">▴</button>
-                <br/>
-                <button class={scopedCss.add} title="Добавить прокси">+</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      ) : (
-        <table class={scopedCss.editor}>
-          <thead>
-            <tr>
-              <th style="width: 100%">Прокси видят данные HTTP-сайтов!</th>
-              <th style="width: 1%">{this.switchBtn}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colspan="2"><textarea class={scopedCss.textarea}
-                  spellcheck={false}
-                  placeholder={`
+      return (
+        <form action="https://ya.ru">
+          {
+            !this.state.ifExportMode
+            ? ((
+              <table class={scopedCss.editor}>
+                <thead>
+                  <tr>
+                    <th>протокол</th> <th>домен</th> <th>порт</th> <th>{this.switchBtn}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class={scopedCss.noPad}>
+                      <select reqiured class={scopedCss.noPad}>
+                        <option value="PROXY">HTTP/PROXY</option>
+                        <option value="HTTPS" selected>HTTPS</option>
+                        <option value="SOCKS4">SOCKS4</option>
+                        <option value="SOCKS5">SOCKS5</option>
+                        <option value="SOCKS">SOCKS</option>
+                      </select>
+                    </td>
+                    <td class={scopedCss.leftPadded}>
+                      <input required type="url" placeholder="89.140.125.17" pattern="https://[a]+\.ru" class={scopedCss.noPad}/>
+                    </td>
+                    <td class={scopedCss.leftPadded}>
+                      <input required type="number" placeholder="9150" min="0" step="1" max="65535" class={scopedCss.noPad} style="min-width: 4em"/>
+                    </td>
+                    <td>
+                      <button title="Повысить приоритет">↑</button>
+                      <br/>
+                      <input type="submit" class={scopedCss.add} title="Добавить прокси" onClick={linkEvent(this, this.handleAdd)} value="+"/>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            )) : ((
+              <table class={scopedCss.editor}>
+                <thead>
+                  <tr>
+                    <th style="width: 100%">Прокси видят данные HTTP-сайтов!</th>
+                    <th style="width: 1%">{this.switchBtn}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="2"><textarea class={scopedCss.textarea}
+                        spellcheck={false}
+                        placeholder={`
 SOCKS5 localhost:9050; # Tor Expert
 SOCKS5 localhost:9150; # Tor Browser
 HTTPS 11.22.33.44:3143;
 PROXY foobar.com:8080; # Not HTTP!`.trim()}
-                  value={props.value || localStorage.getItem(uiRaw) || ''}
-                /></td>
-            </tr>
-          </tbody>
-        </table>
+                        value={this.state.proxyStringRaw}
+                      /></td>
+                  </tr>
+                </tbody>
+              </table>
+            ))
+          }
+        </form>
       );
 
     };
