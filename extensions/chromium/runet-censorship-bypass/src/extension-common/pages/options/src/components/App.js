@@ -24,17 +24,24 @@ export default function getApp(theState) {
 
     }
 
-    setStatusTo(msg) {
+    setStatusTo(msg, cb) {
 
       this.setState(
         {
           status: msg,
-        }
+        },
+        cb
       );
 
     }
 
-    showErrors(err, ...warns) {
+    showErrors(err, ...args/* ...warns, cb */) {
+
+      const lastArg = args[args.length - 1];
+      const cb = (lastArg && typeof lastArg === 'function')
+        ? args.pop()
+        : () => {};
+      const warns = args;
 
       const warningHtml = warns
         .map(
@@ -74,7 +81,8 @@ export default function getApp(theState) {
             evt.preventDefault();
 
           }}> [Техн.детали]</a>}
-        </span>)
+        </span>),
+        cb
       );
 
     }

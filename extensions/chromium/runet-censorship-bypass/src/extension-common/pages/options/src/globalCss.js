@@ -119,7 +119,7 @@ export default function append(document, { flags }) {
       justify-content: space-between;
       width: 100%;
     }
-    .horFlex input:not([type="button"]) {
+    .horFlex > input:not([type="button"]) {
       align-self: flex-end;
     }
 

@@ -21,6 +21,8 @@ export default function getMain(theState) {
   const ApplyMods = getApplyMods(theState);
   const Notifications = getNotifications(theState);
 
+  const checksName = 'pacMods';
+
   return class Main extends Component {
 
     constructor(props) {
@@ -64,8 +66,6 @@ export default function getMain(theState) {
 
     handleModCheck(that, {targetConf, targetIndex, targetChildren}) {
 
-      console.log('CHHHH', targetChildren);
-      window.foo = targetChildren
       const oldCats = that.state.catToOrderedMods;
       const newCats = Object.keys(that.state.catToOrderedMods).reduce((acc, cat) => {
 
@@ -86,9 +86,11 @@ export default function getMain(theState) {
 
     }
 
-    handleModChange(that) {
+    handleModChange(that, event) {
 
-      that.setState({ifModsChangesStashed: true});
+      if (event.target.name === checksName) {
+        that.setState({ifModsChangesStashed: true});
+      }
 
     }
 
@@ -127,6 +129,7 @@ export default function getMain(theState) {
                 childrenOfMod: {
                   customProxyStringRaw: createElement(ProxyEditor, props),
                 },
+                name: checksName,
               }, modsHandlers)
             ),
             key: 'ownProxies',
@@ -137,6 +140,7 @@ export default function getMain(theState) {
               ModList,
               Object.assign({}, props, {
                 orderedConfigs: this.state.catToOrderedMods['general'],
+                name: checksName,
               }, modsHandlers)
             ),
             key: 'mods',
