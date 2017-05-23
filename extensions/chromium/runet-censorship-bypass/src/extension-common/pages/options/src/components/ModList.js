@@ -14,6 +14,7 @@ export default function getModList(theState) {
           (<InfoLi
             conf={conf}
             type='checkbox'
+            name={props.name}
             checked={conf.value}
             key={index}
             onClick={() => props.onClick({targetConf: conf, targetIndex: index, targetChildren: props.childrenOfMod})}
