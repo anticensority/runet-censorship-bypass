@@ -30,7 +30,7 @@ export default function getProxyEditor(theState) {
       padding: 0;
     }
     /* PROXY ROW */
-    table.editor tr.proxyRow td:first-child {
+    table.editor tr.proxyRow td:nth-child(2) {
       text-align: center;
     }
 
@@ -78,7 +78,8 @@ export default function getProxyEditor(theState) {
     }
 
     /* LAST COLUMN: BUTTONS */
-    table.editor tr > *:nth-last-child(1) {
+    table.editor tr > *:nth-last-child(1),
+    table.editor tr.proxyRow > td:first-child {
       text-align: center;
       padding: 0;
       position: relative;
@@ -123,6 +124,10 @@ export default function getProxyEditor(theState) {
     return true;
 
   };
+  const splitBySemi = (proxyString) => proxyString.replace(/#.*$/mg, '').trim().split(/\s*;\s*/g).filter((s) => s);
+  const joinBySemi = (strs) => strs.join(';\n') + ';';
+  const normilizeProxyString = (str) => joinBySemi(splitBySemi(str));
+
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
 
 
@@ -181,10 +186,33 @@ export default function getProxyEditor(theState) {
       const hostname = elements.hostname;
       const port = elements.port;
 
-      that.props.updateProxyStringRaw(
+      that.props.setProxyStringRaw(
         `${that.props.proxyStringRaw} ${type} ${hostname}:${port};`.trim()
       );
 
+    }
+
+    handleDelete(that, {proxyAsString, index}) {
+
+      event.preventDefault();
+      const proxyStrings = splitBySemi(that.props.proxyStringRaw);
+      proxyStrings.splice(index, 1);
+
+      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
+
+    }
+
+    raisePriority(that, {proxyAsString, index}) {
+
+      event.preventDefault();
+      if (index < 1) {
+        return;
+      }
+      const proxyStrings = splitBySemi(that.props.proxyStringRaw);
+      proxyStrings.splice(index - 1, 2, proxyStrings[index], proxyStrings[index-1]);
+
+      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
+      
     }
 
     handleSubmit(that, event) {
@@ -201,7 +229,7 @@ export default function getProxyEditor(theState) {
           <table class={scopedCss.editor}>
             <thead>
               <tr>
-                <th>протокол</th> <th>домен / IP</th> <th>порт</th> <th>
+                <th colspan="2">протокол</th> <th>домен / IP</th> <th>порт</th> <th>
                   <SwitchButton title="импорт/экспорт" onClick={linkEvent(this, this.handleModeSwitch)}/>
                 </th>
               </tr>
@@ -209,7 +237,7 @@ export default function getProxyEditor(theState) {
             <tbody>
               {/* ADD NEW PROXY STARTS. */}
               <tr class={scopedCss.addPanel}>
-                <td>
+                <td colspan="2">
                   <select reqiured
                     class={scopedCss.noPad}
                     name="proxyType"
@@ -232,6 +260,7 @@ export default function getProxyEditor(theState) {
                     placeholder="89.140.125.17"
                     name="hostname"
                     onInvalid={linkEvent(this, this.showInvalidMessage)}
+                    tabindex="1"
                   />
                 </td>
                 <td>
@@ -243,6 +272,7 @@ export default function getProxyEditor(theState) {
                     name="port"
                     onInvalid={linkEvent(this, this.showInvalidMessage)}
                     onkeydown={onlyPort}
+                    tabindex="2"
                   />
                 </td>
                 <td>
@@ -255,17 +285,23 @@ export default function getProxyEditor(theState) {
               </tr>
               {/* ADD NEW PROXY ENDS. */}
               {
-                this.props.proxyStringRaw.split(/\s*;\s*/g).filter((s) => s).map((proxyAsString) => {
+                splitBySemi(this.props.proxyStringRaw).map((proxyAsString, index) => {
 
-                  const [type, addr] = proxyAsString.trim().split(/\s/);
+                  const [type, addr] = proxyAsString.trim().split(/\s+/);
                   const [hostname, port] = addr.split(':');
                   return (
                     <tr class={scopedCss.proxyRow}>
-                      <td>{type}</td><td>{hostname}</td><td>{port}</td>
                       <td>
-                        <button type="button" title="Повысить приоритет">↑</button>
-                        <br/>
-                        {/*<input type="submit" title="Удалить прокси" value="X"/>*/}
+                        <button type="button"
+                          class={scopedCss.only} title="Удалить"
+                          onClick={() => this.handleDelete(this, {proxyAsString, index})}
+                        >X</button>
+                      </td><td>{type}</td><td>{hostname}</td><td>{port}</td>
+                      <td>
+                        <button type="button"
+                          class={scopedCss.only} title="Повысить приоритет"
+                          onClick={() => this.raisePriority(this, {proxyAsString, index})}
+                        >▲</button>
                       </td>
                     </tr>
                   );
@@ -279,14 +315,25 @@ export default function getProxyEditor(theState) {
     }
   }
 
+  const getInitState = () => ({
+    ifHasErrors: false,
+    stashedExports: false,
+  });
+
   class ExportsEditor extends Component {
 
     constructor(props) {
+
       super(props);
-      this.state = {
-        ifHasErrors: false,
-        stashedExports: false,
-      };
+      this.state = getInitState();
+
+    }
+
+    resetState(that, event) {
+
+      that.setState(getInitState());
+      event.preventDefault();
+
     }
 
     getErrorsInStashedExports() {
@@ -294,10 +341,7 @@ export default function getProxyEditor(theState) {
       if(this.state.stashedExports === false) {
         return;
       }
-      const errors = this.state.stashedExports.trim()
-        .replace(/#.*$/mg, '')
-        .split(/\s*;\s*/)
-        .filter((s) => s)
+      const errors = splitBySemi(this.state.stashedExports)
         .map((proxyAsString) => {
 
           const [rawType, addr, ...rest] = proxyAsString.split(/\s+/);
@@ -340,7 +384,7 @@ export default function getProxyEditor(theState) {
           that.props.funs.showErrors(...errors);
           return;
         }
-        that.props.updateProxyStringRaw(that.state.stashedExports);
+        that.props.setProxyStringRaw(that.state.stashedExports);
       }
       that.setState({
         stashedExports: false,
@@ -352,11 +396,9 @@ export default function getProxyEditor(theState) {
 
     handleTextareaChange(that, event) {
 
-      let newVal = event.target.value.trim();
-      if (newVal && !newVal.endsWith(';')) {
-        newVal += ';';
-      }
-      that.setState({stashedExports: newVal});
+      that.setState({
+        stashedExports: normilizeProxyString(event.target.value),
+      });
 
     }
 
@@ -369,6 +411,8 @@ export default function getProxyEditor(theState) {
 
     render(props) {
 
+      const reset = linkEvent(this, this.resetState);
+
       return (
         <form onSubmit={linkEvent(this, this.handleSubmit)}>
           <table class={scopedCss.editor}>
@@ -379,8 +423,8 @@ export default function getProxyEditor(theState) {
                     this.state.stashedExports === false
                       ? 'Жду изменений...'
                       : (this.state.ifHasErrors
-                          ? (<span><a href="">Сбросьте изменения</a> или поправьте</span>)
-                          : (<a href="">Сбросить изменения</a>)
+                          ? (<span><a href="" onClick={reset}>Сбросьте изменения</a> или поправьте</span>)
+                          : (<a href="" onClick={reset}>Сбросить изменения</a>)
                         )
                   }
                 </th>
@@ -440,7 +484,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       const props = Object.assign({
         proxyStringRaw: this.state.proxyStringRaw,
         onSwitch: this.handleSwitch,
-        updateProxyStringRaw: (newVal) => this.setState({proxyStringRaw: newVal}),
+        setProxyStringRaw: (newVal) => this.setState({proxyStringRaw: newVal}),
       }, originalProps);
       
       return this.state.ifExportsMode
