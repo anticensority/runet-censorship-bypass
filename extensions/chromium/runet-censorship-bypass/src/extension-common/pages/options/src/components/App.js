@@ -75,12 +75,13 @@ export default function getApp(theState) {
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred" dangerouslySetInnerHTML={{__html: messageHtml}}></span>
+          {' '}
           {err && <a href="" onClick={(evt) => {
 
             this.props.apis.errorHandlers.viewError('pup-ext-err', err);
             evt.preventDefault();
 
-          }}> [Техн.детали]</a>}
+          }}>[Техн.детали]</a>}
         </span>),
         cb
       );
