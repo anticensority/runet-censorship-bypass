@@ -1,5 +1,6 @@
 import Inferno, {linkEvent} from 'inferno';
 import Component from 'inferno-component';
+import createElement from 'inferno-create-element';
 import css from 'csjs-inject';
 
 export default function getProxyEditor(theState) {
@@ -70,7 +71,7 @@ export default function getProxyEditor(theState) {
       right: 0;
     }
     table.editor .add {
-      font-weight: 900;	
+      font-weight: 900; 
     }
     table.editor .export {
       padding-right: 2px;
@@ -98,8 +99,8 @@ export default function getProxyEditor(theState) {
       width: 100% !important;
       min-height: 100%;
       height: 6em;
-      /* border-width: 1px 0 0 0;*/
-      border: none;
+      border-width: 1px 0 0 0;
+      /*border: none;*/
     }
 
     table.editor input:invalid {
@@ -124,103 +125,33 @@ export default function getProxyEditor(theState) {
   };
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
 
-  return class ProxyEditor extends Component {
+
+  const SwitchButton = (props) =>
+    (
+      <button
+        type="button"
+        class={'emoji' + ' ' + scopedCss.export + ' ' + scopedCss.only}
+        title={props.title}
+        onClick={props.onClick}
+      >⇄</button>
+    );
+
+  class TabledEditor extends Component {
 
     constructor(props) {
 
       super(props);
       this.state = {
-        proxyStringRaw: localStorage.getItem(UI_RAW) || '',
-        ifExportsMode: false,
-
-        exportsStatus: '',
-        ifChangesStashedForApply: false,
-        stashedExports: false,
-
-        newType: 'HTTPS',
+        selectedNewType: 'HTTPS',
       };
 
-      this.switchBtn = (
-        <button
-          class={'emoji' + ' ' + scopedCss.export + ' ' + scopedCss.only}
-          title="импорт/экспорт"
-          onClick={linkEvent(this, this.handleModeSwitch)}
-        >⇄</button>
-      );
-      
     }
 
-    handleTextareaChange(that, event) {
+    handleTypeSelect(that, event) {
 
-      that.setState({stashedExports: event.target.value});
-
-    }
-    preventLostOfChanges() {
-
-      window.onbeforeunload = () => true; // TODO
-
-    }
-
-    findErrorsForStashedExports() {
-
-      const valid = true;
-      if(this.state.stashedExports === false) {
-        return valid;
-      }
-      const errors = this.state.stashedExports.trim()
-        .split(/\s*;\s*/)
-        .filter((s) => s)
-        .map((proxyAsString) => {
-
-          const [rawType, addr] = proxyAsString.split(/\s+/);
-          const knownTypes = PROXY_TYPE_LABEL_PAIRS.map(([type, label]) => type);
-          if( !knownTypes.includes(rawType.toUpperCase()) ) {
-            return new Error(
-              `Неверный тип ${rawType}. Известные типы: ${knownTypes.join(', ')}.`
-            );
-          }
-          if (!(addr && /^[^:]+:\d+$/.test(addr))) {
-            return new Error(
-              `Адрес "${addr}" не соответствует формату "<домен_или_IP_прокси>:<порт_прокси_из_цифр>".`
-            );
-          }
-          const [hostname, rawPort] = addr.split(':');
-          const port = parseInt(rawPort);
-          if (port < 0 || port > 65535) {
-            return new Error(
-              `Порт ${port} должен быть целым числом от 0 до 65535.`
-            );
-          }
-          return false;
-
-        }).filter((e) => e);
-      return errors && errors.length ? errors : false;
-
-    }
-
-    handleModeSwitch(that, event) {
-      
-      event.preventDefault(); // No form submit.
-      let newProxyStringRaw = that.state.proxyStringRaw;
-
-      const doSwitch = () => that.setState({
-        ifExportsMode: !that.state.ifExportsMode,
-        proxyStirngRaw: newProxyStringRaw,
-        stashedExports: false,
-        exportsStatus: '',
+      that.setState({
+        selectedNewType: event.target.value,
       });
-
-      if (that.state.stashedExports !== false) {
-
-        const errors = that.findErrorsForStashedExports();
-        if (!errors) {
-          newProxyStringRaw = that.state.stashedExports;
-        } else {
-          that.setState({exportsStatus: 'Имеются ошибки: <a href>[забыть]</a>?'});
-          return that.props.funs.showErrors(...errors);
-        }
-      }
-      doSwitch();
 
     }
 
@@ -230,20 +161,15 @@ export default function getProxyEditor(theState) {
 
     }
 
-    handleTypeSelect(that, event) {
+    handleModeSwitch(that) {
 
-      that.state.newType = event.target.value;
-
-    }
-
-    handleSubmit(that, event) {
-
-      !that.state.ifExportsMode ? that.handleAdd(that, event) : that.handleModeSwitch(that, event);
+      that.props.onSwitch();
 
     }
 
     handleAdd(that, event) {
 
+      console.log('ADD');
       const form = event.target;
       const elements = Array.from(form.elements).reduce((acc, el, index) => {
 
@@ -252,127 +178,277 @@ export default function getProxyEditor(theState) {
         return acc;
 
       }, {});
-      const type = that.state.newType;
+      const type = that.state.selectedNewType;
       const hostname = elements.hostname;
       const port = elements.port;
 
-      that.setState({proxyStringRaw: `${that.state.proxyStringRaw} ${type} ${hostname}:${port};`.trim()});
-
-      event.preventDefault();
+      console.log('AA', type, hostname, port);
+      that.props.updateProxyStringRaw(
+        `${that.props.proxyStringRaw} ${type} ${hostname}:${port};`.trim()
+      );
 
     }
+
+    handleSubmit(that, event) {
+
+      console.log('SUB');
+      event.preventDefault();
+      that.handleAdd(that, event);
+
+    }
+
     render(props) {
 
       return (
         <form onSubmit={linkEvent(this, this.handleSubmit)}>
-          {
-            !this.state.ifExportsMode
-            ? ((
-              <table class={scopedCss.editor}>
-                <thead>
-                  <tr>
-                    <th>протокол</th> <th>домен / IP</th> <th>порт</th> <th>{this.switchBtn}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* ADD NEW PROXY STARTS. */}
-                  <tr class={scopedCss.addPanel}>
-                    <td>
-                      <select reqiured
-                        class={scopedCss.noPad}
-                        name="proxyType"
-                        onChange={linkEvent(this, this.handleTypeSelect)}
-                      >
-                        {
-                          PROXY_TYPE_LABEL_PAIRS.map(
-                            ([type, label]) =>
-                              (<option value={type} selected={type === this.state.newType}>
-                                {label || type}
-                              </option>)
-                          )
-                        }
-                      </select>
-                    </td>
-                    <td>
-                      {/* LAST-2: HOSTNAME */}
-                      <input required
-                        class={scopedCss.noPad}
-                        placeholder="89.140.125.17" value={this.state.newHostname}
-                        name="hostname"
-                        onInvalid={linkEvent(this, this.showInvalidMessage)}
-                      />
-                    </td>
-                    <td>
-                      {/* LAST-1: PORT */}
-                      <input required type="number"
-                        class={scopedCss.noPad + ' ' + scopedCss.padLeft} style="min-width: 4em"
-                        placeholder="9150" value={this.state.newPort}
-                        min="0" step="1" max={MAX_PORT} pattern="[0-9]{1,5}"
-                        name="port"
-                        onInvalid={linkEvent(this, this.showInvalidMessage)}
-                        onkeydown={onlyPort}
-                      />
-                    </td>
-                    <td>
-                      {/* LAST */}
-                      <input type="submit" class={scopedCss.add + ' ' + scopedCss.only} title="Добавить прокси" value="+"/>
-                    </td>
-                  </tr>
-                  {/* ADD NEW PROXY ENDS. */}
+          <table class={scopedCss.editor}>
+            <thead>
+              <tr>
+                <th>протокол</th> <th>домен / IP</th> <th>порт</th> <th>
+                  <SwitchButton title="импорт/экспорт" onClick={linkEvent(this, this.handleModeSwitch)}/>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* ADD NEW PROXY STARTS. */}
+              <tr class={scopedCss.addPanel}>
+                <td>
+                  <select reqiured
+                    class={scopedCss.noPad}
+                    name="proxyType"
+                    onChange={linkEvent(this, this.handleTypeSelect)}
+                  >
+                    {
+                      PROXY_TYPE_LABEL_PAIRS.map(
+                        ([type, label]) =>
+                          (<option value={type} selected={type === this.state.selectedNewType}>
+                            {label || type}
+                          </option>)
+                      )
+                    }
+                  </select>
+                </td>
+                <td>
+                  {/* LAST-2: HOSTNAME */}
+                  <input required
+                    class={scopedCss.noPad}
+                    placeholder="89.140.125.17"
+                    name="hostname"
+                    onInvalid={linkEvent(this, this.showInvalidMessage)}
+                  />
+                </td>
+                <td>
+                  {/* LAST-1: PORT */}
+                  <input required type="number"
+                    class={scopedCss.noPad + ' ' + scopedCss.padLeft} style="min-width: 4em"
+                    placeholder="9150"
+                    min="0" step="1" max={MAX_PORT} pattern="[0-9]{1,5}"
+                    name="port"
+                    onInvalid={linkEvent(this, this.showInvalidMessage)}
+                    onkeydown={onlyPort}
+                  />
+                </td>
+                <td>
+                  {/* LAST: ADD BUTTON */}
+                  <input
+                    type="submit" class={scopedCss.add + ' ' + scopedCss.only}
+                    title="Добавить прокси" value="+"
+                  />
+                </td>
+              </tr>
+              {/* ADD NEW PROXY ENDS. */}
+              {
+                this.props.proxyStringRaw.split(/\s*;\s*/g).filter((s) => s).map((proxyAsString) => {
+
+                  const [type, addr] = proxyAsString.trim().split(/\s/);
+                  const [hostname, port] = addr.split(':');
+                  return (
+                    <tr class={scopedCss.proxyRow}>
+                      <td>{type}</td><td>{hostname}</td><td>{port}</td>
+                      <td>
+                        <button type="button" title="Повысить приоритет">↑</button>
+                        <br/>
+                        {/*<input type="submit" title="Удалить прокси" value="X"/>*/}
+                      </td>
+                    </tr>
+                  );
+
+                })
+              }
+            </tbody>
+          </table>
+        </form>
+      );
+    }
+  }
+
+  class ExportsEditor extends Component {
+
+    constructor(props) {
+      super(props);
+      this.state = {
+        ifHasErrors: false,
+        stashedExports: false,
+      };
+    }
+
+    getErrorsInStashedExports() {
+
+      if(this.state.stashedExports === false) {
+        return;
+      }
+      const errors = this.state.stashedExports.trim()
+        .replace(/#.*$/mg, '')
+        .split(/\s*;\s*/)
+        .filter((s) => s)
+        .map((proxyAsString) => {
+
+          const [rawType, addr, ...rest] = proxyAsString.split(/\s+/);
+          if (rest && rest.length) {
+            return new Error(
+              `"${rest.join(', ')}" кажется мне лишним. Вы забыли ";"?`
+            );
+          }
+          const knownTypes = PROXY_TYPE_LABEL_PAIRS.map(([type, label]) => type);
+          if( !knownTypes.includes(rawType.toUpperCase()) ) {
+            return new Error(
+              `Неверный тип ${rawType}. Известные типы: ${knownTypes.join(', ')}.`
+            );
+          }
+          if (!(addr && /^[^:]+:\d+$/.test(addr))) {
+            return new Error(
+              `Адрес прокси "${addr || ''}" не соответствует формату "<домен_или_IP>:<порт_из_цифр>".`
+            );
+          }
+          const [hostname, rawPort] = addr.split(':');
+          const port = parseInt(rawPort);
+          if (port < 0 || port > 65535) {
+            return new Error(
+              `Порт "${rawPort}" должен быть целым числом от 0 до 65535.`
+            );
+          }
+          return false;
+
+        }).filter((e) => e);
+      return errors && errors.length && errors;
+
+    }
+
+    handleModeSwitch(that, event) {
+
+      if (that.state.stashedExports !== false) {
+        const errors = that.getErrorsInStashedExports();
+        if (errors) {
+          that.setState({ifHasErrors: true});
+          that.props.funs.showErrors(...errors);
+          return;
+        }
+        that.props.updateProxyStringRaw(that.state.stashedExports);
+      }
+      that.setState({
+        stashedExports: false,
+        ifHasErrors: false,
+      });
+      that.props.onSwitch();
+
+    }
+
+    handleTextareaChange(that, event) {
+
+      let newVal = event.target.value.trim();
+      if (newVal && !newVal.endsWith(';')) {
+        newVal += ';';
+      }
+      that.setState({stashedExports: newVal});
+
+    }
+
+    handleSubmit(that, event) {
+
+      event.preventDefault();
+      this.handleModeSwitch(this, event);
+
+    }
+
+    render(props) {
+
+      return (
+        <form onSubmit={linkEvent(this, this.handleSubmit)}>
+          <table class={scopedCss.editor}>
+            <thead>
+              <tr>
+                <th style="width: 100%">
                   {
-                    this.state.proxyStringRaw.split(/\s*;\s*/g).filter((s) => s).map((proxyAsString) => {
-
-                      const [type, addr] = proxyAsString.trim().split(/\s/);
-                      const [hostname, port] = addr.split(':');
-                      return (
-                        <tr class={scopedCss.proxyRow}>
-                          <td>{type}</td><td>{hostname}</td><td>{port}</td>
-                          <td>
-                            <button title="Повысить приоритет">↑</button>
-                            <br/>
-                            <input type="submit" title="Удалить прокси" value="X"/>
-                          </td>
-                        </tr>
-                      );
-
-                    })
+                    this.state.stashedExports === false
+                      ? 'Жду изменений...'
+                      : (this.state.ifHasErrors
+                          ? (<span><a href="">Сбросьте изменения</a> или поправьте</span>)
+                          : (<a href="">Сбросить изменения</a>)
+                        )
                   }
-                </tbody>
-              </table>
-
-            )) : ((
-
-              <table class={scopedCss.editor}>
-                <thead>
-                  <tr>
-                    <th style="width: 100%">{this.state.exportsStatus || 'Прокси видят содержимое HTTP-сайтов.'}</th>
-                    <th style="width: 1%">{this.switchBtn}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="2"><textarea
-                        class={scopedCss.textarea}
-                        spellcheck={false}
-                        placeholder={`
+                </th>
+                <th style="width: 1%">
+                  <SwitchButton title="Переключиться в табличный режим" onClick={linkEvent(this, this.handleModeSwitch)}/>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="2"><textarea
+                    class={scopedCss.textarea}
+                    spellcheck={false}
+                    placeholder={`
 SOCKS5 localhost:9050; # Tor Expert
 SOCKS5 localhost:9150; # Tor Browser
 HTTPS 11.22.33.44:3143;
 PROXY foobar.com:8080; # Not HTTP!`.trim()}
-                        onChange={linkEvent(this, this.handleTextareaChange)}
-                        value={
-                          this.state.stashedExports !== false
-                            ? this.state.stashedExports
-                            : this.state.proxyStringRaw.replace(/\s*;\s*/g, ';\n')
-                        }
-                      /></td>
-                  </tr>
-                </tbody>
-              </table>
-            ))
-          }
+                    onChange={linkEvent(this, this.handleTextareaChange)}
+                    value={
+                      this.state.stashedExports !== false
+                        ? this.state.stashedExports
+                        : (this.props.proxyStringRaw || '').replace(/\s*;\s*/g, ';\n')
+                    }
+                  /></td>
+              </tr>
+            </tbody>
+          </table>
         </form>
       );
+
+    }
+
+  }
+
+  return class ProxyEditor extends Component {
+
+    constructor(props) {
+
+      super(props);
+      this.state = {
+        proxyStringRaw: localStorage.getItem(UI_RAW) || '',
+        ifExportsMode: false,
+      };
+      this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
+      
+    }
+
+    preventLostOfChanges() {
+
+      window.onbeforeunload = () => true; // TODO
+
+    }
+
+    render(originalProps) {
+
+      const props = Object.assign({
+        proxyStringRaw: this.state.proxyStringRaw,
+        onSwitch: this.handleSwitch,
+        updateProxyStringRaw: (newVal) => this.setState({proxyStringRaw: newVal}),
+      }, originalProps);
+      
+      return this.state.ifExportsMode
+        ? createElement(ExportsEditor, props)
+        : createElement(TabledEditor, props);
 
     };
   }
