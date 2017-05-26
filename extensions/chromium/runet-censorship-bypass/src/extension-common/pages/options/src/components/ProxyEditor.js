@@ -460,6 +460,18 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
   }
 
+  const migrate = (proxyStringRaw) => {
+    /* In the old format \n\r? could be used as a separator. */
+
+    return proxyStringRaw
+      .replace(/#.*$/mg, '') // Strip comments.
+      .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
+      .map( (p) => p.trim() )
+      .filter((p) => p)
+      .join(';\n');
+
+  };
+
   let waitingTillMount = [];
 
   return class ProxyEditor extends Component {
@@ -468,7 +480,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
       super(props);
       const oldValue = typeof props.conf.value === 'string' && props.conf.value;
-      const newValue = oldValue || localStorage.getItem(UI_RAW) || '';
+      const newValue = migrate(oldValue || localStorage.getItem(UI_RAW) || '');
       this.state = {
         proxyStringRaw: newValue,
         ifExportsMode: false,
