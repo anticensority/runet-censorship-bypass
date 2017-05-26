@@ -20,10 +20,8 @@ export default function getModList(theState) {
 
     handleCheck(confMeta, ifChecked) {
 
-      console.log('handle CHECK:', ifChecked);
       this.state.checks[confMeta.index] = ifChecked;
       if (ifChecked === false || !confMeta.ifChild) {
-        console.log('NO CHILD OR FALSE', confMeta);
         this.handleNewValue(confMeta, ifChecked);
       } else {
         this.setState({
@@ -37,7 +35,6 @@ export default function getModList(theState) {
 
     handleNewValue({ conf, index }, newValue) {
 
-      console.log('handle NEW VALUE', conf.key, newValue);
       this.props.onConfChanged({
         targetConf: conf,
         targetIndex: index,
@@ -62,7 +59,6 @@ export default function getModList(theState) {
                 Object.assign({}, props, {conf, onNewValue: (newValue) => this.handleNewValue(confMeta, newValue)})
               );
 
-            console.log('CHIIIIILD', child);
             return (<InfoLi
               conf={conf}
               type='checkbox'
