@@ -134,7 +134,7 @@ export default function getProxyEditor(theState) {
   const SwitchButton = (props) =>
     (
       <button
-        type="button" disabled={props.ifInputsDisabled}
+        type="button"
         class={'emoji' + ' ' + scopedCss.export + ' ' + scopedCss.only}
         title={props.title}
         onClick={props.onClick}
@@ -187,7 +187,7 @@ export default function getProxyEditor(theState) {
       const port = elements.port;
 
       that.props.setProxyStringRaw(
-        `${that.props.proxyStringRaw} ${type} ${hostname}:${port};`.trim()
+        `${that.props.proxyStringRaw.trim()}\n;${type} ${hostname}:${port};`.trim()
       );
 
     }
@@ -195,10 +195,15 @@ export default function getProxyEditor(theState) {
     handleDelete(that, {proxyAsString, index}) {
 
       event.preventDefault();
+      /*
       const proxyStrings = splitBySemi(that.props.proxyStringRaw);
       proxyStrings.splice(index, 1);
-
-      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
+      */
+      const newVal = that.props.proxyStringRaw.replace(
+        new RegExp(`${proxyAsString}(?:\s*;\s*)*`, 'g'),
+        ''
+      );
+      that.props.setProxyStringRaw( newVal );
 
     }
 
@@ -208,11 +213,17 @@ export default function getProxyEditor(theState) {
       if (index < 1) {
         return;
       }
-      const proxyStrings = splitBySemi(that.props.proxyStringRaw);
-      proxyStrings.splice(index - 1, 2, proxyStrings[index], proxyStrings[index-1]);
 
-      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
-      
+      const proxyStrs = splitBySemi(that.props.proxyStringRaw);
+      const target = proxyStrs[index - 1];
+      const newVal = that.props.proxyStringRaw
+        .replace(proxyAsString, target)
+        .replace(target, proxyAsString);
+
+      //proxyStrings.splice(index - 1, 2, proxyStrings[index], proxyStrings[index-1]);
+
+      that.props.setProxyStringRaw( newVal );
+
     }
 
     handleSubmit(that, event) {
@@ -255,7 +266,7 @@ export default function getProxyEditor(theState) {
                 </td>
                 <td>
                   {/* LAST-2: HOSTNAME */}
-                  <input required disabled={props.ifInputsDisabled}
+                  <input required
                     class={scopedCss.noPad}
                     placeholder="89.140.125.17"
                     name="hostname"
@@ -265,7 +276,7 @@ export default function getProxyEditor(theState) {
                 </td>
                 <td>
                   {/* LAST-1: PORT */}
-                  <input required type="number" disabled={props.ifInputsDisabled}
+                  <input required type="number"
                     class={scopedCss.noPad + ' ' + scopedCss.padLeft} style="min-width: 4em"
                     placeholder="9150"
                     min="0" step="1" max={MAX_PORT} pattern="[0-9]{1,5}"
@@ -277,8 +288,8 @@ export default function getProxyEditor(theState) {
                 </td>
                 <td>
                   {/* LAST: ADD BUTTON */}
-                  <input type="submit" disabled={props.ifInputsDisabled}
-                    class={scopedCss.add + ' ' + scopedCss.only}
+                  <input
+                    type="submit" class={scopedCss.add + ' ' + scopedCss.only}
                     title="Добавить прокси" value="+"
                   />
                 </td>
@@ -292,13 +303,13 @@ export default function getProxyEditor(theState) {
                   return (
                     <tr class={scopedCss.proxyRow}>
                       <td>
-                        <button type="button" disabled={props.ifInputsDisabled}
+                        <button type="button"
                           class={scopedCss.only} title="Удалить"
                           onClick={() => this.handleDelete(this, {proxyAsString, index})}
                         >X</button>
                       </td><td>{type}</td><td>{hostname}</td><td>{port}</td>
                       <td>
-                        <button type="button" disabled={props.ifInputsDisabled}
+                        <button type="button"
                           class={scopedCss.only} title="Повысить приоритет"
                           onClick={() => this.raisePriority(this, {proxyAsString, index})}
                         >▲</button>
@@ -397,7 +408,7 @@ export default function getProxyEditor(theState) {
     handleTextareaChange(that, event) {
 
       that.setState({
-        stashedExports: normilizeProxyString(event.target.value),
+        stashedExports: event.target.value,
       });
 
     }
@@ -421,7 +432,7 @@ export default function getProxyEditor(theState) {
                 <th style="width: 100%">
                   {
                     this.state.stashedExports === false
-                      ? 'Комментарии не поддерживаются!'
+                      ? 'Жду изменений...'
                       : (this.state.ifHasErrors
                           ? (<span><a href="" onClick={reset}>Сбросьте изменения</a> или поправьте</span>)
                           : (<a href="" onClick={reset}>Сбросить изменения</a>)
@@ -462,30 +473,20 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
   return class ProxyEditor extends Component {
 
-    constructor(props/*{ conf, onNewValue, ifInputsDisabled }*/) {
+    constructor(props) {
 
       super(props);
-      console.log('CONSTRUCTOR')
-      const oldValue = typeof props.conf.value === 'string' && props.conf.value;
-      const newValue = oldValue || localStorage.getItem(UI_RAW) || '';
       this.state = {
-        proxyStringRaw: newValue,
+        proxyStringRaw: localStorage.getItem(UI_RAW) || '',
         ifExportsMode: false,
       };
       this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
-      this.mayEmitNewValue(oldValue, newValue);
       
     }
 
-    mayEmitNewValue(oldValue, newValue) {
+    preventLostOfChanges() {
 
-      console.log('emit?', oldValue, 'vs', newValue);
-      if ( // Reject: 1) both `false` OR 2) both `===`.
-        ( Boolean(oldValue) || Boolean(newValue) ) && oldValue !== newValue
-      ) {
-        console.log('EMIT');
-        this.props.onNewValue(newValue);
-      }
+      window.onbeforeunload = () => true; // TODO
 
     }
 
@@ -494,17 +495,9 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       const props = Object.assign({
         proxyStringRaw: this.state.proxyStringRaw,
         onSwitch: this.handleSwitch,
-        setProxyStringRaw: (newValue) => {
-
-          const oldValue = this.state.proxyStringRaw;
-          localStorage.setItem(UI_RAW, newValue);
-          this.setState({proxyStringRaw: newValue});
-          this.mayEmitNewValue(oldValue, newValue);
-
-        },
+        setProxyStringRaw: (newVal) => this.setState({proxyStringRaw: newVal}),
       }, originalProps);
       
-      return createElement(ExportsEditor, props);
       return this.state.ifExportsMode
         ? createElement(ExportsEditor, props)
         : createElement(TabledEditor, props);

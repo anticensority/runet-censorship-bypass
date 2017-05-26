@@ -21,6 +21,8 @@ export default function getMain(theState) {
   const ApplyMods = getApplyMods(theState);
   const Notifications = getNotifications(theState);
 
+  //const addChecks = (arr) => arr.map( (conf) => Object.assign(conf, {ifChecked: Boolean(conf.value)}) );
+
   const checksName = 'pacMods';
 
   return class Main extends Component {
@@ -35,6 +37,7 @@ export default function getMain(theState) {
           'ownProxies': props.apis.pacKitchen.getOrderedConfigs('ownProxies'),
         },
       };
+      this.handleModChange = this.handleModChange.bind(this);
 
     }
 
@@ -64,33 +67,34 @@ export default function getMain(theState) {
 
     }
 
-    handleModCheck(that, {targetConf, targetIndex, targetChildren}) {
+    handleModChange({targetConf, targetIndex, newValue}) {
 
-      const oldCats = that.state.catToOrderedMods;
-      const newCats = Object.keys(that.state.catToOrderedMods).reduce((acc, cat) => {
+      const oldCats = this.state.catToOrderedMods;
+      const newCats = Object.keys(this.state.catToOrderedMods).reduce((acc, cat) => {
 
         if (cat !== targetConf.category) {
           acc[cat] = oldCats[cat];
         } else {
-          acc[cat] = oldCats[cat].map(
-            (conf, index) => targetIndex === index
-              ? Object.assign({}, conf, {value: !targetConf.value})
-              : conf
-          );
+          acc[cat] = oldCats[cat].map((conf, index) => {
+
+            if (targetIndex !== index) {
+              return conf;
+            }
+            console.log(`${conf.key} := ${newValue}`);
+            return Object.assign({}, conf, {
+              value: newValue
+            });
+
+          });
         }
         return acc;
 
       }, {});
       
-      that.setState({ catToOrderedMods: newCats });
-
-    }
-
-    handleModChange(that, event) {
-
-      if (event.target.name === checksName) {
-        that.setState({ifModsChangesStashed: true});
-      }
+      this.setState({
+        catToOrderedMods: newCats,
+        ifModsChangesStashed: true,
+      });
 
     }
 
@@ -98,14 +102,13 @@ export default function getMain(theState) {
 
       const applyModsEl = createElement(ApplyMods, Object.assign({}, props,
         {
-          disabled: !this.state.ifModsChangesStashed || props.ifInputsDisabled,
+          ifInputsDisabled: !this.state.ifModsChangesStashed || props.ifInputsDisabled,
           onClick: linkEvent(this, this.handleModApply),
         }
       ));
 
       const modsHandlers = {
-        onChange: linkEvent(this, this.handleModChange),
-        onClick: (...args) => this.handleModCheck(this, ...args),
+        onConfChanged: this.handleModChange,
       };
 
       return createElement(TabPanel, {
@@ -127,7 +130,7 @@ export default function getMain(theState) {
               Object.assign({}, props, {
                 orderedConfigs: this.state.catToOrderedMods['ownProxies'],
                 childrenOfMod: {
-                  customProxyStringRaw: createElement(ProxyEditor, props),
+                  customProxyStringRaw: ProxyEditor,
                 },
                 name: checksName,
               }, modsHandlers)
