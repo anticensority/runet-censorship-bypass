@@ -225,105 +225,117 @@
     cook(pacData, pacMods = mandatory()) {
 
       return pacMods.ifNoMods ? pacData : pacData + `${ kitchenStartsMark }
-;+function(global) {
-  "use strict";
-
-  const originalFindProxyForURL = FindProxyForURL;
-  global.FindProxyForURL = function(url, host) {
-    ${function() {
-
-      let res = pacMods.ifProhibitDns ? `
-    global.dnsResolve = function(host) { return null; };
-      ` : '';
-      if (pacMods.ifProxyHttpsUrlsOnly) {
-
-        res += `
-    if (!url.startsWith("https")) {
-      return "DIRECT";
-    }
-        `;
-      }
-      res += `
-    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"; DIRECT"'};`;
-      if (pacMods.filteredCustomsString) {
-        res += `
-    const filteredCustomProxies = "; ${pacMods.filteredCustomsString}";`;
-      }
-
-      const ifIncluded = pacMods.included && pacMods.included.length;
-      const ifExcluded = pacMods.excluded && pacMods.excluded.length;
-      const ifExceptions = ifIncluded || ifExcluded;
-
-      if (ifExceptions) {
-        res += `
-
-    /* EXCEPTIONS START */
-    const dotHost = '.' + host;
-    const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
-    const domainReducer = (maxWeight, [domain, ifIncluded]) => {
-
-      if (!isHostInDomain(domain)) {
-        return maxWeight;
-      }
-      const newWeightAbs = domain.length;
-      if (newWeightAbs < Math.abs(maxWeight)) {
-        return maxWeight;
-      }
-      return newWeightAbs*(ifIncluded ? 1 : -1);
-
-    };
-
-    const excWeight = ${JSON.stringify(Object.entries(pacMods.exceptions))}.reduce( domainReducer, 0 );
-    if (excWeight !== 0) {
-      if (excWeight < 0) {
-        // Never proxy it!
-        return "DIRECT";
-      }
-      // Always proxy it!
-      ${ pacMods.filteredCustomsString
-        ? `return filteredCustomProxies + directIfAllowed;`
-        : '/* No custom proxies -- continue. */'
-      }
-    }
-    /* EXCEPTIONS END */
-`;
-      }
-      res += `
-    const pacScriptProxies = originalFindProxyForURL(url, host)${
-          pacMods.ifProxyOrDie ? '.replace(/DIRECT/g, "")' : ' + directIfAllowed'
-      };`;
-      if(
-        !pacMods.ifUseSecureProxiesOnly &&
-        !pacMods.filteredCustomsString &&
-         pacMods.ifUsePacScriptProxies
-      ) {
-        return res + `
-    return pacScriptProxies + directIfAllowed;`;
-      }
-
-      return res + `
-    let pacProxyArray = pacScriptProxies.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
-    const ifNoProxies = pacProxyArray${pacMods.ifProxyOrDie ? '.length === 0' : '.every( (p) => /^DIRECT$/i.test(p) )'};
-    if (ifNoProxies) {
-      // Directs only or null, no proxies.
-      return "DIRECT";
-    }
-    return ` +
+/******/
+/******/;+function(global) {
+/******/  "use strict";
+/******/
+/******/  const originalFindProxyForURL = FindProxyForURL;
+/******/  global.FindProxyForURL = function(url, host) {
+/******/
+    ${
       function() {
 
-        if (!pacMods.ifUsePacScriptProxies) {
-          return '';
-        }
-        let filteredPacExp = 'pacScriptProxies';
-        if (pacMods.ifUseSecureProxiesOnly) {
-          filteredPacExp =
-            'pacProxyArray.filter( (pStr) => /^HTTPS\\s/.test(pStr) ).join("; ")';
-        }
-        return filteredPacExp + ' + ';
+        let res = pacMods.ifProhibitDns ? `
+/******/
+/******/    global.dnsResolve = function(host) { return null; };
+/******/
+/******/` : '';
+        if (pacMods.ifProxyHttpsUrlsOnly) {
 
-      }() + `${pacMods.filteredCustomsString ? 'filteredCustomProxies + ' : ''}directIfAllowed;`; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+          res += `
+/******/
+/******/    if (!url.startsWith("https")) {
+/******/      return "DIRECT";
+/******/    }
+/******/
+/******/  `;
+        }
+        res += `
+/******/
+/******/    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"; DIRECT"'};
+/******/`;
+        if (pacMods.filteredCustomsString) {
+          res += `
+/******/
+/******/    const filteredCustomProxies = "; ${pacMods.filteredCustomsString}";
+/******/`;
+        }
 
-    }()}
+        const ifIncluded = pacMods.included && pacMods.included.length;
+        const ifExcluded = pacMods.excluded && pacMods.excluded.length;
+        const ifExceptions = ifIncluded || ifExcluded;
+
+        if (ifExceptions) {
+          res += `
+/******/
+/******/    /* EXCEPTIONS START */
+/******/    const dotHost = '.' + host;
+/******/    const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
+/******/    const domainReducer = (maxWeight, [domain, ifIncluded]) => {
+/******/
+/******/      if (!isHostInDomain(domain)) {
+/******/        return maxWeight;
+/******/      }
+/******/      const newWeightAbs = domain.length;
+/******/      if (newWeightAbs < Math.abs(maxWeight)) {
+/******/        return maxWeight;
+/******/      }
+/******/      return newWeightAbs*(ifIncluded ? 1 : -1);
+/******/
+/******/    };
+/******/
+/******/    const excWeight = ${JSON.stringify(Object.entries(pacMods.exceptions))}.reduce( domainReducer, 0 );
+/******/    if (excWeight !== 0) {
+/******/      if (excWeight < 0) {
+/******/        // Never proxy it!
+/******/        return "DIRECT";
+/******/      }
+/******/      // Always proxy it!
+${        pacMods.filteredCustomsString
+            ? `/******/      return filteredCustomProxies + directIfAllowed;`
+            : '/******/      /* No custom proxies -- continue. */'
+}
+/******/    }
+/******/    /* EXCEPTIONS END */
+`;
+        }
+        res += `
+/******/    const pacScriptProxies = originalFindProxyForURL(url, host)${
+/******/          pacMods.ifProxyOrDie ? '.replace(/DIRECT/g, "")' : ' + directIfAllowed'
+        };`;
+        if(
+          !pacMods.ifUseSecureProxiesOnly &&
+          !pacMods.filteredCustomsString &&
+           pacMods.ifUsePacScriptProxies
+        ) {
+          return res + `
+/******/    return pacScriptProxies + directIfAllowed;`;
+        }
+
+        return res + `
+/******/    let pacProxyArray = pacScriptProxies.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
+/******/    const ifNoProxies = pacProxyArray${pacMods.ifProxyOrDie ? '.length === 0' : '.every( (p) => /^DIRECT$/i.test(p) )'};
+/******/    if (ifNoProxies) {
+/******/      // Directs only or null, no proxies.
+/******/      return "DIRECT";
+/******/    }
+/******/    return ` +
+        function() {
+
+          if (!pacMods.ifUsePacScriptProxies) {
+            return '';
+          }
+          let filteredPacExp = 'pacScriptProxies';
+          if (pacMods.ifUseSecureProxiesOnly) {
+            filteredPacExp =
+              'pacProxyArray.filter( (pStr) => /^HTTPS\\s/.test(pStr) ).join("; ")';
+          }
+          return filteredPacExp + ' + ';
+
+        }() + `${pacMods.filteredCustomsString ? 'filteredCustomProxies + ' : ''}directIfAllowed;`; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+
+      }()
+    }
 
   };
 
