@@ -9,10 +9,10 @@ export default function getExceptions(theState) {
 
   const scopedCss = css`
 
-    #excMods {
+    .excMods {
       padding-top: 1em;
     }
-    #excMods input#mods-if-mind-exceptions:not(:checked) + .label-container label {
+    .excMods input#mods-ifMindExceptions:not(:checked) + * > label {
       color: red;
     }
 
@@ -41,13 +41,14 @@ export default function getExceptions(theState) {
         :
         (<div>
           {createElement(ExcEditor, props)}
-          <ul id="excMods">
+          <ul class={scopedCss.excMods}>
             {
               props.apis.pacKitchen.getOrderedConfigs('exceptions').map((conf) => {
 
                 return <InfoLi
-                  conf={conf}
                   type="checkbox"
+                  conf={conf}
+                  idPrefix="mods-"
                   checked={conf.value}
                   disabled={props.ifInputsDisabled}
                   onClick={(evt) => {

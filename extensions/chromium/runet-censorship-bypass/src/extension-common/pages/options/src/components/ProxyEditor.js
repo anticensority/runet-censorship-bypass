@@ -460,7 +460,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
   }
 
-  let waitingNewValues = [];
+  let waitingTillMount = [];
 
   return class ProxyEditor extends Component {
 
@@ -474,22 +474,22 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
         ifExportsMode: false,
       };
       this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
-      waitingNewValues.push(newValue); // Wait till mount or eat bugs.
+      waitingTillMount.push(newValue); // Wait till mount or eat bugs.
       
     }
 
     componentDidMount() {
 
-      if (waitingNewValues.length) {
-        this.mayEmitNewValue(this.props.value, waitingNewValues.pop());
-        waitingNewValues = [];
+      if (waitingTillMount.length) {
+        this.mayEmitNewValue(this.props.value, waitingTillMount.pop());
+        waitingTillMount = [];
       }
 
     }
 
     componentDidUnmount() {
 
-      waitingNewValues = [];
+      waitingTillMount = [];
 
     }
 
