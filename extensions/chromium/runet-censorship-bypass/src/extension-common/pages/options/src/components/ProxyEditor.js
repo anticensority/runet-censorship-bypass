@@ -460,12 +460,13 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
   }
 
+  let waitingNewValues = [];
+
   return class ProxyEditor extends Component {
 
     constructor(props/*{ conf, onNewValue, ifInputsDisabled }*/) {
 
       super(props);
-      console.log('CONSTRUCTOR')
       const oldValue = typeof props.conf.value === 'string' && props.conf.value;
       const newValue = oldValue || localStorage.getItem(UI_RAW) || '';
       this.state = {
@@ -473,17 +474,30 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
         ifExportsMode: false,
       };
       this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
-      this.mayEmitNewValue(oldValue, newValue);
+      waitingNewValues.push(newValue); // Wait till mount or eat bugs.
       
+    }
+
+    componentDidMount() {
+
+      if (waitingNewValues.length) {
+        this.mayEmitNewValue(this.props.value, waitingNewValues.pop());
+        waitingNewValues = [];
+      }
+
+    }
+
+    componentDidUnmount() {
+
+      waitingNewValues = [];
+
     }
 
     mayEmitNewValue(oldValue, newValue) {
 
-      console.log('emit?', oldValue, 'vs', newValue);
       if ( // Reject: 1) both `false` OR 2) both `===`.
         ( Boolean(oldValue) || Boolean(newValue) ) && oldValue !== newValue
       ) {
-        console.log('EMIT');
         this.props.onNewValue(newValue);
       }
 
@@ -504,7 +518,6 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
         },
       }, originalProps);
       
-      return createElement(ExportsEditor, props);
       return this.state.ifExportsMode
         ? createElement(ExportsEditor, props)
         : createElement(TabledEditor, props);

@@ -80,7 +80,6 @@ export default function getMain(theState) {
             if (targetIndex !== index) {
               return conf;
             }
-            console.log(`${conf.key} := ${newValue}`);
             return Object.assign({}, conf, {
               value: newValue
             });
