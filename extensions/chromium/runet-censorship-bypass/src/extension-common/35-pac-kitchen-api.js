@@ -74,9 +74,9 @@
     ifProxyMoreDomains: {
       ifDisabled: true,
       dflt: false,
-      category: 'ownProxies',
+      category: 'exceptions',
       label: 'проксировать .onion, .i2p и OpenNIC',
-      desc: 'Проксировать особые домены. Необходима поддержка со стороны прокси.',
+      desc: 'Проксировать особые домены. Необходима поддержка со стороны СВОИХ прокси.',
       order: 8,
     },
     ifProxyErrors: {
@@ -189,7 +189,18 @@
       self.customProxyArray = false;
     }
 
-    self.included = self.excluded = undefined;
+    [self.included, self.excluded] = [[], []];
+    if (self.ifProxyMoreDomains) {
+      self.moreDomains = [
+        /* Networks */
+        'onion', 'i2p',
+        /* OpenNIC */
+        'bbs', 'chan', 'dyn', 'free', 'geek', 'gopher', 'indy',
+        'libre', 'neo', 'null', 'o', 'oss', 'oz', 'parody', 'pirate',
+        /* OpenNIC Alternatives */
+        'bazar', 'bit', 'coin', 'emc', 'fur', 'ku', 'lib', 'te', 'ti', 'uu'
+      ];
+    }
     if (self.ifMindExceptions && self.exceptions) {
       self.included = [];
       self.excluded = [];
@@ -274,7 +285,20 @@
 
         const ifIncluded = pacMods.included && pacMods.included.length;
         const ifExcluded = pacMods.excluded && pacMods.excluded.length;
-        const ifExceptions = ifIncluded || ifExcluded;
+        const ifManualExceptions = ifIncluded || ifExcluded;
+        const finalExceptions = {};
+        if (pacMods.ifProxyMoreDomains) {
+          pacMods.moreDomains.reduce((acc, tld) => {
+
+            acc[tld] = true;
+            return acc;
+
+          }, finalExceptions);
+        }
+        if (pacMods.ifMindExceptions || ifManualExceptions) {
+          Object.assign(finalExceptions, (pacMods.exceptions || {}));
+        }
+        const ifExceptions = Object.keys(finalExceptions).length;
 
         if (ifExceptions) {
           res += `
@@ -295,7 +319,7 @@
 /******/
 /******/    };
 /******/
-/******/    const excWeight = ${JSON.stringify(Object.entries(pacMods.exceptions))}.reduce( domainReducer, 0 );
+/******/    const excWeight = ${ JSON.stringify(Object.entries(finalExceptions)) }.reduce( domainReducer, 0 );
 /******/    if (excWeight !== 0) {
 /******/      if (excWeight < 0) {
 /******/        // Never proxy it!
