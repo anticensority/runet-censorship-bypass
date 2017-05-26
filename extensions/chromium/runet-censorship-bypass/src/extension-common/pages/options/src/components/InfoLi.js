@@ -10,7 +10,7 @@ export default function getInfoLi() {
       flex-grow: 9;
       padding-left: 0.3em;
       /* Vertical align to middle. */
-      align-self: flex-end;
+      /*align-self: flex-end;*/
       line-height: 100%;
     }
 
@@ -24,6 +24,10 @@ export default function getInfoLi() {
     .infoRow {
       position: relative;
       flex-wrap: wrap;
+    }
+    .infoRow > input[type="checkbox"] {
+      position: relative;
+      top: -0.08em;
     }
     .rightBottomIcon {
       margin-left: 0.1em;
