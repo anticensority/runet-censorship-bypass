@@ -26,7 +26,7 @@ export default function getApplyMods(theState) {
 
     return (
       <section class="controlRow horFlex" style="margin-top: 1em">
-        <input type="button" value="Применить" disabled={props.disabled} onClick={props.onClick}/>
+        <input type="button" value="Применить" disabled={props.ifInputsDisabled} onClick={props.onClick}/>
         <a href="" onClick={linkEvent(props, resetMods)}>К изначальным!</a>
       </section>
     );

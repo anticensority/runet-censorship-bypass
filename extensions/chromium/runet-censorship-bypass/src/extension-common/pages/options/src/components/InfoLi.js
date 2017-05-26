@@ -122,6 +122,7 @@ export default function getInfoLi() {
           checked={props.checked}
           id={iddy}
           onClick={props.onClick}
+          onChange={props.onChange}
           disabled={props.disabled}
         />
         <div class={scopedCss.labelContainer}>
