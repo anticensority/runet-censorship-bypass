@@ -174,7 +174,8 @@
       }
     }
     if (self.ifUseLocalTor) {
-      customProxyArray.push('SOCKS5 localhost:9050', 'SOCKS5 localhost:9150');
+      self.torPoints = ['SOCKS5 localhost:9150', 'SOCKS5 localhost:9050'];
+      customProxyArray.push(...self.torPoints);
     }
 
     self.filteredCustomsString = '';
@@ -246,6 +247,16 @@
 /******/
 /******/    if (!url.startsWith("https")) {
 /******/      return "DIRECT";
+/******/    }
+/******/
+/******/  `;
+        }
+        if (pacMods.ifUseLocalTor) {
+
+          res += `
+/******/
+/******/    if (host.endsWith(".onion")) {
+/******/      return "${pacMods.torPoints.join('; ')}";
 /******/    }
 /******/
 /******/  `;
