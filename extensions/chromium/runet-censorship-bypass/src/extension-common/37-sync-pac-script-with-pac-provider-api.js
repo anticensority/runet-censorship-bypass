@@ -177,7 +177,7 @@
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
-        label: 'Антицензорити (<a href="https://github.com/anticensorship-russia/chromium-extension/issues/6" style="color: red">тормозит</a>)',
+        label: 'Антицензорити',
         desc: 'Основной PAC-скрипт от автора расширения.' +
         ' Блокировка определятся по доменному имени или IP адресу.' +
         ' Работает на switch-ах. <br/>' +

@@ -1,15 +1,57 @@
 // @flow
-import React from 'react';
-import ReactDOM from 'react-dom';
 
-let x:string; // webpack/babel must remove type here!
-x = 'Search me in the compiled bundle!';
+import Inferno from 'inferno';
+import createElement from 'inferno-create-element';
+import appendGlobalCss from './globalCss';
+import css from 'csjs-inject';
+import getApp from './components/App';
 
-let t:string;
-t = 12345; // Flow must detect error here!
+chrome.runtime.getBackgroundPage( (bgWindow) =>
+  bgWindow.apis.errorHandlers.installListenersOn(
+    window, 'PUP', async() => {
 
-// webpack/babel must transpile JSX to JS below:
-ReactDOM.render(
-  <h1>Hello from React WITH BABEL</h1>,
-  document.getElementById('root')
+      let theState;
+      {
+        const apis = bgWindow.apis;
+
+        theState = {
+          utils: bgWindow.utils,
+          apis: apis,
+          flags: {
+            /* Shortcuts to boolean values. */
+            ifNotControlled: !apis.errorHandlers.ifControllable,
+            ifMini: apis.version.ifMini,
+          },
+          bgWindow,
+        };
+      }
+
+      // IF INSIDE OPTIONS TAB
+
+      const currentTab = await new Promise(
+        (resolve) => chrome.tabs.query(
+          {active: true, currentWindow: true},
+          ([tab]) => resolve(tab)
+        )
+      );
+
+      theState.flags.ifInsideOptionsPage = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=');
+      theState.currentTab = currentTab;
+
+      // STATE DEFINED, COMPOSE.
+
+      appendGlobalCss(document, theState);
+      // Extendable css classes.
+
+      Inferno.render(
+        createElement(getApp(theState), theState),
+        document.getElementById('app-root'),
+      );
+      // READY TO RENDER
+
+      document.documentElement.style.display = 'initial';
+
+    }
+  )
 );
+
