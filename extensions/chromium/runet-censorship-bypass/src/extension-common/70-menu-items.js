@@ -6,21 +6,16 @@
 
     getItemsAsObject: () => ({
 
-      hostTracker: {
-        title: 'Сайт доступен из-за границы? Is up?',
-        getUrl: (blockedUrl) => `data:text/html;charset=utf8,<title>Запрашиваю...</title>
-                <form class='tracker-form' method='POST'
-                  action='https://www.host-tracker.com/ru/InstantCheck/Create'>
-                <input name='InstantCheckUrl' value='${new URL(blockedUrl).hostname}'
-                  type='hidden'>
-                </form>
-                <script>document.querySelector('.tracker-form').submit()<\/script>`,
+      googleTranslate: {
+        title: 'Через Google Translate',
+        getUrl: (blockedUrl) => (
+          'https://translate.google.com/translate?hl=&sl=en&tl=ru&anno=2&sandbox=1&u=' + blockedUrl),
         order: 0,
       },
 
-      antizapretInfo: {
-        title: 'Сайт в реестре блокировок?',
-        getUrl: (blockedUrl) => 'https://antizapret.info/index.php?search=' + new URL(blockedUrl).hostname,
+      hostTracker: {
+        title: 'Из кэша Google',
+        getUrl: (blockedUrl) => 'http://webcache.googleusercontent.com/search?q=cache:' + blockedUrl,
         order: 1,
       },
 
@@ -30,16 +25,15 @@
         order: 2,
       },
 
-      googleTranslate: {
-        title: 'Через Google Translate',
-        getUrl: (blockedUrl) => (
-          'https://translate.google.com/translate?hl=&sl=en&tl=ru&anno=2&sandbox=1&u=' + blockedUrl),
-        order: 3,
-      },
-
       otherUnblock: {
         title: 'Разблокировать по-другому',
         getUrl: (blockedUrl) => ('https://rebrand.ly/ac-unblock#' + blockedUrl),
+        order: 3,
+      },
+
+      antizapretInfo: {
+        title: 'Сайт в реестре блокировок?',
+        getUrl: (blockedUrl) => 'https://antizapret.info/index.php?search=' + new URL(blockedUrl).hostname,
         order: 4,
       },
 

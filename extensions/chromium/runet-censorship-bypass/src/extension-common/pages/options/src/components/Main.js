@@ -110,7 +110,7 @@ export default function getMain(theState) {
         onConfChanged: this.handleModChange,
       };
 
-      return createElement(TabPanel, {
+      return createElement(TabPanel, Object.assign({}, props, {
         tabs: [
           {
             label: 'PAC-скрипт',
@@ -160,7 +160,7 @@ export default function getMain(theState) {
         alwaysShownWith: {
           'applyMods': ['ownProxies', 'mods'],
         },
-      });
+      }));
 
     }
 
