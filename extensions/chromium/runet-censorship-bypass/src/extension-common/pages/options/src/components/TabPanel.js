@@ -114,8 +114,9 @@ export default function getTabPannel({ flags, baseCss }) {
     constructor(props) {
 
       super(props);
+      const fromHash = window.location.hash.substr(1)
       this.state = {
-        chosenTabIndex: 0,
+        chosenTabKeyRaw: fromHash,
       };
 
     }
@@ -123,7 +124,17 @@ export default function getTabPannel({ flags, baseCss }) {
     render(props) {
 
       const indexedTabs = props.tabs.filter((tab) => tab.label);
-      const chosenTabKey = indexedTabs[this.state.chosenTabIndex].key;
+
+      let [chosenTabIndex] = indexedTabs
+        .map((tab, index) => tab.key === this.state.chosenTabKeyRaw ? index : false)
+        .filter((index) => index !== false);
+      if (!(chosenTabIndex >= 0)) {
+        chosenTabIndex = 0;
+      }
+
+      const chosenTabKey = indexedTabs[chosenTabIndex].key;
+      console.log(chosenTabKey, chosenTabIndex, indexedTabs);
+      window.location.hash = chosenTabKey;
 
       return (
         <div>
@@ -132,8 +143,8 @@ export default function getTabPannel({ flags, baseCss }) {
               {
                 indexedTabs.map((tab, index) =>
                   (<li>
-                    <input type="radio" name="selectedTabLabel" id={'radioLabel' + index} checked={this.state.chosenTabIndex === index} class="off"/>
-                    <label onClick={() => this.setState({chosenTabIndex: index})} for={'radioLabel' + index} class={scopedCss.navLabel}>{tab.label}</label>
+                    <input type="radio" name="selectedTabLabel" id={'radioLabel' + index} checked={chosenTabIndex === index} class="off"/>
+                    <label onClick={() => this.setState({chosenTabKeyRaw: tab.key})} for={'radioLabel' + index} class={scopedCss.navLabel}>{tab.label}</label>
                   </li>)
                 )
               }
