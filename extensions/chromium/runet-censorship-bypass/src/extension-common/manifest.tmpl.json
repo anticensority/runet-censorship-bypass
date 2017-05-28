@@ -7,7 +7,7 @@
   "version": "0.0.${version}",
   "icons": {
     "128": "/icons/default-128.png"
-	},
+  },
   "author": "ilyaigpetrov@gmail.com",
   "homepage_url": "https://github.com/anticensorship-russia/chromium-extension",
 
@@ -43,6 +43,6 @@
   },
   "options_ui": {
      "page": "/pages/options/index.html",
-     "chrome_style": true
+     "chrome_style": false
    }
 }

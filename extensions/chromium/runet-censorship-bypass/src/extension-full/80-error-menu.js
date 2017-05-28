@@ -9,24 +9,26 @@ window.chrome.browserAction.setBadgeBackgroundColor({
 chrome.webNavigation.onErrorOccurred.addListener((details) => {
 
   const tabId = details.tabId;
-  if (!(tabId > 0)) {
-    alert(tabId);
+  console.log(details.url, details.error, details);
+  if ( !(details.frameId === 0 && tabId >= 0) ||
+        [
+          'net::ERR_BLOCKED_BY_CLIENT',
+          'net::ERR_ABORTED',
+        ].includes(details.error) ) {
     return;
   }
 
-  //console.log('SETTING 2', details.tabId);
+  console.log(details.url, details.error, details);
+
   chrome.browserAction.setPopup({
     tabId,
-    popup: './pages/on-error-menu/index.html',
+    popup: './pages/options/index.html#exceptions',
   });
 
-  /*
   window.chrome.browserAction.setBadgeBackgroundColor({
     tabId,
-    color: '#09f911',
+    color: '#4285f4',
   });
-  */
-
   chrome.browserAction.setBadgeText({
     tabId,
     text: '●●●',

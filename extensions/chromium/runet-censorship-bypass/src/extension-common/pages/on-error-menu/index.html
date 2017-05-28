@@ -3,10 +3,29 @@
   <head>
     <meta charset="utf-8">
     <title>Обход ошибки</title>
-    <style></style>
+    <style>
+      html, body, ol, ul, li {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        margin: 1em;
+      }
+      .nowrap {
+        display: block;
+        white-space: nowrap;
+        word-break: keep-all;
+      }
+      li {
+        margin: 0.5em 1em;
+      }
+      a:not(:hover) {
+        text-decoration: none;
+      }
+    </style>
   </head>
   <body>
-    <ol id="menuItems"></ol>
+    <ol id="menuItems" class="nowrap"></ol>
     <script src="./index.js"></script>
     <script src="../lib/keep-links-clickable.js"></script>
   </body>
