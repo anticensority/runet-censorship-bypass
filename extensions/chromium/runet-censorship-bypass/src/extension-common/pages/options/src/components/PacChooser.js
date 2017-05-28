@@ -28,6 +28,7 @@ export default function getPacChooser(theState) {
 
     .updateButton {
       visibility: hidden;
+      margin-left: 0.5em;
     }
     input:checked + div .updateButton {
       visibility: inherit;

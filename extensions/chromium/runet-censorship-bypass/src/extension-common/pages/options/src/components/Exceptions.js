@@ -62,7 +62,21 @@ export default function getExceptions(theState) {
 
               })
             }
-            <li><input type="checkbox" style="visibility: hidden"/><a href>Смотреть последние ошибки</a></li>
+            <InfoLi
+              type="checkbox"
+              conf={{
+                key: 'lookupLastErrors',
+                desc: 'Собирать последние ошибки в запросах, чтобы вручную добавлять избранные из них в исключения.',
+                value: props.bgWindow.apis.lastErrors.ifCollecting
+              }}
+              onChange={(event) => {
+
+                props.bgWindow.apis.lastErrors.ifCollecting = event.target.checked;
+                props.funs.setStatusTo('Сделано.');
+
+              }}
+              nodeAfterLabel={(<span>Собирать <a href="../errors-to-exc/index.html">последние ошибки</a> сайтов</span>)}
+            />
           </ul>
         </div>
       );
