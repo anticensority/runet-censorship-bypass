@@ -20,10 +20,10 @@ export default function getModList(theState) {
 
     handleCheck(confMeta, ifChecked) {
 
-      this.state.checks[confMeta.index] = ifChecked;
       if (ifChecked === false || !confMeta.ifChild) {
         this.handleNewValue(confMeta, ifChecked);
       } else {
+        console.log('SET STATE', confMeta.index);
         this.setState({
           checks: this.state.checks.map(
             (ch, i) => i === confMeta.index ? ifChecked : ch
@@ -63,7 +63,7 @@ export default function getModList(theState) {
               conf={conf}
               type='checkbox'
               name={props.name}
-              checked={conf.value}
+              checked={this.state.checks[index]}
               key={index}
               onChange={(event) => this.handleCheck(confMeta, event.target.checked)}
             >

@@ -23,7 +23,6 @@ export default function getInfoLi() {
 
     .infoRow {
       position: relative;
-      flex-wrap: wrap;
     }
     .infoRow > input[type="checkbox"] {
       position: relative;
@@ -119,7 +118,7 @@ export default function getInfoLi() {
 
     const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
     return (
-      <li class={scopedCss.infoRow + ' horFlex'}>
+      <li class={scopedCss.infoRow + ' horFlex'} style={ props.children && 'flex-wrap: wrap'}>
         <input
           type={props.type}
           name={props.name}
