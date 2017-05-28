@@ -74,7 +74,7 @@
     ifProxyMoreDomains: {
       ifDisabled: true,
       dflt: false,
-      category: 'exceptions',
+      category: 'ownProxies',
       label: 'проксировать .onion, .i2p и OpenNIC',
       desc: 'Проксировать особые домены. Необходима поддержка со стороны СВОИХ прокси.',
       order: 8,

@@ -25,13 +25,37 @@ export default function getProxyEditor(theState) {
       height: 100%;
     }
 
+    table.editor input,
+    table.editor button,
+    table.editor select
+    {
+      min-width: 0;
+      min-height: 0;
+    }
+
     /* ADD PANEL */
-    table.editor tr.addPanel td {
+    table.editor tr.addPanel td,
+    table.editor tr.addPanel td input
+    {
       padding: 0;
     }
+    table.editor tr.addPanel td > select[name="proxyType"],
+    table.editor tr.addPanel td:nth-last-child(2) input /* PORT */
+    {
+      font-size: 0.9em;
+    }
+    table.editor tr.addPanel td:nth-last-child(2) input /* PORT */
+    {
+      min-width: 4em;
+    }
     /* PROXY ROW */
-    table.editor tr.proxyRow td:nth-child(2) {
+    table.editor tr.proxyRow td:nth-child(2), /* type */
+    table.editor tr.proxyRow td:nth-child(4)  /* port */
+    {
       text-align: center;
+    }
+    table.editor tr.proxyRow input[name="hostname"] {
+      padding: 0;
     }
 
     table.editor th:not(:last-child) {
@@ -56,8 +80,6 @@ export default function getProxyEditor(theState) {
     /* BUTTONS */
     table.editor input[type="submit"],
     table.editor button {
-      min-width: 0;
-      min-height: 0;
       width: 100%;
       padding: 0;
       border: none;
@@ -74,7 +96,7 @@ export default function getProxyEditor(theState) {
       font-weight: 900; 
     }
     table.editor .export {
-      padding-right: 2px;
+      /*padding-right: 2px;*/
     }
 
     /* LAST COLUMN: BUTTONS */
@@ -93,7 +115,7 @@ export default function getProxyEditor(theState) {
       padding: 0;
     }
     .padLeft {
-      padding-left: 2px;
+      padding-left: 2px !important;
     }
 
     textarea.textarea {
@@ -266,7 +288,7 @@ export default function getProxyEditor(theState) {
                 <td>
                   {/* LAST-1: PORT */}
                   <input required type="number" disabled={props.ifInputsDisabled}
-                    class={scopedCss.noPad + ' ' + scopedCss.padLeft} style="min-width: 4em"
+                    class={scopedCss.noPad + ' ' + scopedCss.padLeft}
                     placeholder="9150"
                     min="0" step="1" max={MAX_PORT} pattern="[0-9]{1,5}"
                     name="port"
@@ -296,7 +318,10 @@ export default function getProxyEditor(theState) {
                           class={scopedCss.only} title="Удалить"
                           onClick={() => this.handleDelete(this, {proxyAsString, index})}
                         >X</button>
-                      </td><td>{type}</td><td>{hostname}</td><td>{port}</td>
+                      </td>
+                      <td>{type}</td>
+                      <td><input value={hostname} name="hostname" readonly/></td>
+                      <td>{port}</td>
                       <td>
                         <button type="button" disabled={props.ifInputsDisabled}
                           class={scopedCss.only} title="Повысить приоритет"

@@ -69,6 +69,7 @@ export default function getMain(theState) {
 
     handleModChange({targetConf, targetIndex, newValue}) {
 
+      console.log('NEW VALUE', newValue);
       const oldCats = this.state.catToOrderedMods;
       const newCats = Object.keys(this.state.catToOrderedMods).reduce((acc, cat) => {
 
@@ -110,7 +111,7 @@ export default function getMain(theState) {
         onConfChanged: this.handleModChange,
       };
 
-      return createElement(TabPanel, {
+      return createElement(TabPanel, Object.assign({}, props, {
         tabs: [
           {
             label: 'PAC-скрипт',
@@ -160,7 +161,7 @@ export default function getMain(theState) {
         alwaysShownWith: {
           'applyMods': ['ownProxies', 'mods'],
         },
-      });
+      }));
 
     }
 
