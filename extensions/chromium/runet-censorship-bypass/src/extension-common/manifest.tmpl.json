@@ -32,8 +32,9 @@
       ${scripts_2x}
       , "35-pac-kitchen-api.js"
       , "37-sync-pac-script-with-pac-provider-api.js"
-      ${scripts_7x}
-      , "80-context-menus.js"
+      ${scripts_8x}
+      , "70-menu-items.js"
+      , "75-context-menus.js"
     ]
   },
   "browser_action": {
