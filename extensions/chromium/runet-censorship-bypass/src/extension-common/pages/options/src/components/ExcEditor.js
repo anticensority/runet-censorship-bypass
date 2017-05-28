@@ -332,7 +332,11 @@ export default function getExcEditor(theState) {
             </li>
             <li>
               <input id="this-yes" type="radio" name="if-proxy-this-site" checked={inputProxyingState === true} onClick={onradio}/>
-              {' '}<label for="this-yes"><span class="emoji">✔</span>&nbsp;да</label>
+              {' '}<label for="this-yes">
+                    <span
+                      class="emoji____buggy"
+                    >✔</span>&nbsp;да
+                  </label>
             </li>
             <li>
               <input id="this-no" type="radio" name="if-proxy-this-site" checked={inputProxyingState === false} onClick={onradio}/>

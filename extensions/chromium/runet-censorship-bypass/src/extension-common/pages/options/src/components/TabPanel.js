@@ -114,7 +114,7 @@ export default function getTabPannel({ flags, baseCss }) {
     constructor(props) {
 
       super(props);
-      const fromHash = window.location.hash.substr(1)
+      const fromHash = props.hashParams.get('tab');
       this.state = {
         chosenTabKeyRaw: fromHash,
       };
@@ -133,8 +133,10 @@ export default function getTabPannel({ flags, baseCss }) {
       }
 
       const chosenTabKey = indexedTabs[chosenTabIndex].key;
-      console.log(chosenTabKey, chosenTabIndex, indexedTabs);
-      window.location.hash = chosenTabKey;
+      if (chosenTabKey !== props.hashParams.get('tab')) {
+        props.hashParams.set('tab', chosenTabKey);
+        window.location.hash = props.hashParams.toString();
+      }
 
       return (
         <div>

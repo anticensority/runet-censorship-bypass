@@ -22,7 +22,7 @@ chrome.webNavigation.onErrorOccurred.addListener((details) => {
 
   chrome.browserAction.setPopup({
     tabId,
-    popup: './pages/options/index.html#exceptions',
+    popup: './pages/options/index.html#tab=exceptions&status=Правый клик по иконке = меню инструментов!',
   });
 
   window.chrome.browserAction.setBadgeBackgroundColor({
