@@ -17,9 +17,15 @@ export default function getApp(theState) {
     constructor(props) {
 
       super(props);
+
+      const hash = window.location.hash.substr(1);
+      const hashParams = new URLSearchParams(hash);
+      console.log('GOT from', hash, hashParams.toString());
+
       this.state = {
-        status: 'Загрузка...',
+        status: hashParams.get('status') || 'Загрузка...',
         ifInputsDisabled: false,
+        hashParams,
       };
 
     }
@@ -131,6 +137,7 @@ export default function getApp(theState) {
           showErrors: this.showErrors.bind(this),
         },
         ifInputsDisabled: this.state.ifInputsDisabled,
+        hashParams: this.state.hashParams,
       });
 
       return createElement('div', null, [
