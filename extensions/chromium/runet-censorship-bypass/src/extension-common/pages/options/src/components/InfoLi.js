@@ -1,4 +1,5 @@
 import Inferno from 'inferno';
+import createElement from 'inferno-create-element';
 import css from 'csjs-inject';
 
 export default function getInfoLi() {
@@ -119,18 +120,10 @@ export default function getInfoLi() {
     const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
     return (
       <li class={scopedCss.infoRow + ' horFlex'} style={ props.children && 'flex-wrap: wrap'}>
-        <input
-          type={props.type}
-          name={props.name}
-          checked={props.checked}
-          id={iddy}
-          onClick={props.onClick}
-          onChange={props.onChange}
-          disabled={props.disabled}
-        />
+        { createElement('input', Object.assign({}, props, {id: iddy})) }
         <div class={scopedCss.labelContainer}>
           <label for={iddy} dangerouslySetInnerHTML={{__html: props.conf.label}}></label>
-          &nbsp;{props.nodeAfterLabel}
+          {props.nodeAfterLabel}
         </div>
         {props.conf.desc
           ? (
