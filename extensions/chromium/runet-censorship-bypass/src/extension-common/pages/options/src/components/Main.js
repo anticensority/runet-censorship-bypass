@@ -69,6 +69,7 @@ export default function getMain(theState) {
 
     handleModChange({targetConf, targetIndex, newValue}) {
 
+      console.log('NEW VALUE', newValue);
       const oldCats = this.state.catToOrderedMods;
       const newCats = Object.keys(this.state.catToOrderedMods).reduce((acc, cat) => {
 

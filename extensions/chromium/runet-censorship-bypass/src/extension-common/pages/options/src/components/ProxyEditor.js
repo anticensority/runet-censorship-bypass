@@ -96,7 +96,7 @@ export default function getProxyEditor(theState) {
       font-weight: 900; 
     }
     table.editor .export {
-      padding-right: 2px;
+      /*padding-right: 2px;*/
     }
 
     /* LAST COLUMN: BUTTONS */
