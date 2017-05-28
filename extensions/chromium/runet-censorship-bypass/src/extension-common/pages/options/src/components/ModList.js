@@ -20,15 +20,13 @@ export default function getModList(theState) {
 
     handleCheck(confMeta, ifChecked) {
 
+      this.setState({
+        checks: this.state.checks.map(
+          (ch, i) => i === confMeta.index ? ifChecked : ch
+        )
+      });
       if (ifChecked === false || !confMeta.ifChild) {
         this.handleNewValue(confMeta, ifChecked);
-      } else {
-        console.log('SET STATE', confMeta.index);
-        this.setState({
-          checks: this.state.checks.map(
-            (ch, i) => i === confMeta.index ? ifChecked : ch
-          )
-        });
       }
 
     }

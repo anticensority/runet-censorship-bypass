@@ -62,6 +62,7 @@ export default function getExceptions(theState) {
 
               })
             }
+            <li><input type="checkbox" style="visibility: hidden"/><a href>Смотреть последние ошибки</a></li>
           </ul>
         </div>
       );
