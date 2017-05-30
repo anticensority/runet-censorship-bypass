@@ -20,10 +20,9 @@ export default function getApp(theState) {
 
       const hash = window.location.hash.substr(1);
       const hashParams = new URLSearchParams(hash);
-      console.log('GOT from', hash, hashParams.toString());
 
       this.state = {
-        status: hashParams.get('status') || 'Загрузка...',
+        status: hashParams.get('status') || 'Хорошего настроения вам!',
         ifInputsDisabled: false,
         hashParams,
       };

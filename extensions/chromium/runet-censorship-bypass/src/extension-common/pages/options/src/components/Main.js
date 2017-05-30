@@ -21,8 +21,6 @@ export default function getMain(theState) {
   const ApplyMods = getApplyMods(theState);
   const Notifications = getNotifications(theState);
 
-  //const addChecks = (arr) => arr.map( (conf) => Object.assign(conf, {ifChecked: Boolean(conf.value)}) );
-
   const checksName = 'pacMods';
 
   return class Main extends Component {
