@@ -17,14 +17,12 @@ export default function getApp(theState) {
     constructor(props) {
 
       super(props);
-
       const hash = window.location.hash.substr(1);
       const hashParams = new URLSearchParams(hash);
-
       this.state = {
-        status: hashParams.get('status') || 'Хорошего настроения вам!',
+        status: 'Загрузка...',
         ifInputsDisabled: false,
-        hashParams,
+        hashParams: hashParams,
       };
 
     }
@@ -37,6 +35,70 @@ export default function getApp(theState) {
         },
         cb
       );
+
+    }
+
+    async componentDidMount() {
+
+      const uiComDate = 'ui-last-comment-date';
+      const uiComEtag = 'ui-last-comments-etag';
+      const uiLastNews = 'ui-last-news';
+
+      const statusFromHash = this.state.hashParams.get('status');
+      if (statusFromHash) {
+        return this.setStatusTo(statusFromHash);
+      }
+
+      const comDate = localStorage[uiComDate];
+      const query = comDate ? `?since=${comDate}` : '';
+      const oldEtag = localStorage[uiComEtag];
+      const headers = {
+        'User-Agent': 'anticensorship-russia',
+      };
+      if (oldEtag) {
+
+        Object.assign(headers, {
+          'If-None-Match': oldEtag,
+        });
+
+      };
+      const params = {
+        headers: new Headers(headers),
+      };
+
+      console.log('headers', headers);
+      const [comments, etag] = await fetch(
+        `https://api.github.com/repos/edge-ware/edge-ware.github.io/issues/1/comments${query}`,
+        params
+      ).then(
+        (res) => Promise.all([
+          res.status !== 304 ? res.json() : false,
+          res.headers.get('ETag')
+        ]),
+        (err) => this.showError({message: 'Что-то не так с сетью. Не удалось достать новости.'})
+      );
+      if (etag) {
+        console.log('new ETag', etag);
+        localStorage[uiComEtag] = etag;
+      }
+      if (!(comments && comments.length)) {
+        const news = localStorage[uiLastNews];
+        if (news) {
+          this.setStatusTo(news);
+        } else {
+          this.setStatusTo('У нас ничего нового.');
+        }
+        return;
+      }
+
+      const lastComment = comments.pop();
+      if (lastComment) {
+        const lastDate = lastComment.updated_at || lastComment.created_at;
+        localStorage[uiComDate] = lastDate;
+        const newsText = lastComment.body.split(/\r?\n/)[0].replace(/^\s*#+\s*/g, '');
+        localStorage[uiLastNews] = newsText;
+        this.setStatusTo(newsText);
+      }
 
     }
 
