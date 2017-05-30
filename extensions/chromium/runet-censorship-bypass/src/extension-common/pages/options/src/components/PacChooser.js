@@ -60,6 +60,14 @@ export default function getPacChooser(theState) {
         chosenPacName: 'none',
       };
 
+      this.updatePac = function updatePac() {
+        props.funs.conduct(
+          'Обновляем...',
+          (cb) => props.apis.antiCensorRu.syncWithPacProviderAsync(cb),
+          'Обновлено.'
+        );
+      };
+
     }
 
     getCurrentProviderId() {
@@ -103,14 +111,6 @@ export default function getPacChooser(theState) {
 
     render(props) {
 
-      const updatePac = function updatePac() {
-        props.funs.conduct(
-          'Обновляем...',
-          (cb) => props.apis.antiCensorRu.syncWithPacProviderAsync(cb),
-          'Обновлено.'
-        );
-      };
-
       const iddyToCheck = this.getCurrentProviderId();
       return (
         <div>
@@ -125,7 +125,12 @@ export default function getPacChooser(theState) {
                   name="pacProvider"
                   checked={iddyToCheck === provConf.key}
                   disabled={props.ifInputsDisabled}
-                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={(evt) => { evt.preventDefault(); updatePac(); }}>[обновить]</a>}
+                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={(evt) => {
+
+                    evt.preventDefault();
+                    this.updatePac();
+
+                }}>[обновить]</a>}
                 />)
               )
             }
@@ -144,6 +149,14 @@ export default function getPacChooser(theState) {
           </div>
         </div>
       );
+
+    }
+
+    componentDidMount() {
+
+      if (this.props.apis.antiCensorRu.ifFirstInstall) {
+        this.updatePac();
+      }
 
     }
 
