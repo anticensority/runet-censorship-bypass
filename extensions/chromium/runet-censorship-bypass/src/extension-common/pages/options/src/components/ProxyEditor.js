@@ -40,7 +40,7 @@ export default function getProxyEditor(theState) {
     {
       padding: 0;
     }
-    table.editor tr.addPanel td > select[name="proxyType"],
+    table.editor tr.addPanel td > select[name="newProxyType"],
     table.editor tr.addPanel td:nth-last-child(2) input /* PORT */
     {
       font-size: 0.9em;
@@ -197,6 +197,7 @@ export default function getProxyEditor(theState) {
 
     handleAdd(that, event) {
 
+      console.log('handle add');
       const form = event.target;
       const elements = Array.from(form.elements).reduce((acc, el, index) => {
 
@@ -206,12 +207,13 @@ export default function getProxyEditor(theState) {
 
       }, {});
       const type = that.state.selectedNewType;
-      const hostname = elements.hostname;
-      const port = elements.port;
+      const hostname = elements.newHostname;
+      const port = elements.newPort;
 
-      that.props.setProxyStringRaw(
-        `${that.props.proxyStringRaw} ${type} ${hostname}:${port};`.trim()
-      );
+      const newValue = `${that.props.proxyStringRaw}; ${type} ${hostname}:${port}`
+        .trim().replace(/(\s*;\s*)+/, '; ');
+      console.log('NEW VALUE', newValue);
+      that.props.setProxyStringRaw(newValue);
 
     }
 
@@ -263,7 +265,7 @@ export default function getProxyEditor(theState) {
                 <td colspan="2">
                   <select reqiured
                     class={scopedCss.noPad}
-                    name="proxyType"
+                    name="newProxyType"
                     onChange={linkEvent(this, this.handleTypeSelect)}
                   >
                     {
@@ -281,7 +283,7 @@ export default function getProxyEditor(theState) {
                   <input required disabled={props.ifInputsDisabled}
                     class={scopedCss.noPad}
                     placeholder="89.140.125.17"
-                    name="hostname"
+                    name="newHostname"
                     onInvalid={linkEvent(this, this.showInvalidMessage)}
                     tabindex="1"
                   />
@@ -292,7 +294,7 @@ export default function getProxyEditor(theState) {
                     class={scopedCss.noPad + ' ' + scopedCss.padLeft}
                     placeholder="9150"
                     min="0" step="1" max={MAX_PORT} pattern="[0-9]{1,5}"
-                    name="port"
+                    name="newPort"
                     onInvalid={linkEvent(this, this.showInvalidMessage)}
                     onkeydown={onlyPort}
                     tabindex="2"
