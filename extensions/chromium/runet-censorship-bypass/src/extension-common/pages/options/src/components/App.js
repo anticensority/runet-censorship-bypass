@@ -40,6 +40,7 @@ export default function getApp(theState) {
 
     async componentDidMount() {
 
+      console.log('Did mount!');
       const uiComDate = 'ui-last-comment-date';
       const uiComEtag = 'ui-last-comments-etag';
       const uiLastNews = 'ui-last-news';
@@ -56,17 +57,14 @@ export default function getApp(theState) {
         'User-Agent': 'anticensorship-russia',
       };
       if (oldEtag) {
-
         Object.assign(headers, {
           'If-None-Match': oldEtag,
         });
-
       };
       const params = {
         headers: new Headers(headers),
       };
 
-      console.log('headers', headers);
       const [comments, etag] = await fetch(
         `https://api.github.com/repos/edge-ware/edge-ware.github.io/issues/1/comments${query}`,
         params
@@ -75,10 +73,14 @@ export default function getApp(theState) {
           res.status !== 304 ? res.json() : false,
           res.headers.get('ETag')
         ]),
-        (err) => this.showError({message: 'Что-то не так с сетью. Не удалось достать новости.'})
+        (err) => {
+
+          this.showErrors({message: 'Что-то не так с сетью. Не удалось достать новости.'});
+          return [false, false];
+
+        }
       );
       if (etag) {
-        console.log('new ETag', etag);
         localStorage[uiComEtag] = etag;
       }
       if (!(comments && comments.length)) {
@@ -191,6 +193,7 @@ export default function getApp(theState) {
 
     render(originalProps) {
 
+      console.log('Render');
       const props = Object.assign({}, originalProps, {
         funs: {
           setStatusTo: this.setStatusTo.bind(this),
