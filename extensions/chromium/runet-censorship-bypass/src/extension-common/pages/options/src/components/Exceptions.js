@@ -69,8 +69,8 @@ export default function getExceptions(theState) {
                   conf={{
                     key: 'lookupLastErrors',
                     desc: 'Собирать последние ошибки в запросах, чтобы вручную добавлять избранные из них в исключения.',
-                    value: props.bgWindow.apis.lastErrors.ifCollecting
                   }}
+                  checked={props.bgWindow.apis.lastErrors.ifCollecting}
                   onChange={(event) => {
 
                     props.bgWindow.apis.lastErrors.ifCollecting = event.target.checked;
