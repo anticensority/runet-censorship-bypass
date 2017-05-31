@@ -60,11 +60,12 @@ export default function getPacChooser(theState) {
         chosenPacName: 'none',
       };
 
-      this.updatePac = function updatePac() {
+      this.updatePac = function updatePac(onSuccess) {
         props.funs.conduct(
           'Обновляем...',
           (cb) => props.apis.antiCensorRu.syncWithPacProviderAsync(cb),
-          'Обновлено.'
+          'Обновлено.',
+          onSuccess
         );
       };
 
@@ -155,7 +156,7 @@ export default function getPacChooser(theState) {
     componentDidMount() {
 
       if (this.props.apis.antiCensorRu.ifFirstInstall) {
-        this.updatePac();
+        this.updatePac( this.props.funs.showNews );
       }
 
     }
