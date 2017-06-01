@@ -188,6 +188,7 @@
   window.apis = {
     version: {
       ifMini: false,
+      build: chrome.runtime.getManifest().version.replace(/\d+\.\d+\./g, ''),
     },
   };
 

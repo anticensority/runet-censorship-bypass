@@ -225,6 +225,16 @@
     ifFirstInstall: false,
     lastPacUpdateStamp: 0,
 
+    setTitle() {
+
+      const upDate = new Date(this.lastPacUpdateStamp).toLocaleString('ru-RU')
+        .replace(/:\d+$/, '');
+      chrome.browserAction.setTitle({
+        title: `Обновлялись ${upDate} | Версия ${window.apis.version.build}`,
+      });
+
+    },
+
     _currentPacProviderLastModified: 0, // Not initialized.
 
     getLastModifiedForKey(key = mandatory()) {
@@ -331,6 +341,7 @@
               this.lastPacUpdateStamp = Date.now();
               this.ifFirstInstall = false;
               this.setAlarms();
+              this.setTitle();
             }
 
             resolve([err, null, ...warns]);
@@ -509,10 +520,10 @@
       2. We have to check storage for migration before using it.
          Better on each launch then on each pull.
     */
-    const ifUpdating = antiCensorRu.version !== oldStorage.version;
 
     await new Promise((resolve) => {
 
+      const ifUpdating = antiCensorRu.version !== oldStorage.version;
       if (!ifUpdating) {
 
         // LAUNCH, RELOAD, ENABLE
@@ -549,6 +560,7 @@
     if (antiCensorRu.getPacProvider()) {
       antiCensorRu.setAlarms();
     }
+    antiCensorRu.setTitle();
 
     /*
       History of Changes to Storage (Migration Guide)
