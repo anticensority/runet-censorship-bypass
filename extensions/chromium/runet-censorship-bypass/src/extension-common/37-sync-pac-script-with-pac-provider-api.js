@@ -228,7 +228,7 @@
     setTitle() {
 
       const upDate = new Date(this.lastPacUpdateStamp).toLocaleString('ru-RU')
-        .replace(/:\d+$/, '');
+        .replace(/:\d+$/, '').replace(/\.\d{4}/, '');
       chrome.browserAction.setTitle({
         title: `Обновлялись ${upDate} | Версия ${window.apis.version.build}`,
       });
