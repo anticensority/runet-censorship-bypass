@@ -460,7 +460,7 @@ export default function getProxyEditor(theState) {
                 <th style="width: 100%">
                   {
                     this.state.stashedExports === false
-                      ? 'Комментарии не поддерживаются!'
+                      ? 'Комментарии вырезаются!'
                       : (this.state.ifHasErrors
                           ? (<span><a href="" onClick={reset}>Сбросьте изменения</a> или поправьте</span>)
                           : (<a href="" onClick={reset}>Сбросить изменения</a>)
