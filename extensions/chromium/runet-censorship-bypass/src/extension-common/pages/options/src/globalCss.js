@@ -47,7 +47,8 @@ export default function append(document, { flags }) {
     .nowrap {
       display: block;
     }
-    li, li > * {
+    .middledChildren > li,
+    .middledChildren > li > * {
       vertical-align: middle;
     }
     input[type="radio"], input[type="checkbox"] {
