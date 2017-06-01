@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const BabiliPlugin = require('babili-webpack-plugin');
+//const BabiliPlugin = require('babili-webpack-plugin');
 
 module.exports = (env, ...flags) => ({
   entry: './src/index.js',
@@ -21,7 +21,10 @@ module.exports = (env, ...flags) => ({
             loader: 'babel-loader',
             options: {
               presets: ['flow'],
-              plugins: ['dynamic-import-webpack', 'inferno'],
+              plugins: [
+                'dynamic-import-webpack',
+                'inferno',
+              ],
             },
           },
           /*{
