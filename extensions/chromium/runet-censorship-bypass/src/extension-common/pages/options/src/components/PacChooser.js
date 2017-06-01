@@ -156,7 +156,7 @@ export default function getPacChooser(theState) {
     componentDidMount() {
 
       if (this.props.apis.antiCensorRu.ifFirstInstall) {
-        this.updatePac( this.props.funs.showNews );
+        this.updatePac();
       }
 
     }
