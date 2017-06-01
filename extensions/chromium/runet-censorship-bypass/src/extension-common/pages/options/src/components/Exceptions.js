@@ -67,6 +67,7 @@ export default function getExceptions(theState) {
                 <InfoLi
                   type="checkbox"
                   conf={{
+                    label: '<span>Собирать <a href="../errors-to-exc/index.html">последние ошибки</a> сайтов</span>',
                     key: 'lookupLastErrors',
                     desc: 'Собирать последние ошибки в запросах, чтобы вручную добавлять избранные из них в исключения.',
                   }}
@@ -77,7 +78,6 @@ export default function getExceptions(theState) {
                     props.funs.setStatusTo('Сделано.');
 
                   }}
-                  nodeAfterLabel={(<span>Собирать <a href="../errors-to-exc/index.html">последние ошибки</a> сайтов</span>)}
                 />
               )
             }
