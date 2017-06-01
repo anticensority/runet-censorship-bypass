@@ -207,7 +207,6 @@ export default function getProxyEditor(theState) {
 
     handleAdd(that, event) {
 
-      console.log('handle add');
       const form = event.target;
       const elements = Array.from(form.elements).reduce((acc, el, index) => {
 
@@ -222,7 +221,6 @@ export default function getProxyEditor(theState) {
 
       const newValue = `${that.props.proxyStringRaw}; ${type} ${hostname}:${port}`
         .trim().replace(/(\s*;\s*)+/, '; ');
-      console.log('NEW VALUE', newValue);
       that.props.setProxyStringRaw(newValue);
 
     }

@@ -25,6 +25,11 @@ export default function getApp(theState) {
         hashParams: hashParams,
       };
 
+      this.setStatusTo = this.setStatusTo.bind(this);
+      this.conduct = this.conduct.bind(this);
+      this.showErrors = this.showErrors.bind(this);
+      this.showNews = this.showNews.bind(this);
+
     }
 
     setStatusTo(msg, cb) {
@@ -75,7 +80,6 @@ export default function getApp(theState) {
       };
 
       const ghUrl = `https://api.github.com/repos/edge-ware/edge-ware.github.io/issues/1/comments${query}`;
-      console.log(ghUrl);
       const [comments, etag] = await fetch(
         ghUrl,
         params
@@ -248,10 +252,10 @@ export default function getApp(theState) {
     console.log('Render');
       const props = Object.assign({}, originalProps, {
         funs: {
-          setStatusTo: this.setStatusTo.bind(this),
-          conduct: this.conduct.bind(this),
-          showErrors: this.showErrors.bind(this),
-          showNews: this.showNews.bind(this),
+          setStatusTo: this.setStatusTo,
+          conduct: this.conduct,
+          showErrors: this.showErrors,
+          showNews: this.showNews,
         },
         ifInputsDisabled: this.state.ifInputsDisabled,
         hashParams: this.state.hashParams,

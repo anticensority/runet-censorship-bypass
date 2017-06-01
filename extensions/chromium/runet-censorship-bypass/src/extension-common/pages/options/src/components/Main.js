@@ -55,7 +55,7 @@ export default function getMain(theState) {
         modsMutated[conf.key] = conf.value;
         return modsMutated;
 
-      });
+      }, modsMutated/*< Needed for index 0*/);
       that.props.funs.conduct(
         'Применяем настройки...',
         (cb) => that.props.apis.pacKitchen.keepCookedNowAsync(newMods, cb),
@@ -67,7 +67,6 @@ export default function getMain(theState) {
 
     handleModChange({targetConf, targetIndex, newValue}) {
 
-      console.log('NEW VALUE', newValue);
       const oldCats = this.state.catToOrderedMods;
       const newCats = Object.keys(this.state.catToOrderedMods).reduce((acc, cat) => {
 

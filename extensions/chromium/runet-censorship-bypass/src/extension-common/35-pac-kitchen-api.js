@@ -123,9 +123,10 @@
         const conf = configs[key];
         if(typeof(conf.order) === 'number') {
           if(!category || category === (conf.category || 'general')) {
-            arr.push(conf);
             conf.value = pacMods[key];
             conf.key = key;
+            conf.category = category || 'general';
+            arr.push(conf);
          }
         }
         return arr;
@@ -433,15 +434,12 @@ ${        pacMods.filteredCustomsString
         const oldProxies = getCurrentConfigs().filteredCustomsString || '';
         const newProxies = pacMods.filteredCustomsString || '';
         ifProxiesChanged = oldProxies !== newProxies;
-        console.log('Proxies changed from:', oldProxies, 'to', newProxies);
         kitchenState(modsKey, pacMods);
       }
-      console.log('Keep cooked now...', pacMods);
       this.setNowAsync(
         (err, res, ...setWarns) => {
 
           const accWarns = modsWarns.concat(setWarns); // Acc = accumulated.
-          console.log('Try now err:', err);
           if (err) {
             return cb(err, res, ...accWarns);
           }
