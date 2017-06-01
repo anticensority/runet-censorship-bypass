@@ -24,7 +24,8 @@
     "build:dev:nocomp": "NODE_ENV=development webpack --define process.env.NODE_ENV=\"'development'\" --env=dev",
     "build:dev": "NODE_ENV=development webpack --debug --define process.env.NODE_ENV=\"'development'\" --output-pathinfo --env=dev",
     "gulp": "cd .. && npm run gulp",
-    "start": "npm run build:dev && npm run gulp"
+    "build": "npm run build:dev",
+    "start": "cd .. && npm start"
   },
   "dependencies": {
     "babel-plugin-inferno": "^3.2.0"
