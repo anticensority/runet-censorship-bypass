@@ -84,6 +84,10 @@ export default function getApp(theState) {
         ghUrl,
         params
       ).then(
+        (res) => !( res.status >= 200 && res.status < 300 || res.status === 304 )
+                    ? Promise.reject(new Error(`Полечен ответ с неудачным кодом ${res.status}.`))
+                    : res
+      ).then(
         (res) => Promise.all([
           res.status !== 304 ? res.json() : false,
           res.headers.get('ETag')
