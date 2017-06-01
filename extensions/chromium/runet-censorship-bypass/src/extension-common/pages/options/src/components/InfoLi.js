@@ -136,7 +136,8 @@ export default function getInfoLi() {
               : (<span>&nbsp;</span>) // Affects vertical align of flexbox items.
             )
         }
-        {props.children && (<div class={scopedCss.children}>{props.children}</div>)}
+        { props.checked && props.children }
+        {/* props.checked && (<div class={scopedCss.children}>{props.children}</div>)*/}
       </li>
     );
 
