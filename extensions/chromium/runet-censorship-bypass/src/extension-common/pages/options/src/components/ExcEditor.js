@@ -324,7 +324,7 @@ export default function getExcEditor(theState) {
               })
             }
           </datalist>
-          <ol class="horizontalList" id="exc-radio">
+          <ol class="horizontalList middledChildren" id="exc-radio">
             <li><input id="this-auto" type="radio" checked name="if-proxy-this-site" onClick={onradio}/>{' '}
                   <label for="this-auto">{/*<span class="emoji">🔄(looks fat)</span>*/}<svg
                     class="icon"
