@@ -7,6 +7,10 @@ export default function getProxyEditor(theState) {
 
   const scopedCss = css`
 
+    form.root {
+      width: 100%;
+    }
+
     table.editor {
       border-collapse: collapse;
       /*border-style: hidden;*/
@@ -17,6 +21,11 @@ export default function getProxyEditor(theState) {
 
     table.editor ::-webkit-input-placeholder {
       color: #c9c9c9;
+    }
+
+    table.editor th.shrink,
+    table.editor td.shrink {
+      width: 1%;
     }
 
     table.editor td, table.editor th {
@@ -45,7 +54,7 @@ export default function getProxyEditor(theState) {
     {
       font-size: 0.9em;
     }
-    table.editor tr.addPanel td:nth-last-child(2) input /* PORT */
+    table.editor tr.addPanel td:nth-last-child(2) /* PORT */
     {
       min-width: 4em;
     }
@@ -102,6 +111,7 @@ export default function getProxyEditor(theState) {
 
     /* LAST COLUMN: BUTTONS */
     table.editor tr > *:nth-last-child(1),
+    table.editor tr > *:nth-last-child(2),
     table.editor tr.proxyRow > td:first-child {
       text-align: center;
       padding: 0;
@@ -250,11 +260,14 @@ export default function getProxyEditor(theState) {
     render(props) {
 
       return (
-        <form onSubmit={linkEvent(this, this.handleSubmit)}>
+        <form onSubmit={linkEvent(this, this.handleSubmit)} class={scopedCss.root}>
           <table class={scopedCss.editor}>
             <thead>
               <tr>
-                <th colspan="2">протокол</th> <th>домен / IP</th> <th>порт</th> <th>
+                <th colspan="2" class={scopedCss.shrink}>протокол</th>
+                <th>домен / IP</th>
+                <th class={scopedCss.shrink}>порт</th>
+                <th>
                   <SwitchButton title="импорт/экспорт" onClick={linkEvent(this, this.handleModeSwitch)}/>
                 </th>
               </tr>
@@ -291,7 +304,7 @@ export default function getProxyEditor(theState) {
                 <td>
                   {/* LAST-1: PORT */}
                   <input required type="number" disabled={props.ifInputsDisabled}
-                    class={scopedCss.noPad + ' ' + scopedCss.padLeft}
+                    class={scopedCss.noPad + ' ' + scopedCss.padLeft + ' ' + scopedCss.only}
                     placeholder="9150"
                     min="0" step="1" max={MAX_PORT} pattern="[0-9]{1,5}"
                     name="newPort"
@@ -442,7 +455,7 @@ export default function getProxyEditor(theState) {
       const reset = linkEvent(this, this.resetState);
 
       return (
-        <form onSubmit={linkEvent(this, this.handleSubmit)}>
+        <form onSubmit={linkEvent(this, this.handleSubmit)} class={scopedCss.root}>
           <table class={scopedCss.editor}>
             <thead>
               <tr>
