@@ -79,7 +79,7 @@ export default function getApp(theState) {
         headers: new Headers(headers),
       };
 
-      const ghUrl = `https://api.github.com/repos/edge-ware/edge-ware.github.io/issues/1/comments${query}`;
+      const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing-github-api/issues/1/comments${query}`;
       const [comments, etag] = await fetch(
         ghUrl,
         params
