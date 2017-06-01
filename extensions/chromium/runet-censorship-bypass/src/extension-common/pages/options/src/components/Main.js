@@ -1,6 +1,7 @@
 import Inferno, {linkEvent} from 'inferno';
 import Component from 'inferno-component';
 import createElement from 'inferno-create-element';
+import css from 'csjs-inject';
 
 import getTabPanel from './TabPanel';
 import getPacChooser from './PacChooser';
@@ -11,6 +12,14 @@ import getApplyMods from './ApplyMods';
 import getNotifications from './Notifications';
 
 export default function getMain(theState) {
+
+  const scopedCss = css`
+
+    input#ifProxyHttpsUrlsOnly:checked + div {
+      color: red;
+    }
+
+  `;
 
   const TabPanel = getTabPanel(theState);
 
