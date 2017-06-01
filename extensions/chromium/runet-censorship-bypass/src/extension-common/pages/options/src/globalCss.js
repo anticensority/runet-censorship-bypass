@@ -41,9 +41,11 @@ export default function append(document, { flags }) {
       list-style-type: none;
     }
     li, .nowrap {
-      display: block;
       white-space: nowrap;
       word-break: keep-all;
+    }
+    .nowrap {
+      display: block;
     }
     li, li > * {
       vertical-align: middle;
