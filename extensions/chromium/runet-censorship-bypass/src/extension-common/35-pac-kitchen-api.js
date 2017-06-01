@@ -75,7 +75,7 @@
       ifDisabled: true,
       dflt: false,
       category: 'ownProxies',
-      label: 'проксировать .onion, .i2p и OpenNIC',
+      label: 'проксировать .onion, .i2p и <a href="https://en.wikipedia.org/wiki/OpenNIC#OpenNIC_TLDs">OpenNIC</a>',
       desc: 'Проксировать особые домены. Необходима поддержка со стороны СВОИХ прокси.',
       order: 8,
     },
