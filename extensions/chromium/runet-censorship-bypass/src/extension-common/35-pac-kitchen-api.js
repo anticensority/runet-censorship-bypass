@@ -288,7 +288,7 @@
 
           }, finalExceptions);
         }
-        if (pacMods.ifMindExceptions || ifManualExceptions) {
+        if (pacMods.ifMindExceptions) {
           Object.assign(finalExceptions, (pacMods.exceptions || {}));
         }
         const ifExceptions = Object.keys(finalExceptions).length;
