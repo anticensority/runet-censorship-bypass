@@ -46,7 +46,7 @@ export default function getApp(theState) {
     setNewsStatusTo(newsArr) {
 
       this.setStatusTo(
-        <ol>
+        <ol style="list-style-type: initial;">
           {newsArr.map(([title, url]) => (<li><a href={url}>{title}</a></li>))}
         </ol>
       );
@@ -95,7 +95,6 @@ export default function getApp(theState) {
 
         }
       );
-      console.log('RESP', comments, etag);
       if (etag) {
         localStorage[uiComEtag] = etag;
       }
@@ -114,7 +113,6 @@ export default function getApp(theState) {
 
         let minDate;
         const news = [];
-        console.log('we have', comments);
         comments.forEach((comment) => {
 
           const curDate = comment.updated_at || comment.created_at;
@@ -131,125 +129,125 @@ export default function getApp(theState) {
           return false;
         }
         localStorage[uiComDate] = minDate;
-        console.log('New date!', minDate);
         localStorage[uiLastNewsArr] = JSON.stringify(news);
         this.setNewsStatusTo(news);
         return true;
 
-    })();
-    if (!ifNews) {
-      this.setStatusTo('Ничего нового.');
+      })();
+      if (!ifNews) {
+        this.setStatusTo('Ничего нового.');
+      }
+
     }
 
-  }
+    componentDidMount() {
 
-  componentDidMount() {
-
-    this.showNews();
-
-  }
-
-  getNewsHeadline(comBody) {
-
-      const headline = comBody.split(/\r?\n/)[0];
-      const ifOver = /#+\s*$/.test(headline);
-      if (ifOver) {
-        return false;
+      if (!this.props.apis.antiCensorRu.ifFirstInstall) {
+        this.showNews();
       }
-      return headline.replace(/^\s*#+\s*/g, '');
 
-  }
+    }
 
-  showErrors(err, ...args/* ...warns, cb */) {
+    getNewsHeadline(comBody) {
 
-    const lastArg = args[args.length - 1];
-    const cb = (lastArg && typeof lastArg === 'function')
-      ? args.pop()
-      : () => {};
-    const warns = args;
-
-    const warningHtml = warns
-      .map(
-        (w) => w && w.message || ''
-      )
-      .filter( (m) => m )
-      .map( (m) => '✘ ' + m )
-      .join('<br/>');
-
-    let messageHtml = '';
-    if (err) {
-      let wrapped = err.wrapped;
-      messageHtml = err.message || '';
-
-      while( wrapped ) {
-        const deeperMsg = wrapped && wrapped.message;
-        if (deeperMsg) {
-          messageHtml = messageHtml + ' &gt; ' + deeperMsg;
+        const headline = comBody.split(/\r?\n/)[0];
+        const ifOver = /#+\s*$/.test(headline);
+        if (ifOver) {
+          return false;
         }
-        wrapped = wrapped.wrapped;
-      }
+        return headline.replace(/^\s*#+\s*/g, '');
+
     }
-    messageHtml = messageHtml.trim();
-    if (warningHtml) {
-      messageHtml = messageHtml ? messageHtml + '<br/>' + warningHtml : warningHtml;
+
+    showErrors(err, ...args/* ...warns, cb */) {
+
+      const lastArg = args[args.length - 1];
+      const cb = (lastArg && typeof lastArg === 'function')
+        ? args.pop()
+        : () => {};
+      const warns = args;
+
+      const warningHtml = warns
+        .map(
+          (w) => w && w.message || ''
+        )
+        .filter( (m) => m )
+        .map( (m) => '✘ ' + m )
+        .join('<br/>');
+
+      let messageHtml = '';
+      if (err) {
+        let wrapped = err.wrapped;
+        messageHtml = err.message || '';
+
+        while( wrapped ) {
+          const deeperMsg = wrapped && wrapped.message;
+          if (deeperMsg) {
+            messageHtml = messageHtml + ' &gt; ' + deeperMsg;
+          }
+          wrapped = wrapped.wrapped;
+        }
+      }
+      messageHtml = messageHtml.trim();
+      if (warningHtml) {
+        messageHtml = messageHtml ? messageHtml + '<br/>' + warningHtml : warningHtml;
+      }
+      this.setStatusTo(
+        (<span>
+          <span style="color:red">
+            {err ? <span><span class="emoji">🔥</span> Ошибка!</span> : 'Некритичная oшибка.'}
+          </span>
+          <br/>
+          <span style="font-size: 0.9em; color: darkred" dangerouslySetInnerHTML={{__html: messageHtml}}></span>
+          {' '}
+          {err && <a href="" onClick={(evt) => {
+
+            this.props.apis.errorHandlers.viewError('pup-ext-err', err);
+            evt.preventDefault();
+
+          }}>[Техн.детали]</a>}
+        </span>),
+        cb
+      );
+
     }
-    this.setStatusTo(
-      (<span>
-        <span style="color:red">
-          {err ? <span><span class="emoji">🔥</span> Ошибка!</span> : 'Некритичная oшибка.'}
-        </span>
-        <br/>
-        <span style="font-size: 0.9em; color: darkred" dangerouslySetInnerHTML={{__html: messageHtml}}></span>
-        {' '}
-        {err && <a href="" onClick={(evt) => {
 
-          this.props.apis.errorHandlers.viewError('pup-ext-err', err);
-          evt.preventDefault();
+    switchInputs(val) {
 
-        }}>[Техн.детали]</a>}
-      </span>),
-      cb
-    );
+      this.setState({
+        ifInputsDisabled: val === 'off' ? true : false,
+      });
 
-  }
+    }
 
-  switchInputs(val) {
+    conduct(
+      beforeStatus, operation, afterStatus,
+      onSuccess = () => {}, onError = () => {}
+    ) {
 
-    this.setState({
-      ifInputsDisabled: val === 'off' ? true : false,
-    });
+      this.setStatusTo(beforeStatus);
+      this.switchInputs('off');
+      operation((err, res, ...warns) => {
 
-  }
+        warns = warns.filter( (w) => w );
+        if (err || warns.length) {
+          this.showErrors(err, ...warns);
+        } else {
+          this.setStatusTo(afterStatus);
+        }
+        this.switchInputs('on');
+        if (!err) {
+          onSuccess(res);
+        } else {
+          onError(err);
+        }
 
-  conduct(
-    beforeStatus, operation, afterStatus,
-    onSuccess = () => {}, onError = () => {}
-  ) {
+      });
 
-    this.setStatusTo(beforeStatus);
-    this.switchInputs('off');
-    operation((err, res, ...warns) => {
+    }
 
-      warns = warns.filter( (w) => w );
-      if (err || warns.length) {
-        this.showErrors(err, ...warns);
-      } else {
-        this.setStatusTo(afterStatus);
-      }
-      this.switchInputs('on');
-      if (!err) {
-        onSuccess(res);
-      } else {
-        onError(err);
-      }
+    render(originalProps) {
 
-    });
-
-  }
-
-  render(originalProps) {
-
-    console.log('Render');
       const props = Object.assign({}, originalProps, {
         funs: {
           setStatusTo: this.setStatusTo,
