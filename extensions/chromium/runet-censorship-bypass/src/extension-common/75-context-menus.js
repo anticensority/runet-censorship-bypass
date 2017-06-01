@@ -37,7 +37,7 @@
 
     createMenuLinkEntry(
       item.title,
-      (tab) => item.getUrl(tab.url),
+      (tab) => item.getUrl(tab.url)
     );
 
   });
