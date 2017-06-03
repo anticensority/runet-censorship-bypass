@@ -6,8 +6,24 @@
   const lastErrors = [];
   const lastErrorsLength = 20;
 
-  const that = window.apis.lastErrors = {
-    ifCollecting: false,
+  const IF_COLL_KEY = 'err-to-exc-if-coll';
+
+  const privates = {
+    ifCollecting: window.localStorage[IF_COLL_KEY] || false,
+  };
+
+  const that = window.apis.lastNetErrors = {
+    get ifCollecting() {
+
+      return privates.ifCollecting;
+
+    },
+
+    set ifCollecting(newValue) {
+
+      privates.ifCollecting = window.localStorage[IF_COLL_KEY] = newValue;
+
+    },
     get: () => lastErrors,
   }
 
