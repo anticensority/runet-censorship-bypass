@@ -107,12 +107,12 @@ export default function getInfoLi() {
 
   };
 
-  return function InfoLi(props) {
+  return function InfoLi(originalProps) {
 
-    props = Object.assign({}, {
+    const props = Object.assign({}, {
       idPrefix: '',
       ifDashify: false,
-    }, props);
+    }, originalProps);
 
     const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
 
@@ -124,6 +124,7 @@ export default function getInfoLi() {
       onClick: props.onClick,
       onChange: props.onChange,
       class: props.class,
+      disabled: props.ifInputsDisabled,
     };
     delete inputProps.children;
 
