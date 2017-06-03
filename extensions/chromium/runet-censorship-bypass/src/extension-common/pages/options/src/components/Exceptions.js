@@ -71,10 +71,10 @@ export default function getExceptions(theState) {
                     key: 'lookupLastErrors',
                     desc: 'Собирать последние ошибки в запросах, чтобы вручную добавлять избранные из них в исключения.',
                   }}
-                  checked={props.bgWindow.apis.lastErrors.ifCollecting}
+                  checked={props.bgWindow.apis.lastNetErrors.ifCollecting}
                   onChange={(event) => {
 
-                    props.bgWindow.apis.lastErrors.ifCollecting = event.target.checked;
+                    props.bgWindow.apis.lastNetErrors.ifCollecting = event.target.checked;
                     props.funs.setStatusTo('Сделано.');
 
                   }}
