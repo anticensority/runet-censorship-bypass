@@ -137,7 +137,7 @@ export default function getExcEditor(theState) {
           case 'this-no':
             if (ifYesClicked && !pacMods.filteredCustomsString) {
               this.props.funs.showErrors( new TypeError(
-                'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси (см. «Модификаторы» ). Нет своих прокси, удовлетворяющих вашим требованиям.'
+                'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси. Нет своих прокси, удовлетворяющих вашим требованиям.'
               ));
               return false;
             }
