@@ -32,6 +32,8 @@
       if (!that.ifCollecting || [
               'net::ERR_BLOCKED_BY_CLIENT',
               'net::ERR_ABORTED',
+              'net::ERR_CACHE_MISS',
+              'net::ERR_INSUFFICIENT_RESOURCES',
           ].includes(details.error) ) {
         return;
       }
