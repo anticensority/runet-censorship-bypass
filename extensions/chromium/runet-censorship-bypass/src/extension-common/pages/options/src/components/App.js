@@ -108,7 +108,8 @@ export default function getApp(theState) {
       const ifNews = (() => {
 
         if (!(comments && comments.length)) {
-          const news = JSON.parse(localStorage[uiLastNewsArr]);
+          const json = localStorage[uiLastNewsArr];
+          const news = json && JSON.parse(json);
           if (news) {
             this.setNewsStatusTo(news);
             return true;
