@@ -79,13 +79,14 @@ export default function getApp(theState) {
         headers: new Headers(headers),
       };
 
-      const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing-github-api/issues/1/comments${query}`;
+      //const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing-github-api/issues/1/comments${query}`;
+      const ghUrl = `http://httpstat.us/418`;
       const [comments, etag] = await fetch(
         ghUrl,
         params
       ).then(
         (res) => !( res.status >= 200 && res.status < 300 || res.status === 304 )
-                    ? Promise.reject(new Error(`Полечен ответ с неудачным кодом ${res.status}.`))
+                    ? Promise.reject(new Error(`Получен ответ с неудачным кодом ${res.status}.`))
                     : res
       ).then(
         (res) => Promise.all([
