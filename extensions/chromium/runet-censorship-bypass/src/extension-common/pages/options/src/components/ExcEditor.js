@@ -83,6 +83,8 @@ export default function getExcEditor(theState) {
         sortedListOfOptions: this.modsToOpts(pacMods),
         isHostHidden: {}
       };
+      this.handleRadioClick = this.handleRadioClick.bind(this);
+      this.handleInputOrClick = this.handleInputOrClick.bind(this);
 
     }
 
@@ -289,9 +291,6 @@ export default function getExcEditor(theState) {
 
       }, undefined);
 
-      const onradio = this.handleRadioClick.bind(this);
-      const oninput = this.handleInputOrClick.bind(this);
-
       return (
         <section style="padding-bottom: 1em;">
           <div>Проксировать указанный сайт?</div>
@@ -301,8 +300,8 @@ export default function getExcEditor(theState) {
                 value={this.state.trimmedInputValueOrSpace}
                 ref={(inputNode) => { this.rawInput = inputNode; }}
                 onKeyDown={this.handleKeyDown.bind(this)}
-                onInput={oninput}
-                onClick={oninput}
+                onInput={this.handleInputOrClick}
+                onClick={this.handleInputOrClick}
               />
             </div>
             {/*<a href class="emoji">⇄</a>*/}
@@ -325,13 +324,13 @@ export default function getExcEditor(theState) {
             }
           </datalist>
           <ol class="horizontalList middledChildren" id="exc-radio">
-            <li><input id="this-auto" type="radio" checked name="if-proxy-this-site" onClick={onradio}/>{' '}
+            <li><input id="this-auto" type="radio" checked name="if-proxy-this-site" onClick={this.handleRadioClick}/>{' '}
                   <label for="this-auto">{/*<span class="emoji">🔄(looks fat)</span>*/}<svg
                     class="icon"
                     style="position: relative; top: 0.15em;"><use xlink:href="#iconLoopRound"></use></svg>&nbsp;авто</label>
             </li>
             <li>
-              <input id="this-yes" type="radio" name="if-proxy-this-site" checked={inputProxyingState === true} onClick={onradio}/>
+              <input id="this-yes" type="radio" name="if-proxy-this-site" checked={inputProxyingState === true} onClick={this.handleRadioClick}/>
               {' '}<label for="this-yes">
                     <span
                       class="emoji____buggy"
@@ -339,7 +338,7 @@ export default function getExcEditor(theState) {
                   </label>
             </li>
             <li>
-              <input id="this-no" type="radio" name="if-proxy-this-site" checked={inputProxyingState === false} onClick={onradio}/>
+              <input id="this-no" type="radio" name="if-proxy-this-site" checked={inputProxyingState === false} onClick={this.handleRadioClick}/>
               {' '}<label for="this-no"><span class="emoji">✘</span>&nbsp;нет</label></li>
           </ol>
         </section>
