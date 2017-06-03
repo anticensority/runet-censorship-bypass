@@ -81,7 +81,7 @@ export default function getApp(theState) {
 
       //const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing-github-api/issues/1/comments${query}`;
       const ghUrl = `http://httpstat.us/418`;
-      const [comments, etag] = await fetch(
+      const [error, comments, etag] = await fetch(
         ghUrl,
         params
       ).then(
@@ -90,13 +90,14 @@ export default function getApp(theState) {
                     : res
       ).then(
         (res) => Promise.all([
+          null,
           res.status !== 304 ? res.json() : false,
           res.headers.get('ETag')
         ]),
         (err) => {
 
           this.showErrors({message: 'Не удалось достать новости: что-то не так с сетью.', wrapped: err});
-          return [false, false];
+          return [err, false, false];
 
         }
       );
@@ -104,6 +105,9 @@ export default function getApp(theState) {
         localStorage[uiComEtag] = etag;
       }
 
+      if (error) {
+        return; // Let user see the error message and contemplate.
+      }
 
       const ifNews = (() => {
 
