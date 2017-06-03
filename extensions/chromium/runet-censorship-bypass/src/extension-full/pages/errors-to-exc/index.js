@@ -13,6 +13,10 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
 
         const exc = bgWindow.apis.pacKitchen.getPacMods().exceptions || {};
         tbody.innerHTML = '';
+        if (!errors.length) {
+          tbody.innerHTML = '<tr><td colspan="4">Ошибок пока не было.</td></tr>';
+          return;
+        }
         errors.forEach((err, index) => {
 
           const ifProxy = exc[err.hostname];

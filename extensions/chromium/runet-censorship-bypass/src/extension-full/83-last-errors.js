@@ -1,6 +1,7 @@
 'use strict';
 
 {
+  const chromified = window.utils.chromified;
 
   const lastErrors = [];
   const lastErrorsLength = 20;
@@ -10,7 +11,7 @@
     get: () => lastErrors,
   }
 
-  chrome.webRequest.onErrorOccurred.addListener((details) => {
+  chrome.webRequest.onErrorOccurred.addListener(chromified((err/*Ignored*/, details) => {
 
       if (!that.ifCollecting || [
               'net::ERR_BLOCKED_BY_CLIENT',
@@ -25,11 +26,11 @@
       }
 
       lastErrors.unshift(details);
-      if (lastErrors.length > lastErrorsLenght) {
+      if (lastErrors.length > lastErrorsLength) {
         lastErrors.pop();
       }
 
-    },
+    }),
     {urls: ['<all_urls>']}
   );
 
