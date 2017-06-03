@@ -96,7 +96,8 @@ export default function getApp(theState) {
         ]),
         (err) => {
 
-          this.showErrors({message: 'Не удалось достать новости: что-то не так с сетью.', wrapped: err});
+          const ifCritical = null;
+          this.showErrors(ifCritical, {message: 'Не удалось достать новости: что-то не так с сетью.', wrapped: err});
           return [err, false, false];
 
         }
@@ -177,18 +178,11 @@ export default function getApp(theState) {
         : () => {};
       const warns = args;
 
-      const warningHtml = warns
-        .map(
-          (w) => w && w.message || ''
-        )
-        .filter( (m) => m )
-        .map( (m) => '✘ ' + m )
-        .join('<br/>');
+      const errToHtmlMessage = (error) => {
 
-      let messageHtml = '';
-      if (err) {
-        let wrapped = err.wrapped;
-        messageHtml = err.message || '';
+        let messageHtml = '';
+        let wrapped = error.wrapped;
+        messageHtml = error.message || '';
 
         while( wrapped ) {
           const deeperMsg = wrapped && wrapped.message;
@@ -197,7 +191,20 @@ export default function getApp(theState) {
           }
           wrapped = wrapped.wrapped;
         }
-      }
+        return messageHtml;
+
+      };
+
+      let messageHtml = err ? errToHtmlMessage(err) : '';
+      
+      const warningHtml = warns
+        .filter((w) => w)
+        .map(
+          (w) => errToHtmlMessage(w)
+        )
+        .map( (m) => '✘ ' + m )
+        .join('<br/>');
+
       messageHtml = messageHtml.trim();
       if (warningHtml) {
         messageHtml = messageHtml ? messageHtml + '<br/>' + warningHtml : warningHtml;
