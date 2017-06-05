@@ -40,7 +40,7 @@ export default function append(document, { flags }) {
     ul, ol {
       list-style-type: none;
     }
-    li, .nowrap {
+    .nowrap {
       white-space: nowrap;
       word-break: keep-all;
     }
