@@ -57,7 +57,6 @@ export default function getApp(theState) {
 
       const uiComDate = 'ui-last-comment-date';
       const uiComEtag = 'ui-last-comments-etag';
-      const uiLastNewsArr = 'ui-last-news-arr';
 
       const statusFromHash = this.state.hashParams.get('status');
       if (statusFromHash) {
@@ -106,18 +105,13 @@ export default function getApp(theState) {
       }
 
       if (error) {
-        return; // Let user see the error message and contemplate.
+        return; // Let the user see the error message and contemplate.
       }
 
       const ifNews = (() => {
 
         if (!(comments && comments.length)) {
-          const json = localStorage[uiLastNewsArr];
-          const news = json && JSON.parse(json);
-          if (news) {
-            this.setNewsStatusTo(news);
-            return true;
-          }
+          // Don't show stale news here.
           return false;
         }
 
@@ -139,13 +133,12 @@ export default function getApp(theState) {
           return false;
         }
         localStorage[uiComDate] = minDate;
-        localStorage[uiLastNewsArr] = JSON.stringify(news);
         this.setNewsStatusTo(news);
         return true;
 
       })();
       if (!ifNews) {
-        this.setStatusTo('Ничего нового.');
+        this.setStatusTo('Хорошего настроения Вам!');
       }
 
     }
