@@ -57,6 +57,7 @@ export default function getApp(theState) {
 
       const uiComDate = 'ui-last-comment-date';
       const uiComEtag = 'ui-last-comments-etag';
+      const uiLastNewsArr = 'ui-last-news-arr';
 
       const statusFromHash = this.state.hashParams.get('status');
       if (statusFromHash) {
@@ -78,13 +79,14 @@ export default function getApp(theState) {
         headers: new Headers(headers),
       };
 
-      const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing-github-api/issues/1/comments${query}`;
+      const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing/issues/1/comments${query}`;
+      //const ghUrl = `http://httpstat.us/418`;
       const [error, comments, etag] = await fetch(
         ghUrl,
         params
       ).then(
         (res) => !( res.status >= 200 && res.status < 300 || res.status === 304 )
-                    ? Promise.reject(new Error(`Получен ответ с неудачным кодом ${res.status}.`))
+                    ? Promise.reject({message: `Получен ответ с неудачным кодом ${res.status}.`, data: res})
                     : res
       ).then(
         (res) => Promise.all([
@@ -94,8 +96,14 @@ export default function getApp(theState) {
         ]),
         (err) => {
 
+          const statusCode = err.data && err.data.status;
           const ifCritical = null;
-          this.showErrors(ifCritical, {message: 'Не удалось достать новости: что-то не так с сетью.', wrapped: err});
+          this.showErrors(ifCritical, {
+            message: statusCode === 403
+              ? 'Слишком много запросов :-( Сообщите разработчику, как вам удалось всё истратить.'
+              : 'Не удалось достать новости: что-то не так с сетью.',
+            wrapped: err,
+          });
           return [err, false, false];
 
         }
@@ -108,16 +116,21 @@ export default function getApp(theState) {
         return; // Let the user see the error message and contemplate.
       }
 
-      const ifNews = (() => {
+      const ifNewsWasSet = (() => {
 
-        if (!(comments && comments.length)) {
-          // Don't show stale news here.
+        if (comments === false) {
+          // 304
+          const json = localStorage[uiLastNewsArr];
+          const news = json && JSON.parse(json);
+          if (news && news.length) {
+            this.setNewsStatusTo(news);
+            return true;
+          }
           return false;
         }
 
-        let minDate;
-        const news = [];
-        comments.forEach((comment) => {
+        let minDate; // Minimal date among all news-comments.
+        const news = comments.reduce((acc, comment) => {
 
           const curDate = comment.updated_at || comment.created_at;
           const newsTitle = this.getNewsHeadline( comment.body );
@@ -125,19 +138,24 @@ export default function getApp(theState) {
             if (!minDate || curDate <= minDate) {
               minDate = curDate;
             }
-            news.push([newsTitle, comment.html_url]);
+            acc.push([newsTitle, comment.html_url]);
           }
+          return acc;
 
-        });
-        if (!news.length) {
-          return false;
+        }, []);
+        // Response with empty news is cached too.
+        localStorage[uiLastNewsArr] = JSON.stringify(news);
+        if (news.length) {
+          if (minDate) {
+            localStorage[uiComDate] = minDate;
+          }
+          this.setNewsStatusTo(news);
+          return true;
         }
-        localStorage[uiComDate] = minDate;
-        this.setNewsStatusTo(news);
-        return true;
+        return false;
 
       })();
-      if (!ifNews) {
+      if (!ifNewsWasSet) {
         this.setStatusTo('Хорошего настроения Вам!');
       }
 
