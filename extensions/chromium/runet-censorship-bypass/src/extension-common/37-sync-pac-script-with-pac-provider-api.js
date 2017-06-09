@@ -169,19 +169,19 @@
     pacProviders: {
       Антизапрет: {
         label: 'Антизапрет',
-        desc: 'Альтернативный PAC-скрипт от стороннего разработчика.' +
-          ' Блокировка определяется по доменному имени,' +
-          ' для некоторых провайдеров есть автоопредление.' +
-          ' <br/> <a href="https://antizapret.prostovpn.org">Страница проекта</a>.',
+        desc: `Альтернативный PAC-скрипт от стороннего разработчика.
+               Работает быстрее, но охватывает меньше сайтов.
+               Блокировка определяется по доменному имени,
+               <br/> <a href="https://antizapret.prostovpn.org">Страница проекта</a>.`,
         order: 0,
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
-        label: 'Антицензорити (<a href="https://github.com/anticensorship-russia/chromium-extension/issues/6" style="color: red">тормозит</a>)',
-        desc: 'Основной PAC-скрипт от автора расширения.' +
-        ' Блокировка определятся по доменному имени или IP адресу.' +
-        ' Работает на switch-ах. <br/>' +
-        ' <a href="https://rebrand.ly/ac-anticensority">Страница проекта</a>.',
+        label: 'Антицензорити',
+        desc: `Основной PAC-скрипт от автора расширения.
+               Работает медленней, но охватывает больше сайтов.
+               Блокировка определятся по доменному имени или IP адресу.<br/>
+               <a href="https://rebrand.ly/ac-anticensority">Страница проекта</a>.`,
         order: 1,
 
         /*
@@ -193,13 +193,16 @@
           // First official, shortened:
           'https://rebrand.ly/ac-chrome-anticensority-pac',
           // Second official, Cloud Flare with caching:
+          'https://anticensority.tk/generated-pac-scripts/anticensority.pac',
+          // GitHub.io (anticensority):
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63',
+          // GitHub repo (anticensority):
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63',
+          // Old, deprecated:
           'https://anticensorship-russia.tk/generated-pac-scripts/anticensority.pac',
-          // GitHub.io:
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63', // eslint-disable-line max-len
-          // GitHub repo:
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x72\x61\x77\x2e\x67\x69\x74\x68\x75\x62\x75\x73\x65\x72\x63\x6f\x6e\x74\x65\x6e\x74\x2e\x63\x6f\x6d\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x73\x68\x69\x70\x2d\x72\x75\x73\x73\x69\x61\x2f\x67\x65\x6e\x65\x72\x61\x74\x65\x64\x2d\x70\x61\x63\x2d\x73\x63\x72\x69\x70\x74\x73\x2f\x6d\x61\x73\x74\x65\x72\x2f\x61\x6e\x74\x69\x63\x65\x6e\x73\x6f\x72\x69\x74\x79\x2e\x70\x61\x63', // eslint-disable-line max-len
-          // Google Drive (0.17):
-          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x2d\x5a\x43\x56\x53\x76\x75\x4e\x57\x66\x30\x54\x44\x46\x52\x4f\x47\x35\x46\x62\x55\x39\x4f\x64\x44\x67'], // eslint-disable-line max-len
+          // Google Drive (0.17, anticensority):
+          '\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x72\x69\x76\x65\x2e\x67\x6f\x6f\x67\x6c\x65\x2e\x63\x6f\x6d\x2f\x75\x63\x3f\x65\x78\x70\x6f\x72\x74\x3d\x64\x6f\x77\x6e\x6c\x6f\x61\x64\x26\x69\x64\x3d\x30\x42\x32\x6d\x68\x42\x67\x46\x6e\x66\x34\x70\x45\x4c\x56\x6c\x47\x4e\x54\x42\x45\x4d\x58\x4e\x6d\x52\x58\x63',
+        ],
       },
       onlyOwnSites: {
         label: 'Только свои сайты и свои прокси',
@@ -213,7 +216,7 @@
 
     getSortedEntriesForProviders() {
 
-      return Object.entries(this.pacProviders).sort((entryA, entryB) => entryA[1].order - entryB[1].order);
+      return Object.entries(this.pacProviders).sort((entryA, entryB) => entryA[1].order - entryB[1].order).map(([key, prov]) => Object.assign({key: key}, prov));
 
     },
 
@@ -224,6 +227,16 @@
     */
     ifFirstInstall: false,
     lastPacUpdateStamp: 0,
+
+    setTitle() {
+
+      const upDate = new Date(this.lastPacUpdateStamp).toLocaleString('ru-RU')
+        .replace(/:\d+$/, '').replace(/\.\d{4}/, '');
+      chrome.browserAction.setTitle({
+        title: `Обновлялись ${upDate} | Версия ${window.apis.version.build}`,
+      });
+
+    },
 
     _currentPacProviderLastModified: 0, // Not initialized.
 
@@ -331,6 +344,7 @@
               this.lastPacUpdateStamp = Date.now();
               this.ifFirstInstall = false;
               this.setAlarms();
+              this.setTitle();
             }
 
             resolve([err, null, ...warns]);
@@ -509,10 +523,10 @@
       2. We have to check storage for migration before using it.
          Better on each launch then on each pull.
     */
-    const ifUpdating = antiCensorRu.version !== oldStorage.version;
 
     await new Promise((resolve) => {
 
+      const ifUpdating = antiCensorRu.version !== oldStorage.version;
       if (!ifUpdating) {
 
         // LAUNCH, RELOAD, ENABLE
@@ -527,12 +541,7 @@
       const key = antiCensorRu._currentPacProviderKey;
       if (key !== null) {
         const ifVeryOld = !Object.keys(antiCensorRu.pacProviders).includes(key);
-        const ifNeedsForcing = (oldStorage.version < '0.0.0.2') && !localStorage.getItem('provider-backup');
-        if ( ifVeryOld || ifNeedsForcing ) {
-          if (ifNeedsForcing) {
-            console.log('Update forces antizapret...')
-            localStorage.setItem('provider-backup', antiCensorRu._currentPacProviderKey);
-          }
+        if (ifVeryOld) {
           antiCensorRu._currentPacProviderKey = 'Антизапрет';
         }
       }
@@ -549,6 +558,7 @@
     if (antiCensorRu.getPacProvider()) {
       antiCensorRu.setAlarms();
     }
+    antiCensorRu.setTitle();
 
     /*
       History of Changes to Storage (Migration Guide)

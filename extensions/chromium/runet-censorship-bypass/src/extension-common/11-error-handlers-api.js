@@ -61,7 +61,7 @@
 
   const ifPrefix = 'if-on-';
   const extName = chrome.runtime.getManifest().name;
-  const extVersion = chrome.runtime.getManifest().version.replace(/\d+\.\d+\./g, '');
+  const extVersion = window.apis.version.build;
 
   window.apis.errorHandlers = {
 

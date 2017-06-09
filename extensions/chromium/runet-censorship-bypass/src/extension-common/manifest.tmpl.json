@@ -7,7 +7,7 @@
   "version": "0.0.${version}",
   "icons": {
     "128": "/icons/default-128.png"
-	},
+  },
   "author": "ilyaigpetrov@gmail.com",
   "homepage_url": "https://github.com/anticensorship-russia/chromium-extension",
 
@@ -32,16 +32,17 @@
       ${scripts_2x}
       , "35-pac-kitchen-api.js"
       , "37-sync-pac-script-with-pac-provider-api.js"
-      ${scripts_7x}
-      , "80-context-menus.js"
+      ${scripts_8x}
+      , "70-menu-items.js"
+      , "75-context-menus.js"
     ]
   },
   "browser_action": {
     "default_title": "Этот сайт благословлён | Версия ${version + versionSuffix}",
-    "default_popup": "/pages/choose-pac-provider/index.html"
+    "default_popup": "/pages/options/index.html"
   },
   "options_ui": {
-     "page": "/pages/choose-pac-provider/index.html",
-     "chrome_style": true
+     "page": "/pages/options/index.html",
+     "chrome_style": false
    }
 }

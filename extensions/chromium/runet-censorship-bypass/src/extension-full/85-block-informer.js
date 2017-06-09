@@ -18,10 +18,6 @@
 
   const chromified = window.utils.chromified;
 
-  window.chrome.browserAction.setBadgeBackgroundColor({
-    color: '#db4b2f',
-  });
-
   const _tabCallbacks = {};
 
   const afterTabUpdated = function afterTabUpdated(tabId, cb) {
@@ -44,6 +40,15 @@
   };
 
   chrome.tabs.onUpdated.addListener( onTabUpdate );
+
+  const setRedBadge = (opts) => {
+
+    window.chrome.browserAction.setBadgeBackgroundColor({
+      color: '#db4b2f',
+    });
+    chrome.browserAction.setBadgeText(opts);
+
+  };
 
   const updateTitle = function updateTitle(requestDetails, proxyHost, cb) {
 
@@ -71,7 +76,7 @@
             + proxyTitle + '\n' + indent + proxyHost;
           ifShouldUpdateTitle = true;
 
-          chrome.browserAction.setBadgeText({
+          setRedBadge({
             tabId: requestDetails.tabId,
             text: requestDetails.type === 'main_frame' ? '1' : '%1',
           });
@@ -101,13 +106,11 @@
               {tabId: requestDetails.tabId},
               (result) => {
 
-                chrome.browserAction.setBadgeText(
-                  {
-                    tabId: requestDetails.tabId,
-                    text: (isNaN( result.charAt(0)) && result.charAt(0) || '')
-                      + (hostsProxiesPair[0].split('\n').length - 1),
-                  }
-                );
+                setRedBadge({
+                  tabId: requestDetails.tabId,
+                  text: (isNaN( result.charAt(0)) && result.charAt(0) || '')
+                    + (hostsProxiesPair[0].split('\n').length - 1),
+                });
                 return _cb();
 
               }
