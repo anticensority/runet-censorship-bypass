@@ -1,20 +1,39 @@
 'use strict';
 
 {
+  const chromified = window.utils.chromified;
 
   const lastErrors = [];
   const lastErrorsLength = 20;
 
-  const that = window.apis.lastErrors = {
-    ifCollecting: false,
+  const IF_COLL_KEY = 'err-to-exc-if-coll';
+
+  const privates = {
+    ifCollecting: window.localStorage[IF_COLL_KEY] || false,
+  };
+
+  const that = window.apis.lastNetErrors = {
+    get ifCollecting() {
+
+      return privates.ifCollecting;
+
+    },
+
+    set ifCollecting(newValue) {
+
+      privates.ifCollecting = window.localStorage[IF_COLL_KEY] = newValue;
+
+    },
     get: () => lastErrors,
   }
 
-  chrome.webRequest.onErrorOccurred.addListener((details) => {
+  chrome.webRequest.onErrorOccurred.addListener(chromified((err/*Ignored*/, details) => {
 
       if (!that.ifCollecting || [
               'net::ERR_BLOCKED_BY_CLIENT',
               'net::ERR_ABORTED',
+              'net::ERR_CACHE_MISS',
+              'net::ERR_INSUFFICIENT_RESOURCES',
           ].includes(details.error) ) {
         return;
       }
@@ -25,11 +44,11 @@
       }
 
       lastErrors.unshift(details);
-      if (lastErrors.length > lastErrorsLenght) {
+      if (lastErrors.length > lastErrorsLength) {
         lastErrors.pop();
       }
 
-    },
+    }),
     {urls: ['<all_urls>']}
   );
 

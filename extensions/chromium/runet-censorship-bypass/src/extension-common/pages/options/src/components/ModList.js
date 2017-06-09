@@ -64,6 +64,7 @@ export default function getModList(theState) {
               checked={this.state.checks[index]}
               key={index}
               onChange={(event) => this.handleCheck(confMeta, event.target.checked)}
+              ifInputsDisabled={props.ifInputsDisabled}
             >
               {child}
             </InfoLi>);

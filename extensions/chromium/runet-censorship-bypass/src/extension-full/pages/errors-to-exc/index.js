@@ -5,7 +5,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
     window, 'LERR', () => {
 
       const tbody = document.getElementById('errorsTable');
-      const errors = bgWindow.apis.lastErrors.get().map(
+      const errors = bgWindow.apis.lastNetErrors.get().map(
         ({url, error}, index) => ({ message: error, hostname: new URL(url).hostname, ifChecked: false })
       );
 
@@ -13,6 +13,10 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
 
         const exc = bgWindow.apis.pacKitchen.getPacMods().exceptions || {};
         tbody.innerHTML = '';
+        if (!errors.length) {
+          tbody.innerHTML = '<tr><td colspan="4">Ошибок пока не было.</td></tr>';
+          return;
+        }
         errors.forEach((err, index) => {
 
           const ifProxy = exc[err.hostname];

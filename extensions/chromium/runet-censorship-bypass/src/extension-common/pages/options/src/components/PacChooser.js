@@ -68,12 +68,21 @@ export default function getPacChooser(theState) {
           onSuccess
         );
       };
+      this.radioClickHandler = this.radioClickHandler.bind(this);
+      this.updateClickHandler = this.updateClickHandler.bind(this);
 
     }
 
     getCurrentProviderId() {
 
       return this.props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none';
+
+    }
+
+    updateClickHandler(event) {
+
+      event.preventDefault();
+      this.updatePac();
 
     }
 
@@ -120,18 +129,13 @@ export default function getPacChooser(theState) {
             {
               [...props.apis.antiCensorRu.getSortedEntriesForProviders(), {key: 'none', label: 'Отключить'}].map((provConf) =>
                 (<InfoLi
-                  onClick={this.radioClickHandler.bind(this)}
+                  onClick={this.radioClickHandler}
                   conf={provConf}
                   type="radio"
                   name="pacProvider"
                   checked={iddyToCheck === provConf.key}
-                  disabled={props.ifInputsDisabled}
-                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={(evt) => {
-
-                    evt.preventDefault();
-                    this.updatePac();
-
-                }}>[обновить]</a>}
+                  ifInputsDisabled={props.ifInputsDisabled}
+                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={this.updateClickHandler}>[обновить]</a>}
                 />)
               )
             }

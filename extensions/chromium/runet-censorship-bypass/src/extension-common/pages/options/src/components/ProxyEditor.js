@@ -7,16 +7,16 @@ export default function getProxyEditor(theState) {
 
   const scopedCss = css`
 
-    form.root {
-      width: 100%;
-    }
-
     table.editor {
       border-collapse: collapse;
       /*border-style: hidden;*/
       width: 100%;
       margin: 0.5em 0;
       background-color: #f3f5f6;
+    }
+
+    .tabledEditor, .exportsEditor {
+      /* Empty, but not undefined. */
     }
 
     table.editor ::-webkit-input-placeholder {
@@ -110,9 +110,10 @@ export default function getProxyEditor(theState) {
     }
 
     /* LAST COLUMN: BUTTONS */
-    table.editor tr > *:nth-last-child(1),
-    table.editor tr > *:nth-last-child(2),
-    table.editor tr.proxyRow > td:first-child {
+    table.editor tr > *:nth-last-child(1), /* Buttons */
+    table.tabledEditor tr > *:nth-last-child(2), /* Port */
+    table.tabledEditor tr.proxyRow > td:first-child /* Type */
+    {
       text-align: center;
       padding: 0;
       position: relative;
@@ -258,8 +259,8 @@ export default function getProxyEditor(theState) {
     render(props) {
 
       return (
-        <form onSubmit={linkEvent(this, this.handleSubmit)} class={scopedCss.root}>
-          <table class={scopedCss.editor}>
+        <form onSubmit={linkEvent(this, this.handleSubmit)}>
+          <table class={scopedCss.editor + ' ' + scopedCss.tabledEditor}>
             <thead>
               <tr>
                 <th colspan="2" class={scopedCss.shrink}>протокол</th>
@@ -453,8 +454,8 @@ export default function getProxyEditor(theState) {
       const reset = linkEvent(this, this.resetState);
 
       return (
-        <form onSubmit={linkEvent(this, this.handleSubmit)} class={scopedCss.root}>
-          <table class={scopedCss.editor}>
+        <form onSubmit={linkEvent(this, this.handleSubmit)}>
+          <table class={scopedCss.editor + ' ' + scopedCss.exportsEditor}>
             <thead>
               <tr>
                 <th style="width: 100%">

@@ -9,7 +9,6 @@
     "babel-plugin-dynamic-import-webpack": "^1.0.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
-    "babili-webpack-plugin": "^0.0.11",
     "concat-stream": "^1.6.0",
     "csjs-inject": "^1.0.1",
     "flow-bin": "^0.45.0",
@@ -24,7 +23,7 @@
     "build:dev:nocomp": "NODE_ENV=development webpack --define process.env.NODE_ENV=\"'development'\" --env=dev",
     "build:dev": "NODE_ENV=development webpack --debug --define process.env.NODE_ENV=\"'development'\" --output-pathinfo --env=dev",
     "gulp": "cd .. && npm run gulp",
-    "build": "npm run build:dev",
+    "build": "npm run build:prod",
     "start": "cd .. && npm start"
   },
   "dependencies": {
