@@ -39,7 +39,7 @@
 
       support: {
         title: 'Документация / Помощь / Поддержка',
-        getUrl: (blockedUrl) => 'https://rebrand.ly/ac-support',
+        getUrl: (blockedUrl) => 'https://rebrand.ly/ac-wiki',
         order: 99,
       },
 
