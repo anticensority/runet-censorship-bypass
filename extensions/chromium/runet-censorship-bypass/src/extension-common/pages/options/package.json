@@ -1,0 +1,32 @@
+{
+  "name": "hello-react",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-dynamic-import-webpack": "^1.0.1",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-react": "^6.24.1",
+    "concat-stream": "^1.6.0",
+    "csjs-inject": "^1.0.1",
+    "flow-bin": "^0.45.0",
+    "inferno": "^3.2.0",
+    "inferno-component": "^3.1.2",
+    "inferno-create-element": "^3.1.2",
+    "webpack": "^2.5.1"
+  },
+  "scripts": {
+    "check": "flow status",
+    "build:prod": "webpack --define process.env.NODE_ENV=\"'production'\" --env=prod",
+    "build:dev:nocomp": "NODE_ENV=development webpack --define process.env.NODE_ENV=\"'development'\" --env=dev",
+    "build:dev": "NODE_ENV=development webpack --debug --define process.env.NODE_ENV=\"'development'\" --output-pathinfo --env=dev",
+    "gulp": "cd .. && npm run gulp",
+    "build": "npm run build:prod",
+    "start": "cd .. && npm start"
+  },
+  "dependencies": {
+    "babel-plugin-inferno": "^3.2.0"
+  }
+}

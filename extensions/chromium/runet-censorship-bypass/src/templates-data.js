@@ -1,7 +1,7 @@
 'use strict';
 
 const commonContext = {
-  version: '0.34',
+  version: '1.0',
 };
 
 exports.contexts = {};
@@ -10,10 +10,10 @@ exports.contexts.full = Object.assign({}, commonContext, {
   versionSuffix: '',
   nameSuffixEn: '',
   nameSuffixRu: '',
-  extra_permissions: ', "webRequest"',
+  extra_permissions: ', "webRequest", "webNavigation"',
   persistent: '',
   scripts_2x: ', "20-ip-to-host-api.js"',
-  scripts_7x: ', "70-block-informer.js"',
+  scripts_8x: ', "80-error-menu.js", "83-last-errors.js", "85-block-informer.js"',
 });
 
 exports.contexts.mini = Object.assign({}, commonContext, {
@@ -23,6 +23,6 @@ exports.contexts.mini = Object.assign({}, commonContext, {
   extra_permissions: '',
   persistent: '"persistent": false,',
   scripts_2x: ', "20-for-mini-only.js"',
-  scripts_7x: '',
+  scripts_8x: '',
 });
 

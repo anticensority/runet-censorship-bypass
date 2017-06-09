@@ -3,14 +3,21 @@
   "version": "0.0.19",
   "description": "Development tools for chromium extension",
   "scripts": {
+    "postinstall": "node --use_strict -e \"const fs = require('fs'), path = 'node_modules/_project-root'; fs.unlink(path, ()=> fs.symlinkSync('..', path, 'dir'));\"",
     "lint": "eslint ./src/**/*.js --ignore-pattern vendor",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "test": "mocha --recursive ./src/**/test/*",
+    "start": "cd ./src/extension-common/pages/options/ && npm run build && cd - && npm run gulp"
   },
   "author": "Ilya Ig. Petrov",
   "license": "GPLv3",
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint": "^3.15.0",
-    "eslint-config-google": "^0.7.1"
+    "eslint-config-google": "^0.7.1",
+    "gulp-changed": "^3.1.0",
+    "mocha": "^3.3.0",
+    "sinon-chrome": "^2.2.1"
   },
   "dependencies": {
     "del": "^2.2.2",
