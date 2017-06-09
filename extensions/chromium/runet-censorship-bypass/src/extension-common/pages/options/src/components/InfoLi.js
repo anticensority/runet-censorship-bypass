@@ -88,9 +88,6 @@ export default function getInfoLi() {
 
     /* CHILDREN */
 
-    input:not(:checked) ~ .children {
-      display: none;
-    }
     .children {
       flex-grow: 9999;
     }
@@ -110,17 +107,30 @@ export default function getInfoLi() {
 
   };
 
-  return function InfoLi(props) {
+  return function InfoLi(originalProps) {
 
-    props = Object.assign({}, {
+    const props = Object.assign({}, {
       idPrefix: '',
       ifDashify: false,
-    }, props);
+    }, originalProps);
 
     const iddy = props.idPrefix + ( props.ifDashify ? camelToDash(props.conf.key) : props.conf.key );
+
+    const inputProps = {
+      id: iddy,
+      name: props.name,
+      type: props.type,
+      checked: props.checked,
+      onClick: props.onClick,
+      onChange: props.onChange,
+      class: props.class,
+      disabled: props.ifInputsDisabled,
+    };
+    delete inputProps.children;
+
     return (
       <li class={scopedCss.infoRow + ' horFlex'} style={ props.children && 'flex-wrap: wrap'}>
-        { createElement('input', Object.assign({}, props, {id: iddy})) }
+        {createElement('input', inputProps)}
         <div class={scopedCss.labelContainer}>
           <label for={iddy} dangerouslySetInnerHTML={{__html: props.conf.label}}></label>
           {props.nodeAfterLabel}
@@ -136,8 +146,8 @@ export default function getInfoLi() {
               : (<span>&nbsp;</span>) // Affects vertical align of flexbox items.
             )
         }
-        { props.checked && props.children }
-        {/* props.checked && (<div class={scopedCss.children}>{props.children}</div>)*/}
+        {/* props.checked && props.children */}
+        {props.checked && props.children && (<div class={scopedCss.children}>{props.children}</div>)}
       </li>
     );
 

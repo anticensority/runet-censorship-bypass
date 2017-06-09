@@ -14,6 +14,7 @@ export default function getApplyMods(theState) {
 
         props.apis.pacKitchen.resetToDefaults();
         props.bgWindow.utils.fireRequest('ip-to-host-reset-to-defaults', cb);
+        window.localStorage.clear();
 
       },
       'Откройте окно заново для отображения эффекта.',

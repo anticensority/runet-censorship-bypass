@@ -79,23 +79,32 @@ export default function getApp(theState) {
         headers: new Headers(headers),
       };
 
-      const ghUrl = `https://api.github.com/repos/anticensorship-russia/for-testing-github-api/issues/1/comments${query}`;
-      const [comments, etag] = await fetch(
+      const ghUrl = `https://api.github.com/repos/anticensority/chromium-extension/issues/10/comments${query}`;
+
+      const [error, comments, etag] = await fetch(
         ghUrl,
         params
       ).then(
         (res) => !( res.status >= 200 && res.status < 300 || res.status === 304 )
-                    ? Promise.reject(new Error(`Полечен ответ с неудачным кодом ${res.status}.`))
+                    ? Promise.reject({message: `Получен ответ с неудачным кодом ${res.status}.`, data: res})
                     : res
       ).then(
         (res) => Promise.all([
+          null,
           res.status !== 304 ? res.json() : false,
           res.headers.get('ETag')
         ]),
         (err) => {
 
-          this.showErrors({message: 'Не удалось достать новости: что-то не так с сетью.', wrapped: err});
-          return [false, false];
+          const statusCode = err.data && err.data.status;
+          const ifCritical = null;
+          this.showErrors(ifCritical, {
+            message: statusCode === 403
+              ? 'Слишком много запросов :-( Сообщите разработчику, как вам удалось всё истратить.'
+              : 'Не удалось достать новости: что-то не так с сетью.',
+            wrapped: err,
+          });
+          return [err, false, false];
 
         }
       );
@@ -103,21 +112,25 @@ export default function getApp(theState) {
         localStorage[uiComEtag] = etag;
       }
 
+      if (error) {
+        return; // Let the user see the error message and contemplate.
+      }
 
-      const ifNews = (() => {
+      const ifNewsWasSet = (() => {
 
-        if (!(comments && comments.length)) {
-          const news = JSON.parse(localStorage[uiLastNewsArr]);
-          if (news) {
+        if (comments === false) {
+          // 304
+          const json = localStorage[uiLastNewsArr];
+          const news = json && JSON.parse(json);
+          if (news && news.length) {
             this.setNewsStatusTo(news);
             return true;
           }
           return false;
         }
 
-        let minDate;
-        const news = [];
-        comments.forEach((comment) => {
+        let minDate; // Minimal date among all news-comments.
+        const news = comments.reduce((acc, comment) => {
 
           const curDate = comment.updated_at || comment.created_at;
           const newsTitle = this.getNewsHeadline( comment.body );
@@ -125,21 +138,25 @@ export default function getApp(theState) {
             if (!minDate || curDate <= minDate) {
               minDate = curDate;
             }
-            news.push([newsTitle, comment.html_url]);
+            acc.push([newsTitle, comment.html_url]);
           }
+          return acc;
 
-        });
-        if (!news.length) {
-          return false;
-        }
-        localStorage[uiComDate] = minDate;
+        }, []);
+        // Response with empty news is cached too.
         localStorage[uiLastNewsArr] = JSON.stringify(news);
-        this.setNewsStatusTo(news);
-        return true;
+        if (news.length) {
+          if (minDate) {
+            localStorage[uiComDate] = minDate;
+          }
+          this.setNewsStatusTo(news);
+          return true;
+        }
+        return false;
 
       })();
-      if (!ifNews) {
-        this.setStatusTo('Ничего нового.');
+      if (!ifNewsWasSet) {
+        this.setStatusTo('Хорошего настроения Вам!');
       }
 
     }
@@ -171,18 +188,11 @@ export default function getApp(theState) {
         : () => {};
       const warns = args;
 
-      const warningHtml = warns
-        .map(
-          (w) => w && w.message || ''
-        )
-        .filter( (m) => m )
-        .map( (m) => '✘ ' + m )
-        .join('<br/>');
+      const errToHtmlMessage = (error) => {
 
-      let messageHtml = '';
-      if (err) {
-        let wrapped = err.wrapped;
-        messageHtml = err.message || '';
+        let messageHtml = '';
+        let wrapped = error.wrapped;
+        messageHtml = error.message || '';
 
         while( wrapped ) {
           const deeperMsg = wrapped && wrapped.message;
@@ -191,7 +201,20 @@ export default function getApp(theState) {
           }
           wrapped = wrapped.wrapped;
         }
-      }
+        return messageHtml;
+
+      };
+
+      let messageHtml = err ? errToHtmlMessage(err) : '';
+      
+      const warningHtml = warns
+        .filter((w) => w)
+        .map(
+          (w) => errToHtmlMessage(w)
+        )
+        .map( (m) => '✘ ' + m )
+        .join('<br/>');
+
       messageHtml = messageHtml.trim();
       if (warningHtml) {
         messageHtml = messageHtml ? messageHtml + '<br/>' + warningHtml : warningHtml;
