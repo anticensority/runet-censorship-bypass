@@ -21,6 +21,7 @@
     , "notifications"
     ${extra_permissions}
   ],
+  "minimum_chrome_version": "55.0.0.0",
 
   "background": {
     ${persistent}
