@@ -505,7 +505,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
     return proxyStringRaw
       .replace(/#.*$/mg, '') // Strip comments.
-      .replace(/\s*DIRECT\s*/g, '') // Remove DIRECT from old versions.
+      .replace(/[^\S\r\n]*DIRECT[^\S\r\n]*/g, '') // Remove DIRECT from old versions.
       .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
       .map( (p) => p.trim() )
       .filter((p) => p)
