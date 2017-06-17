@@ -222,7 +222,7 @@ export default function getProxyEditor(theState) {
 
       const newValue = `${that.props.proxyStringRaw}; ${type} ${hostname}:${port}`
         .trim().replace(/(\s*;\s*)+/, '; ');
-      that.props.setProxyStringRaw(newValue);
+      that.props.setProxyStringRaw(true, newValue);
 
     }
 
@@ -232,7 +232,7 @@ export default function getProxyEditor(theState) {
       const proxyStrings = splitBySemi(that.props.proxyStringRaw);
       proxyStrings.splice(index, 1);
 
-      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
+      that.props.setProxyStringRaw(true, joinBySemi(proxyStrings) );
 
     }
 
@@ -245,7 +245,7 @@ export default function getProxyEditor(theState) {
       const proxyStrings = splitBySemi(that.props.proxyStringRaw);
       proxyStrings.splice(index - 1, 2, proxyStrings[index], proxyStrings[index-1]);
 
-      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
+      that.props.setProxyStringRaw(true, joinBySemi(proxyStrings) );
 
     }
 
@@ -367,11 +367,13 @@ export default function getProxyEditor(theState) {
       super(props);
       this.state = getInitState();
       this.resetState = linkEvent(this, this.resetState);
+      this.showApply =  linkEvent(undefined,  props.setProxyStringRaw);
 
     }
 
     resetState(that, event) {
 
+      that.props.setProxyStringRaw(true, that.props.proxyStringRaw);
       if (that.state.ifHasErrors) {
         that.props.funs.setStatusTo(''); // Clear errors
       }
@@ -421,7 +423,6 @@ export default function getProxyEditor(theState) {
 
     handleModeSwitch(that, event) {
 
-      console.log('SWITCH!');
       if (that.state.ifHasErrors) {
         return;
       }
@@ -431,18 +432,18 @@ export default function getProxyEditor(theState) {
 
     handleTextareaChange(that, event) {
 
-      console.log('CHANGE!');
       that.setState({
         stashedExports: normalizeProxyString(event.target.value),
       });
       const errors = that.getErrorsInStashedExports();
       if (errors) {
+        that.props.setProxyStringRaw(false);
         that.setState({ifHasErrors: true});
         that.props.funs.showErrors(...errors);
         return;
       }
       // No errors.
-      that.props.setProxyStringRaw(that.state.stashedExports);
+      that.props.setProxyStringRaw(true, that.state.stashedExports);
       that.setState({
         stashedExports: false,
         ifHasErrors: false,
@@ -490,6 +491,7 @@ SOCKS5 localhost:9150; # Tor Browser
 HTTPS 11.22.33.44:3143;
 PROXY foobar.com:8080; # Not HTTP!`.trim()}
                     onChange={linkEvent(this, this.handleTextareaChange)}
+                    onFocus={this.showApply}
                     value={
                       this.state.stashedExports !== false
                         ? this.state.stashedExports
@@ -531,6 +533,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       this.state = {
         proxyStringRaw: newValue,
         ifExportsMode: false,
+        ifValid: true,
       };
       this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
       waitingTillMount.push(newValue); // Wait till mount or eat bugs.
@@ -552,12 +555,12 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
     }
 
-    mayEmitNewValue(oldValue, newValue) {
+    mayEmitNewValue(oldValue, newValue, ifValidityChanged) {
 
       if ( // Reject: 1) both `false` OR 2) both `===`.
-        ( Boolean(oldValue) || Boolean(newValue) ) && oldValue !== newValue
+        ifValidityChanged || ( Boolean(oldValue) || Boolean(newValue) ) && oldValue !== newValue
       ) {
-        this.props.onNewValue(newValue);
+        this.props.onNewValue(this.state.ifValid, newValue);
       }
 
     }
@@ -567,12 +570,21 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       const props = Object.assign({
         proxyStringRaw: this.state.proxyStringRaw,
         onSwitch: this.handleSwitch,
-        setProxyStringRaw: (newValue) => {
+        setProxyStringRaw: (ifValid, newValue) => {
+
+          const ifValidityChanged = this.state.ifValid !== ifValid;
+          if (!ifValid) {
+            if (ifValidityChanged || ifValid === undefined) {
+              this.props.onNewValue(ifValid);
+              this.setState({ ifValid });
+            }
+            return;
+          }
 
           const oldValue = this.state.proxyStringRaw;
           localStorage.setItem(UI_RAW, newValue);
-          this.setState({proxyStringRaw: newValue});
-          this.mayEmitNewValue(oldValue, newValue);
+          this.setState({proxyStringRaw: newValue, ifValid});
+          this.mayEmitNewValue(oldValue, newValue, ifValidityChanged);
 
         },
       }, originalProps);
