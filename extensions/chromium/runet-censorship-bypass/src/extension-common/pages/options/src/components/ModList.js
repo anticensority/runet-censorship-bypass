@@ -7,7 +7,7 @@ export default function getModList(theState) {
 
   const InfoLi = getInfoLi(theState);
 
-  return class ModList extends Component { 
+  return class ModList extends Component {
 
     constructor(props) {
 
