@@ -103,7 +103,7 @@ export default function getProxyEditor(theState) {
       right: 0;
     }
     table.editor .add {
-      font-weight: 900; 
+      font-weight: 900;
     }
     table.editor .export {
       /*padding-right: 2px;*/
@@ -160,7 +160,7 @@ export default function getProxyEditor(theState) {
   };
   const splitBySemi = (proxyString) => proxyString.replace(/#.*$/mg, '').trim().split(/\s*;\s*/g).filter((s) => s);
   const joinBySemi = (strs) => strs.join(';\n') + ';';
-  const normilizeProxyString = (str) => joinBySemi(splitBySemi(str));
+  const normalizeProxyString = (str) => joinBySemi(splitBySemi(str));
 
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
 
@@ -437,7 +437,7 @@ export default function getProxyEditor(theState) {
     handleTextareaChange(that, event) {
 
       that.setState({
-        stashedExports: normilizeProxyString(event.target.value),
+        stashedExports: normalizeProxyString(event.target.value),
       });
 
     }
