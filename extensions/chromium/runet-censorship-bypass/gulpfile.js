@@ -17,12 +17,12 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
     file.path = file.path.replace(new RegExp(`${tjson}$`), '.json');
 
     if (file.isStream()) {
-      return cb(new PluginError(PluginName, 'Streams not supported!'));
+      return cb(new PluginError(PluginName, 'Streams are not supported!'));
     } else if (file.isBuffer()) {
 
       const {keys, values} = Object.keys(context).reduce( (acc, key) => {
 
-  const value = context[key];
+        const value = context[key];
         acc.keys.push(key);
         acc.values.push(value);
         return acc;
@@ -103,4 +103,5 @@ gulp.task('_cp-full', ['_cp-common'], function(cb) {
 
 });
 
-gulp.task('build', ['_cp-mini', '_cp-full']);
+gulp.task('build:prod', ['_cp-mini', '_cp-full']);
+gulp.task('build', ['_cp-full']);
