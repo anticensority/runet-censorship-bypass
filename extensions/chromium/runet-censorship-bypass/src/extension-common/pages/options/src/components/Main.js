@@ -96,7 +96,7 @@ export default function getMain(theState) {
         return acc;
 
       }, {});
-      
+
       this.setState({
         catToOrderedMods: newCats,
         ifModsChangesStashed: true,

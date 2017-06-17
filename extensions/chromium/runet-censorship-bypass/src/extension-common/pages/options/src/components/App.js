@@ -206,7 +206,7 @@ export default function getApp(theState) {
       };
 
       let messageHtml = err ? errToHtmlMessage(err) : '';
-      
+
       const warningHtml = warns
         .filter((w) => w)
         .map(

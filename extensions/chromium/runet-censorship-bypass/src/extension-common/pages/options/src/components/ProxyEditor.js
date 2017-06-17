@@ -246,7 +246,7 @@ export default function getProxyEditor(theState) {
       proxyStrings.splice(index - 1, 2, proxyStrings[index], proxyStrings[index-1]);
 
       that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
-      
+
     }
 
     handleSubmit(that, event) {
@@ -528,7 +528,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       };
       this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
       waitingTillMount.push(newValue); // Wait till mount or eat bugs.
-      
+
     }
 
     componentDidMount() {
@@ -570,7 +570,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
         },
       }, originalProps);
-      
+
       return this.state.ifExportsMode
         ? createElement(ExportsEditor, props)
         : createElement(TabledEditor, props);

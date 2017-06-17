@@ -41,7 +41,7 @@ export default function getInfoLi() {
     .desc {
       text-align: right;
       color: var(--ribbon-color);
-      cursor: help; 
+      cursor: help;
       padding-left: 0.3em;
     }
     .tooltip {
