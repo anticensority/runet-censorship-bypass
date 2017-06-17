@@ -36,7 +36,7 @@ export default function getApp(theState) {
 
       this.setState(
         {
-          status: msg,
+          status: msg || 'Хорошего настроения Вам!',
         },
         cb
       );
@@ -156,7 +156,7 @@ export default function getApp(theState) {
 
       })();
       if (!ifNewsWasSet) {
-        this.setStatusTo('Хорошего настроения Вам!');
+        this.setStatusTo();
       }
 
     }
