@@ -26,17 +26,18 @@ export default function getModList(theState) {
         )
       });
       if (ifChecked === false || !confMeta.ifChild) {
-        this.handleNewValue(confMeta, ifChecked);
+        this.handleNewValue(true, confMeta, ifChecked);
       }
 
     }
 
-    handleNewValue({ conf, index }, newValue) {
+    handleNewValue(ifValid, { conf, index }, newValue) {
 
       this.props.onConfChanged({
         targetConf: conf,
         targetIndex: index,
         newValue: newValue,
+        ifValid,
       });
 
     }
@@ -54,7 +55,7 @@ export default function getModList(theState) {
             const child = ifMayHaveChild && this.state.checks[index]
               && createElement(
                 props.childrenOfMod[conf.key],
-                Object.assign({}, props, {conf, onNewValue: (newValue) => this.handleNewValue(confMeta, newValue)})
+                Object.assign({}, props, {conf, onNewValue: (ifValid, newValue) => this.handleNewValue(ifValid, confMeta, newValue)})
               );
 
             return (<InfoLi
