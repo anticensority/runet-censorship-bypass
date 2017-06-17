@@ -366,11 +366,15 @@ export default function getProxyEditor(theState) {
 
       super(props);
       this.state = getInitState();
+      this.resetState = linkEvent(this, this.resetState);
 
     }
 
     resetState(that, event) {
 
+      if (that.state.ifHasErrors) {
+        that.props.funs.setStatusTo(''); // Clear errors
+      }
       that.setState(getInitState());
       event.preventDefault();
 
@@ -417,27 +421,31 @@ export default function getProxyEditor(theState) {
 
     handleModeSwitch(that, event) {
 
-      if (that.state.stashedExports !== false) {
-        const errors = that.getErrorsInStashedExports();
-        if (errors) {
-          that.setState({ifHasErrors: true});
-          that.props.funs.showErrors(...errors);
-          return;
-        }
-        that.props.setProxyStringRaw(that.state.stashedExports);
+      console.log('SWITCH!');
+      if (that.state.ifHasErrors) {
+        return;
       }
-      that.setState({
-        stashedExports: false,
-        ifHasErrors: false,
-      });
       that.props.onSwitch();
 
     }
 
     handleTextareaChange(that, event) {
 
+      console.log('CHANGE!');
       that.setState({
         stashedExports: normalizeProxyString(event.target.value),
+      });
+      const errors = that.getErrorsInStashedExports();
+      if (errors) {
+        that.setState({ifHasErrors: true});
+        that.props.funs.showErrors(...errors);
+        return;
+      }
+      // No errors.
+      that.props.setProxyStringRaw(that.state.stashedExports);
+      that.setState({
+        stashedExports: false,
+        ifHasErrors: false,
       });
 
     }
@@ -451,8 +459,6 @@ export default function getProxyEditor(theState) {
 
     render(props) {
 
-      const reset = linkEvent(this, this.resetState);
-
       return (
         <form onSubmit={linkEvent(this, this.handleSubmit)}>
           <table class={scopedCss.editor + ' ' + scopedCss.exportsEditor}>
@@ -463,8 +469,8 @@ export default function getProxyEditor(theState) {
                     this.state.stashedExports === false
                       ? 'Комментарии вырезаются!'
                       : (this.state.ifHasErrors
-                          ? (<span><a href="" onClick={reset}>Сбросьте изменения</a> или поправьте</span>)
-                          : (<a href="" onClick={reset}>Сбросить изменения</a>)
+                          ? (<span><a href="" onClick={this.resetState} style="color: red">Сбросьте изменения</a> или поправьте</span>)
+                          : (<a href="" onClick={this.resetState}>Сбросить изменения</a>)
                         )
                   }
                 </th>
