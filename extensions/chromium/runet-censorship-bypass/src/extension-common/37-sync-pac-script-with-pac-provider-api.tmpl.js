@@ -221,7 +221,7 @@
 
     },
 
-    _currentPacProviderKey: 'Антизапрет',
+    _currentPacProviderKey: 'Антицензорити',
 
     /* Is it the first time extension installed?
        Do something, e.g. initiate PAC sync.
@@ -541,10 +541,7 @@
       console.log('Updating from ', oldStorage.version, 'to', antiCensorRu.version);
       const key = antiCensorRu._currentPacProviderKey;
       if (key !== null) {
-        const ifVeryOld = !Object.keys(antiCensorRu.pacProviders).includes(key);
-        if (ifVeryOld) {
-          antiCensorRu._currentPacProviderKey = 'Антизапрет';
-        }
+        antiCensorRu._currentPacProviderKey = 'Антицензорити';
       }
 
       antiCensorRu.pushToStorageAsync(() => {
