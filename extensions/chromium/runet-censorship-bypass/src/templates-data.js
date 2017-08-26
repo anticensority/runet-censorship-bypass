@@ -1,7 +1,7 @@
 'use strict';
 
 const commonContext = {
-  version: '1.3',
+  version: '1.4',
   anticensorityPacUrls: [
     // First official, shortened:
     'https://rebrand.ly/ac-chrome-anticensority-pac',
