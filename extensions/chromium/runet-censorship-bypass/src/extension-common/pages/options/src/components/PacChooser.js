@@ -88,7 +88,7 @@ export default function getPacChooser(theState) {
 
     radioClickHandler(event) {
 
-      const checkChosenProvider = () => 
+      const checkChosenProvider = () =>
         this.setState({ chosenPacName: this.getCurrentProviderId() });
 
       const pacKey = event.target.id;

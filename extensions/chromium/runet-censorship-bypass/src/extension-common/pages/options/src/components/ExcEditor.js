@@ -65,7 +65,7 @@ export default function getExcEditor(theState) {
   return class ExcEditor extends Component {
 
     modsToOpts(pacMods) {
-      
+
       return Object.keys(pacMods.exceptions || {}).sort().map(
         (excHost) => [excHost, pacMods.exceptions[excHost]]
       );
@@ -100,7 +100,7 @@ export default function getExcEditor(theState) {
           },
         {}),
       });
-      
+
     }
 
     isHostValid(host) {
