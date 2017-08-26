@@ -103,7 +103,7 @@ export default function getProxyEditor(theState) {
       right: 0;
     }
     table.editor .add {
-      font-weight: 900; 
+      font-weight: 900;
     }
     table.editor .export {
       /*padding-right: 2px;*/
@@ -160,7 +160,7 @@ export default function getProxyEditor(theState) {
   };
   const splitBySemi = (proxyString) => proxyString.replace(/#.*$/mg, '').trim().split(/\s*;\s*/g).filter((s) => s);
   const joinBySemi = (strs) => strs.join(';\n') + ';';
-  const normilizeProxyString = (str) => joinBySemi(splitBySemi(str));
+  const normalizeProxyString = (str) => joinBySemi(splitBySemi(str));
 
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
 
@@ -222,7 +222,7 @@ export default function getProxyEditor(theState) {
 
       const newValue = `${that.props.proxyStringRaw}; ${type} ${hostname}:${port}`
         .trim().replace(/(\s*;\s*)+/, '; ');
-      that.props.setProxyStringRaw(newValue);
+      that.props.setProxyStringRaw(true, newValue);
 
     }
 
@@ -232,7 +232,7 @@ export default function getProxyEditor(theState) {
       const proxyStrings = splitBySemi(that.props.proxyStringRaw);
       proxyStrings.splice(index, 1);
 
-      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
+      that.props.setProxyStringRaw(true, joinBySemi(proxyStrings) );
 
     }
 
@@ -245,8 +245,8 @@ export default function getProxyEditor(theState) {
       const proxyStrings = splitBySemi(that.props.proxyStringRaw);
       proxyStrings.splice(index - 1, 2, proxyStrings[index], proxyStrings[index-1]);
 
-      that.props.setProxyStringRaw( joinBySemi(proxyStrings) );
-      
+      that.props.setProxyStringRaw(true, joinBySemi(proxyStrings) );
+
     }
 
     handleSubmit(that, event) {
@@ -366,11 +366,17 @@ export default function getProxyEditor(theState) {
 
       super(props);
       this.state = getInitState();
+      this.resetState = linkEvent(this, this.resetState);
+      this.showApply =  linkEvent(undefined,  props.setProxyStringRaw);
 
     }
 
     resetState(that, event) {
 
+      that.props.setProxyStringRaw(true, that.props.proxyStringRaw);
+      if (that.state.ifHasErrors) {
+        that.props.funs.setStatusTo(''); // Clear errors
+      }
       that.setState(getInitState());
       event.preventDefault();
 
@@ -417,19 +423,9 @@ export default function getProxyEditor(theState) {
 
     handleModeSwitch(that, event) {
 
-      if (that.state.stashedExports !== false) {
-        const errors = that.getErrorsInStashedExports();
-        if (errors) {
-          that.setState({ifHasErrors: true});
-          that.props.funs.showErrors(...errors);
-          return;
-        }
-        that.props.setProxyStringRaw(that.state.stashedExports);
+      if (that.state.ifHasErrors) {
+        return;
       }
-      that.setState({
-        stashedExports: false,
-        ifHasErrors: false,
-      });
       that.props.onSwitch();
 
     }
@@ -437,7 +433,20 @@ export default function getProxyEditor(theState) {
     handleTextareaChange(that, event) {
 
       that.setState({
-        stashedExports: normilizeProxyString(event.target.value),
+        stashedExports: normalizeProxyString(event.target.value),
+      });
+      const errors = that.getErrorsInStashedExports();
+      if (errors) {
+        that.props.setProxyStringRaw(false);
+        that.setState({ifHasErrors: true});
+        that.props.funs.showErrors(...errors);
+        return;
+      }
+      // No errors.
+      that.props.setProxyStringRaw(true, that.state.stashedExports);
+      that.setState({
+        stashedExports: false,
+        ifHasErrors: false,
       });
 
     }
@@ -451,8 +460,6 @@ export default function getProxyEditor(theState) {
 
     render(props) {
 
-      const reset = linkEvent(this, this.resetState);
-
       return (
         <form onSubmit={linkEvent(this, this.handleSubmit)}>
           <table class={scopedCss.editor + ' ' + scopedCss.exportsEditor}>
@@ -463,8 +470,8 @@ export default function getProxyEditor(theState) {
                     this.state.stashedExports === false
                       ? 'Комментарии вырезаются!'
                       : (this.state.ifHasErrors
-                          ? (<span><a href="" onClick={reset}>Сбросьте изменения</a> или поправьте</span>)
-                          : (<a href="" onClick={reset}>Сбросить изменения</a>)
+                          ? (<span><a href="" onClick={this.resetState} style="color: red">Сбросьте изменения</a> или поправьте</span>)
+                          : (<a href="" onClick={this.resetState}>Сбросить изменения</a>)
                         )
                   }
                 </th>
@@ -484,6 +491,7 @@ SOCKS5 localhost:9150; # Tor Browser
 HTTPS 11.22.33.44:3143;
 PROXY foobar.com:8080; # Not HTTP!`.trim()}
                     onChange={linkEvent(this, this.handleTextareaChange)}
+                    onFocus={this.showApply}
                     value={
                       this.state.stashedExports !== false
                         ? this.state.stashedExports
@@ -525,10 +533,11 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       this.state = {
         proxyStringRaw: newValue,
         ifExportsMode: false,
+        ifValid: true,
       };
       this.handleSwitch = () => this.setState({ifExportsMode: !this.state.ifExportsMode});
       waitingTillMount.push(newValue); // Wait till mount or eat bugs.
-      
+
     }
 
     componentDidMount() {
@@ -546,12 +555,12 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
 
     }
 
-    mayEmitNewValue(oldValue, newValue) {
+    mayEmitNewValue(oldValue, newValue, ifValidityChanged) {
 
       if ( // Reject: 1) both `false` OR 2) both `===`.
-        ( Boolean(oldValue) || Boolean(newValue) ) && oldValue !== newValue
+        ifValidityChanged || ( Boolean(oldValue) || Boolean(newValue) ) && oldValue !== newValue
       ) {
-        this.props.onNewValue(newValue);
+        this.props.onNewValue(this.state.ifValid, newValue);
       }
 
     }
@@ -561,16 +570,25 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
       const props = Object.assign({
         proxyStringRaw: this.state.proxyStringRaw,
         onSwitch: this.handleSwitch,
-        setProxyStringRaw: (newValue) => {
+        setProxyStringRaw: (ifValid, newValue) => {
+
+          const ifValidityChanged = this.state.ifValid !== ifValid;
+          if (!ifValid) {
+            if (ifValidityChanged || ifValid === undefined) {
+              this.props.onNewValue(ifValid);
+              this.setState({ ifValid });
+            }
+            return;
+          }
 
           const oldValue = this.state.proxyStringRaw;
           localStorage.setItem(UI_RAW, newValue);
-          this.setState({proxyStringRaw: newValue});
-          this.mayEmitNewValue(oldValue, newValue);
+          this.setState({proxyStringRaw: newValue, ifValid});
+          this.mayEmitNewValue(oldValue, newValue, ifValidityChanged);
 
         },
       }, originalProps);
-      
+
       return this.state.ifExportsMode
         ? createElement(ExportsEditor, props)
         : createElement(TabledEditor, props);

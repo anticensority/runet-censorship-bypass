@@ -38,7 +38,8 @@ export default function getMain(theState) {
 
       super(props);
       this.state = {
-        ifModsChangesStashed: false,
+        ifModsChangesAreStashed: false,
+        ifModsChangesAreValid: true,
         catToOrderedMods: {
           'general': props.apis.pacKitchen.getOrderedConfigs('general'),
           'ownProxies': props.apis.pacKitchen.getOrderedConfigs('ownProxies'),
@@ -58,24 +59,46 @@ export default function getMain(theState) {
 
     handleModApply(that) {
 
+      if (!that.state.ifModsChangesAreValid) {
+        // Error message must be already set by a config validator.
+        return;
+      }
       const modsMutated = that.props.apis.pacKitchen.getPacMods();
       const newMods = that.getAllMods().reduce((_, conf) => {
 
         modsMutated[conf.key] = conf.value;
         return modsMutated;
 
-      }, modsMutated/*< Needed for index 0*/);
+      }, modsMutated/* Needed for index 0*/);
       that.props.funs.conduct(
         'Применяем настройки...',
         (cb) => that.props.apis.pacKitchen.keepCookedNowAsync(newMods, cb),
         'Настройки применены.',
-        () => that.setState({ifModsChangesStashed: false})
+        () => that.setState({
+          ifModsChangesAreStashed: false,
+          ifModsChangesAreValid: true,
+        })
       );
 
     }
 
-    handleModChange({targetConf, targetIndex, newValue}) {
+    handleModChange({ifValid, targetConf, targetIndex, newValue}) {
 
+      if (ifValid === undefined) {
+        // User input some data, but not validated yet.
+        this.setState({
+          // Make apply button clickable when user only starts writing.
+          ifModsChangesAreStashed: true,
+        });
+        return;
+      }
+      if (ifValid === false) {
+        this.setState({
+          ifModsChangesAreValid: false,
+          ifModsChangesAreStashed: true,
+        })
+        return;
+      }
       const oldCats = this.state.catToOrderedMods;
       const newCats = Object.keys(this.state.catToOrderedMods).reduce((acc, cat) => {
 
@@ -96,10 +119,11 @@ export default function getMain(theState) {
         return acc;
 
       }, {});
-      
+
       this.setState({
         catToOrderedMods: newCats,
-        ifModsChangesStashed: true,
+        ifModsChangesAreStashed: true,
+        ifModsChangesAreValid: true,
       });
 
     }
@@ -108,7 +132,7 @@ export default function getMain(theState) {
 
       const applyModsEl = createElement(ApplyMods, Object.assign({}, props,
         {
-          ifInputsDisabled: !this.state.ifModsChangesStashed || props.ifInputsDisabled,
+          ifInputsDisabled: !this.state.ifModsChangesAreStashed || props.ifInputsDisabled,
           onClick: linkEvent(this, this.handleModApply),
         }
       ));

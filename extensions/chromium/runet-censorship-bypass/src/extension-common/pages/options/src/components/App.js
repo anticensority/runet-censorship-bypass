@@ -36,7 +36,7 @@ export default function getApp(theState) {
 
       this.setState(
         {
-          status: msg,
+          status: msg || 'Хорошего настроения Вам!',
         },
         cb
       );
@@ -79,7 +79,8 @@ export default function getApp(theState) {
         headers: new Headers(headers),
       };
 
-      const ghUrl = `https://api.github.com/repos/anticensority/chromium-extension/issues/10/comments${query}`;
+      //const ghUrl = `https://api.github.com/repos/anticensority/chromium-extension/issues/10/comments${query}`;
+      const ghUrl = `https://api.github.com/repos/anticensority/for-testing/issues/1/comments${query}`;
 
       const [error, comments, etag] = await fetch(
         ghUrl,
@@ -156,7 +157,7 @@ export default function getApp(theState) {
 
       })();
       if (!ifNewsWasSet) {
-        this.setStatusTo('Хорошего настроения Вам!');
+        this.setStatusTo();
       }
 
     }
@@ -206,7 +207,7 @@ export default function getApp(theState) {
       };
 
       let messageHtml = err ? errToHtmlMessage(err) : '';
-      
+
       const warningHtml = warns
         .filter((w) => w)
         .map(
