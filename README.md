@@ -13,7 +13,7 @@ This repo contains:
 3. ~~PAC-scripts performance analyses of scripts generated~~ (doesn't take parse time into account)
 4. Based on the research of step 3 [the final PAC-generator][pac-generator] was written as a Google App Script in JavaScript which is triggered every two hours to generate and publish PAC-script on Google Drive (don't use direct URL without extension, please, URL will be periodically changed to counter abuse).
 
-[pac-generator]: https://script.google.com/d/1uKNRz6w-BbOef8bC9lsWpzYMJxczjFXfMKK8fq6nYTzyPcVxzjGB9ynb/edit?usp=sharing
+[pac-generator]: https://script.google.com/d/1RlqqfUmYNpEhekySfOqdzJ8L4eV1GsHYDjPD1DexxEW0RcGvuCSQlWa0/edit?usp=sharing
 
 ## Why I do This
 
@@ -29,9 +29,7 @@ I decided to write an anti-censorship extension for Chromium before they strike 
 ## How it Works
 
 0. PAC script is a JavaScript file, triggered on every URL request, which says browser which proxy to use if any for this particular URL.
-1. The Chrome Extension sets PAC script in browser settings and keeps it synced with PAC script on the server (offering one on Google Drive, Antizapret or on Anticenz).
-2. On every request PAC script checks if host is blocked OR if it's IP is blocked using `switch(..) {..}` trie-like structure (Google Drive PAC script).  
-Antizapret PAC script checks for IPs only with `indexOf`.  
-Anticenz PAC script checks for hosts and IPs with `indexOf`, but lacks some IPs.
-3. If address is blocked PAC script returns proxy server to the browser: Antizapret, or Anticenz if the first one fails.
-4. PAC scripts on servers are updated periodically from https://github.com/zapret-info/z-i
+1. The Chrome Extension sets PAC script in browser settings and keeps it synced with PAC script on the server (offering Antizapret (hosted on a dedicated server) or Anticensority (hosted on GitHub + CloudFlare)).
+2. On every request PAC script checks if host is blocked or if its IP is blocked.
+3. If address is blocked PAC script returns proxy server to the browser, both Antizapret and Anticensority use Antizapret proxy servers.
+4. PAC scripts on servers are updated periodically from https://github.com/zapret-info/z-i.
