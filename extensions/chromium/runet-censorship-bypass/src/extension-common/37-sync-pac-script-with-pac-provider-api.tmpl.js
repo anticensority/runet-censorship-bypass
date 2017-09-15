@@ -540,8 +540,10 @@
       // UPDATE & MIGRATION
       console.log('Updating from ', oldStorage.version, 'to', antiCensorRu.version);
       const key = antiCensorRu._currentPacProviderKey;
-      if (key !== null) {
-        antiCensorRu._currentPacProviderKey = 'Антицензорити';
+      if (oldStorage.version === ' 0.0.1.2') {
+        if (key !== null && key !== 'onlyOwnSites') {
+          antiCensorRu._currentPacProviderKey = 'Антицензорити';
+        }
       }
 
       antiCensorRu.pushToStorageAsync(() => {
