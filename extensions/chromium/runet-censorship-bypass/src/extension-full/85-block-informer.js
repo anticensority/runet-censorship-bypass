@@ -59,7 +59,7 @@
         if (err) {
           // E.g., no tab with such id happens.
           // Because requestDetails may be stale.
-          console.log('Notifier error ignored:', err);
+          console.log('Notifier error ignored (this is normal, it happens):', err);
           return cb();
         }
         const ifTitleSetAlready = /\n/.test(title);
