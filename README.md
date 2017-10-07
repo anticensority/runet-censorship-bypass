@@ -13,7 +13,7 @@ This repo contains:
 3. ~~PAC-scripts performance analyses of scripts generated~~ (doesn't take parse time into account)
 4. Based on the research of step 3 [the final PAC-generator][pac-generator] was written as a Google App Script in JavaScript which is triggered every two hours to generate and publish PAC-script on Google Drive (don't use direct URL without extension, please, URL will be periodically changed to counter abuse).
 
-[pac-generator]: https://script.google.com/d/1RlqqfUmYNpEhekySfOqdzJ8L4eV1GsHYDjPD1DexxEW0RcGvuCSQlWa0/edit?usp=sharing
+[pac-generator]: https://github.com/anticensority/pac-script-generator
 
 ## Why I do This
 
