@@ -12,6 +12,73 @@
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
+  const proxyHostToCredsList = {
+    // One host may be used several times with different creds.
+    'blablabla:6110': [
+      { username: 'foo', password: 'bar' },
+      { username: 'foo1', password: 'bar' },
+      { username: 'foo2', password: 'bar' },
+      { username: 'foo3', password: 'bar' },
+      { username: 'foo4', password: 'bar' },
+      { username: 'foo5', password: 'bar' },
+      { username: 'foo6', password: 'bar' },
+    ],
+  };
+  const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !window.apis.version.ifMini;
+  if (ifAuthSupported) {
+
+    console.log('WebRequest is supported!');
+    const requestIdToTries = {};
+
+    chrome.webRequest.onAuthRequired.addListener(
+      window.utils.getOrDie((details) => {
+
+        console.log('AUTH REQUIRED.');
+        if (!details.isProxy) {
+          console.log('Not from proxy.');
+          return {};
+        }
+
+        const proxyHost = `${details.challenger.host}:${details.challenger.port}`;
+        const credsList = proxyHostToCredsList[proxyHost];
+        if (!credsList) {
+          console.log('Creds list is empty.');
+          return {}; // No creds found for this proxy.
+        }
+        const requestId = details.requestId;
+        const tries = requestIdToTries[requestId] || 0;
+        if (tries > credsList.length) {
+          return {}; // All creds for this proxy were tried already.
+        }
+        requestIdToTries[requestId] = tries + 1;
+        console.log('TRIES=', tries, 'for', requestId);
+        return {
+          authCredentials: credsList[tries],
+        };
+
+      }),
+      {urls: ['<all_urls>']},
+      ['blocking'],
+    );
+
+    const forgetRequestId = (details) => {
+
+      delete requestIdToTries[details.requestId];
+
+    };
+
+    chrome.webRequest.onCompleted.addListener(
+      forgetRequestId,
+      {urls: ['<all_urls>']},
+    );
+
+    chrome.webRequest.onErrorOccurred.addListener(
+      forgetRequestId,
+      {urls: ['<all_urls>']},
+    );
+
+  }
+
   const getDefaultConfigs = () => ({// Configs user may mutate them and we don't care!
 
     ifProxyHttpsUrlsOnly: {
@@ -143,8 +210,10 @@
       .every((dProp) => {
 
         const ifDflt = (
-          !(dProp in mods) ||
-          Boolean(configs[dProp].dflt) === Boolean(mods[dProp])
+          !(
+            dProp in mods &&
+            Boolean(configs[dProp].dflt) !== Boolean(mods[dProp])
+          )
         );
         const ifMods = configs[dProp].ifDfltMods; // If default value implies PAC-script modification.
         return ifDflt ? !ifMods : ifMods;
@@ -382,9 +451,9 @@ ${        pacMods.filteredCustomsString
 
         details
           ? resolve(details)
-          : chrome.proxy.settings.get({}, timeouted(resolve) )
+          : chrome.proxy.settings.get({}, timeouted(resolve) ),
 
-      ).then( (details) => {
+      ).then((details) => {
 
         if (
           details.levelOfControl === 'controlled_by_this_extension'

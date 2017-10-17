@@ -71,6 +71,19 @@
 
     },
 
+    getOrDie(cb = self.mandatory()) {
+
+      return self.chromified((err, ...args) => {
+
+        if (err) {
+          throw err;
+        }
+        cb(...args);
+
+      });
+
+    },
+
     getProp(obj, path = self.mandatory()) {
 
       const props = path.split('.');
