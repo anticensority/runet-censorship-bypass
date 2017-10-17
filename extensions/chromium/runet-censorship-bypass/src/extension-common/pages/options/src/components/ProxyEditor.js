@@ -64,7 +64,7 @@ export default function getProxyEditor(theState) {
     {
       text-align: center;
     }
-    table.editor tr.proxyRow input[name="hostname"] {
+    table.editor tr.proxyRow input[name="crededHostname"] {
       padding: 0;
     }
 
@@ -217,10 +217,10 @@ export default function getProxyEditor(theState) {
 
       }, {});
       const type = that.state.selectedNewType;
-      const hostname = elements.newHostname;
+      const crededHostname = elements.newHostname;
       const port = elements.newPort;
 
-      const newValue = `${that.props.proxyStringRaw}; ${type} ${hostname}:${port}`
+      const newValue = `${that.props.proxyStringRaw}; ${type} ${crededHostname}:${port}`
         .trim().replace(/(\s*;\s*)+/, '; ');
       that.props.setProxyStringRaw(true, newValue);
 
@@ -324,7 +324,12 @@ export default function getProxyEditor(theState) {
               {
                 splitBySemi(this.props.proxyStringRaw).map((proxyAsString, index) => {
 
-                  const [type, addr] = proxyAsString.trim().split(/\s+/);
+                  const [type, crededAddr] = proxyAsString.trim().split(/\s+/);
+                  let [creds, addr] = crededAddr.split('@');
+                  if (!addr) {
+                    addr = creds;
+                    creds = '';
+                  }
                   const [hostname, port] = addr.split(':');
                   return (
                     <tr class={scopedCss.proxyRow}>
@@ -335,7 +340,7 @@ export default function getProxyEditor(theState) {
                         >X</button>
                       </td>
                       <td>{type}</td>
-                      <td><input value={hostname} name="hostname" readonly/></td>
+                      <td><input value={`${creds && `${creds}@`}${hostname}`} name="crededHostname" readonly/></td>
                       <td>{port}</td>
                       <td>
                         <button type="button" disabled={props.ifInputsDisabled}
@@ -390,7 +395,7 @@ export default function getProxyEditor(theState) {
       const errors = splitBySemi(this.state.stashedExports)
         .map((proxyAsString) => {
 
-          const [rawType, addr, ...rest] = proxyAsString.split(/\s+/);
+          const [rawType, crededAddr, ...rest] = proxyAsString.split(/\s+/);
           if (rest && rest.length) {
             return new Error(
               `"${rest.join(', ')}" кажется мне лишним. Вы забыли ";"?`
@@ -402,10 +407,15 @@ export default function getProxyEditor(theState) {
               `Неверный тип ${rawType}. Известные типы: ${knownTypes.join(', ')}.`
             );
           }
-          if (!(addr && /^[^:]+:\d+$/.test(addr))) {
+          if (!(crededAddr && /^(?:[^@]+@)?[^:]+:\d+$/.test(crededAddr))) {
             return new Error(
-              `Адрес прокси "${addr || ''}" не соответствует формату "<домен_или_IP>:<порт_из_цифр>".`
+              `Адрес прокси "${crededAddr || ''}" не соответствует формату "<опц_логин>:<опц_пароль>@<домен_или_IP>:<порт_из_цифр>".`
             );
+          }
+          let [creds, addr] = crededAddr.split('@');
+          if (!addr) {
+            addr = creds;
+            creds = '';
           }
           const [hostname, rawPort] = addr.split(':');
           const port = parseInt(rawPort);
