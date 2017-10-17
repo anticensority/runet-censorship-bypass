@@ -20,11 +20,13 @@ const commonContext = {
 
 exports.contexts = {};
 
+const  extra_permissions = ', "webRequest", "webRequestBlocking", "webNavigation"';
+
 exports.contexts.full = Object.assign({}, commonContext, {
   versionSuffix: '',
   nameSuffixEn: '',
   nameSuffixRu: '',
-  extra_permissions: ', "webRequest", "webNavigation"',
+  extra_permissions,
   persistent: '',
   scripts_2x: ', "20-ip-to-host-api.js"',
   scripts_8x: ', "80-error-menu.js", "83-last-errors.js", "85-block-informer.js"',
@@ -49,7 +51,7 @@ exports.contexts.beta = Object.assign({}, commonContext, {
   versionSuffix: '',
   nameSuffixEn: ' FOR TESTING',
   nameSuffixRu: ' ДЛЯ ТЕСТОВ',
-  extra_permissions: ', "webRequest", "webNavigation"',
+  extra_permissions,
   persistent: '',
   scripts_2x: ', "20-ip-to-host-api.js"',
   scripts_8x: ', "80-error-menu.js", "83-last-errors.js", "85-block-informer.js"',
