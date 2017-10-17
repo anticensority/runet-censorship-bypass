@@ -146,7 +146,7 @@
           !(dProp in mods) ||
           Boolean(configs[dProp].dflt) === Boolean(mods[dProp])
         );
-        const ifMods = configs[dProp].ifDfltMods;
+        const ifMods = configs[dProp].ifDfltMods; // If default value implies PAC-script modification.
         return ifDflt ? !ifMods : ifMods;
 
       });
@@ -159,9 +159,9 @@
     if (self.customProxyStringRaw) {
       customProxyArray = self.customProxyStringRaw
         .replace(/#.*$/mg, '') // Strip comments.
-        .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
+        .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g ) // Split by (<other whitespace>*<semi-colon or newline>+<other whitespace>*)+
         .map( (p) => p.trim() )
-        .filter( (p) => p && /\s+/g.test(p) );
+        .filter( (p) => p && /\s+/g.test(p) ); // At least one space is required.
       if (self.ifUseSecureProxiesOnly) {
         customProxyArray = customProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) );
       }
@@ -448,9 +448,14 @@ ${        pacMods.filteredCustomsString
             return cb(null, res, ...accWarns);
           }
           const newHosts = (pacMods.customProxyArray || []).map( (ps) => ps.split(/\s+/)[1] );
-          window.utils.fireRequest('ip-to-host-replace-all', newHosts, (err, res, ...moreWarns) => cb( err, res, ...accWarns.concat(moreWarns) ));
+          window.utils.fireRequest(
+            'ip-to-host-replace-all',
+            newHosts,
+            (err, res, ...moreWarns) =>
+              cb(err, res, ...accWarns, ...moreWarns),
+          );
 
-        }
+        },
       );
 
     },
