@@ -240,6 +240,9 @@
       customProxyArray.push(...self.torPoints);
     }
 
+    // Hanlde protected proxies in customProxyArray.
+    // TODO:
+
     self.filteredCustomsString = '';
     if (customProxyArray.length) {
       self.customProxyArray = customProxyArray;
