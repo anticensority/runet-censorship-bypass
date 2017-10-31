@@ -268,7 +268,7 @@
         proxyHostToCredsList[`${hostname}:${port}`] || [];
       const tries = proxyHostToCredsList[`${hostname}:${port}`];
       tries.push({
-        username,
+        username: username || '',
         password: password || '',
       });
 

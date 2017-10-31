@@ -408,6 +408,8 @@ export default function getProxyEditor(theState) {
             creds,
             hostname,
             port,
+            username,
+            password,
           } = theState.utils.parseProxyScheme(proxyAsString);
           const crededAddr = `${creds ? `${creds}@` : ''}${hostname}:${port}`;
 
@@ -417,10 +419,13 @@ export default function getProxyEditor(theState) {
               `Неверный тип ${type}. Известные типы: ${knownTypes.join(', ')}.`
             );
           }
-          if (!(crededAddr && /^(?:[^@]+@)?[^:]+:\d+$/.test(crededAddr))) {
+          if (!(crededAddr && /^(?:.+@)?[^:]+:\d+$/.test(crededAddr))) {
             return new Error(
               `Адрес прокси "${crededAddr || ''}" не соответствует формату "<опц_логин>:<опц_пароль>@<домен_или_IP>:<порт_из_цифр>".`
             );
+          }
+          if (password && !username) {
+            return new Error('Вашему пользователю не хватает имени?');
           }
           const portInt = parseInt(port);
           if (portInt < 0 || portInt > 65535) {
