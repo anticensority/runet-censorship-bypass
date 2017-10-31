@@ -524,12 +524,15 @@
       }
 
       // UPDATE & MIGRATION
-      console.log('Updating from ', oldStorage.version, 'to', antiCensorRu.version);
-      const key = antiCensorRu._currentPacProviderKey;
-      if (oldStorage.version === '0.0.1.2') {
-        if (key !== null && key !== 'onlyOwnSites') {
-          antiCensorRu._currentPacProviderKey = 'Антицензорити';
-        }
+      console.log('Updating from', oldStorage.version, 'to', antiCensorRu.version);
+      if (window.apis.version.isLeq(oldStorage.version, '0.0.1.5')) {
+
+        // Change semicolons to newlines in proxy string (raw).
+        // TODO:
+        const modsMutated = window.apis.pacKitchen.getPacMods();
+        modsMutated['customProxyStringRaw'] = MIGRATE(conf.value);
+        window.apis.pacKitchen.keepCookedNowAsync(modsMutated, cb);
+
       }
 
       antiCensorRu.pushToStorageAsync(() => {
