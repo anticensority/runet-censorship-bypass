@@ -161,7 +161,7 @@ export default function getProxyEditor(theState) {
   const splitBySemi = (proxyString) => proxyString
     .replace(/#.*$/mg, '')
     .trim()
-    .split(/\s*;\s*/g)
+    .split(/\s*;\r?\n\s*/g)
     .map((s) => s.trim())
     .filter((s) => s);
 
@@ -227,7 +227,7 @@ export default function getProxyEditor(theState) {
       const port = elements.newPort;
 
       const newValue = `${that.props.proxyStringRaw};\n${type} ${crededHostname}:${port}`
-        .trim().replace(/(\s*;\s*)+/, ';\n');
+        .trim().replace(/(\s*;\n\s*)+/, ';\n');
       that.props.setProxyStringRaw(true, newValue);
 
     }
@@ -331,11 +331,10 @@ export default function getProxyEditor(theState) {
                 splitBySemi(this.props.proxyStringRaw).map((proxyAsString, index) => {
 
                   const [type, crededAddr] = proxyAsString.trim().split(/\s+/);
-                  let [creds, addr] = crededAddr.split('@');
-                  if (!addr) {
-                    addr = creds;
-                    creds = '';
-                  }
+                  let parts;
+                  parts = crededAddr.split('@');
+                  let [creds, addr] = [parts.slice(0, -1).join('@'), parts[parts.length - 1]];
+
                   const [hostname, port] = addr.split(':');
                   return (
                     <tr class={scopedCss.proxyRow}>
@@ -511,7 +510,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
                     value={
                       this.state.stashedExports !== false
                         ? this.state.stashedExports
-                        : (this.props.proxyStringRaw || '').replace(/\s*;\s*/g, ';\n')
+                        : (this.props.proxyStringRaw || '').replace(/\s*;\n\s*/g, ';\n')
                     }
                   /></td>
               </tr>
@@ -530,10 +529,12 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
     return proxyStringRaw
       .replace(/#.*$/mg, '') // Strip comments.
       .replace(/[^\S\r\n]*DIRECT[^\S\r\n]*/g, '') // Remove DIRECT from old versions.
+      /*
       .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
       .map( (p) => p.trim() )
       .filter((p) => p)
       .join(';\n');
+      */
 
   };
 
