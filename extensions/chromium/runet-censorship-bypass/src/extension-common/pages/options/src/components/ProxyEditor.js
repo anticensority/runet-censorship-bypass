@@ -328,9 +328,19 @@ export default function getProxyEditor(theState) {
               </tr>
               {/* ADD NEW PROXY ENDS. */}
               {
-                splitBySemi(this.props.proxyStringRaw).map((proxyAsString, index) => {
+                splitBySemi(this.props.proxyStringRaw).map((proxyAsStringRaw, index) => {
 
-                  const [type, crededAddr] = proxyAsString.trim().split(/\s+/);
+                  const proxyAsString = proxyAsStringRaw.trim();
+                  const [type] = proxyAsString.split(/\s+/);
+                  /*
+                  if (!/^[a-zA-Z0-9]+$/.test(type)) {
+                    throw new Error(`${type} is not a proxy type!`);
+                  }
+                    JS has no code blocks in RE, seems safe to omit this check.
+                  */
+                  const typeRe = new RegExp(`^${type}\s+`, 'g');
+                  const crededAddr = proxyAsString.replace(typeRe, '');
+
                   let parts;
                   parts = crededAddr.split('@');
                   let [creds, addr] = [parts.slice(0, -1).join('@'), parts[parts.length - 1]];
