@@ -161,10 +161,10 @@ export default function getProxyEditor(theState) {
   const splitBySemi = (proxyString) => proxyString
     .replace(/#.*$/mg, '')
     .trim()
-    .split(/\s*;\s*/g)
+    .split(/\s*;\r?\n\s*/g)
     .filter((s) => s);
 
-  const joinBySemi = (strs) => strs.join(';\n') + ';';
+  const joinBySemi = (strs) => strs.join(';\n') + ';\n';
   const normalizeProxyString = (str) => joinBySemi(splitBySemi(str));
 
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
