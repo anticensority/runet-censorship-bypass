@@ -161,10 +161,11 @@ export default function getProxyEditor(theState) {
   const splitBySemi = (proxyString) => proxyString
     .replace(/#.*$/mg, '')
     .trim()
-    .split(/\s*;\r?\n\s*/g)
+    .split(/\s*;\s*/g)
+    .map((s) => s.trim())
     .filter((s) => s);
 
-  const joinBySemi = (strs) => strs.join(';\n') + ';\n';
+  const joinBySemi = (strs) => strs.join(';\n');
   const normalizeProxyString = (str) => joinBySemi(splitBySemi(str));
 
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
@@ -225,8 +226,8 @@ export default function getProxyEditor(theState) {
       const crededHostname = elements.newHostname;
       const port = elements.newPort;
 
-      const newValue = `${that.props.proxyStringRaw}; ${type} ${crededHostname}:${port}`
-        .trim().replace(/(\s*;\s*)+/, '; ');
+      const newValue = `${that.props.proxyStringRaw};\n${type} ${crededHostname}:${port}`
+        .trim().replace(/(\s*;\s*)+/, ';\n');
       that.props.setProxyStringRaw(true, newValue);
 
     }
