@@ -538,7 +538,7 @@
         // Change semicolons to semicolons followed by newlines in proxy string (raw).
         const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
         const modsMutated = window.apis.pacKitchen.getPacModsRaw();
-        modsMutated['customProxyStringRaw'] = migrateProxies(conf.value);
+        modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
         window.apis.pacKitchen.keepCookedNowAsync(modsMutated, ifUpdatedCb);
 
       } else {
