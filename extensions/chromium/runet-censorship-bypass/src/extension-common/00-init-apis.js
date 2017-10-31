@@ -198,10 +198,20 @@
 
   };
 
+  const max = 2**16;
+  const versionToArray = (v) => [ ...v.split('.'), 0, 0, 0].slice(0,4);
+  const versionToInt = (v) => versionToArray(v)
+    .reverse()
+    .reduce((acc, vv, i) => acc + parseInt(vv)*(max**i), 0);
+
+  const compareVersions = (a, b) => versionToInt(a) - versionToInt(b);
+
   window.apis = {
     version: {
       ifMini: false,
       build: chrome.runtime.getManifest().version.replace(/\d+\.\d+\./g, ''),
+
+      isLeq: (a, b) => compareVersions(a, b) <= 0,
     },
   };
 
