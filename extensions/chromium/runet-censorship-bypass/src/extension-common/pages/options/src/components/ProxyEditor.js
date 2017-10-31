@@ -403,16 +403,18 @@ export default function getProxyEditor(theState) {
       const errors = splitBySemi(this.state.stashedExports)
         .map((proxyAsString) => {
 
-          const [rawType, crededAddr, ...rest] = proxyAsString.split(/\s+/);
-          if (rest && rest.length) {
-            return new Error(
-              `"${rest.join(', ')}" кажется мне лишним. Вы забыли ";"?`
-            );
-          }
+          const {
+            type,
+            creds,
+            hostname,
+            port,
+          } = theState.utils.parseProxyScheme(proxyAsString);
+          const crededAddr = `${creds ? `${creds}@` : ''}${hostname}:${port}`;
+
           const knownTypes = PROXY_TYPE_LABEL_PAIRS.map(([type, label]) => type);
-          if( !knownTypes.includes(rawType.toUpperCase()) ) {
+          if( !knownTypes.includes(type.toUpperCase()) ) {
             return new Error(
-              `Неверный тип ${rawType}. Известные типы: ${knownTypes.join(', ')}.`
+              `Неверный тип ${type}. Известные типы: ${knownTypes.join(', ')}.`
             );
           }
           if (!(crededAddr && /^(?:[^@]+@)?[^:]+:\d+$/.test(crededAddr))) {
@@ -420,16 +422,10 @@ export default function getProxyEditor(theState) {
               `Адрес прокси "${crededAddr || ''}" не соответствует формату "<опц_логин>:<опц_пароль>@<домен_или_IP>:<порт_из_цифр>".`
             );
           }
-          let [creds, addr] = crededAddr.split('@');
-          if (!addr) {
-            addr = creds;
-            creds = '';
-          }
-          const [hostname, rawPort] = addr.split(':');
-          const port = parseInt(rawPort);
-          if (port < 0 || port > 65535) {
+          const portInt = parseInt(port);
+          if (portInt < 0 || portInt > 65535) {
             return new Error(
-              `Порт "${rawPort}" должен быть целым числом от 0 до 65535.`
+              `Порт "${port}" должен быть целым числом от 0 до 65535.`
             );
           }
           return false;
