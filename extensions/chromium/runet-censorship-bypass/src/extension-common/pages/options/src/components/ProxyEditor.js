@@ -158,7 +158,12 @@ export default function getProxyEditor(theState) {
     return true;
 
   };
-  const splitBySemi = (proxyString) => proxyString.replace(/#.*$/mg, '').trim().split(/\s*;\s*/g).filter((s) => s);
+  const splitBySemi = (proxyString) => proxyString
+    .replace(/#.*$/mg, '')
+    .trim()
+    .split(/\s*;\s*/g)
+    .filter((s) => s);
+
   const joinBySemi = (strs) => strs.join(';\n') + ';';
   const normalizeProxyString = (str) => joinBySemi(splitBySemi(str));
 
