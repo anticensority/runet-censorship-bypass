@@ -161,13 +161,13 @@
 
   };
 
-  const getCurrentConfigs = function getCurrentConfigs() {
+  const getCurrentConfigs = function getCurrentConfigs(ifRaw = false) {
 
     const oldMods = kitchenState(modsKey);
-    /*if (oldMods) {
+    if (ifRaw) {
       // No migration!
       return oldMods;
-    }*/
+    }
 
     // Client may expect mods.included and mods.excluded!
     // On first install they are not defined.
@@ -228,7 +228,7 @@
     if (self.customProxyStringRaw) {
       customProxyArray = self.customProxyStringRaw
         .replace(/#.*$/mg, '') // Strip comments.
-        .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g ) // Split by (<other whitespace>*<semi-colon or newline>+<other whitespace>*)+
+        .split( /(?:\s*(?:;\r?\n)+\s*)+/g )
         .map( (p) => p.trim() )
         .filter( (p) => p && /\s+/g.test(p) ); // At least one space is required.
       if (self.ifUseSecureProxiesOnly) {
@@ -294,6 +294,7 @@
   window.apis.pacKitchen = {
 
     getPacMods: getCurrentConfigs,
+    getPacModsRaw: () => getCurrentConfigs(true),
     getOrderedConfigs: getOrderedConfigsForUser,
 
     cook(pacData, pacMods = mandatory()) {

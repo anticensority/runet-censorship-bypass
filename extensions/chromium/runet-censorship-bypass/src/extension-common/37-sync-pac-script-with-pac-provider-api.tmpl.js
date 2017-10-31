@@ -524,23 +524,26 @@
       }
 
       // UPDATE & MIGRATION
-      console.log('Updating from', oldStorage.version, 'to', antiCensorRu.version);
-      if (window.apis.version.isLeq(oldStorage.version, '0.0.1.5')) {
 
-        // Change semicolons to semicolons followed by newlines in proxy string (raw).
-        const migrateProxies = (oldStr) => oldStr.replace(/;\r?\n?/g, ';\n');
-        const modsMutated = window.apis.pacKitchen.getPacMods();
-        modsMutated['customProxyStringRaw'] = migrateProxies(conf.value);
-        window.apis.pacKitchen.keepCookedNowAsync(modsMutated, cb);
-
-      }
-
-      antiCensorRu.pushToStorageAsync(() => {
+      const ifUpdatedCb = () => antiCensorRu.pushToStorageAsync(() => {
 
         console.log('Extension updated.');
         resolve();
 
       });
+
+      console.log('Updating from', oldStorage.version, 'to', antiCensorRu.version);
+      if (window.apis.version.isLeq(oldStorage.version, '0.0.1.5')) {
+
+        // Change semicolons to semicolons followed by newlines in proxy string (raw).
+        const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
+        const modsMutated = window.apis.pacKitchen.getPacModsRaw();
+        modsMutated['customProxyStringRaw'] = migrateProxies(conf.value);
+        window.apis.pacKitchen.keepCookedNowAsync(modsMutated, ifUpdatedCb);
+
+      } else {
+        ifUpdatedCb();
+      }
 
     });
 
