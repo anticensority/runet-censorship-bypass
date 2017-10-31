@@ -12,8 +12,9 @@
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
-  const proxyHostToCredsList = {
+  window.proxyHostToCredsList = {
     // One host may be used several times with different creds.
+    /*
     'blablabla:6110': [
       { username: 'foo', password: 'bar' },
       { username: 'foo1', password: 'bar' },
@@ -23,6 +24,7 @@
       { username: 'foo5', password: 'bar' },
       { username: 'foo6', password: 'bar' },
     ],
+    */
   };
   const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !window.apis.version.ifMini;
   if (ifAuthSupported) {
@@ -31,7 +33,7 @@
     const requestIdToTries = {};
 
     chrome.webRequest.onAuthRequired.addListener(
-      window.utils.getOrDie((details) => {
+      (details) => {
 
         console.log('AUTH REQUIRED.');
         if (!details.isProxy) {
@@ -51,12 +53,12 @@
           return {}; // All creds for this proxy were tried already.
         }
         requestIdToTries[requestId] = tries + 1;
-        console.log('TRIES=', tries, 'for', requestId);
+        console.log('TRIES=', tries, 'for', requestId, 'CREDS', credsList[tries]);
         return {
           authCredentials: credsList[tries],
         };
 
-      }),
+      },
       {urls: ['<all_urls>']},
       ['blocking'],
     );
@@ -241,7 +243,36 @@
     }
 
     // Hanlde protected proxies in customProxyArray.
-    // TODO:
+    const protectedProxies = [];
+    customProxyArray = customProxyArray.map((proxyScheme) => {
+
+      if (proxyScheme.includes('@')) {
+
+        const proxy = window.utils.parseProxyScheme(proxyScheme);
+        protectedProxies.push(proxy);
+        return `${proxy.type} ${proxy.hostname}:${proxy.port}`;
+
+      }
+      return proxyScheme;
+
+    });
+
+    if (!ifAuthSupported && protectedProxies.length) {
+      return [new Error('Запароленные прокси не поддерживатюся в данной версии/платформе!')];
+    }
+
+    proxyHostToCredsList = {};
+    protectedProxies.forEach(({ hostname, port, username, password }) => {
+
+      proxyHostToCredsList[`${hostname}:${port}`] =
+        proxyHostToCredsList[`${hostname}:${port}`] || [];
+      const tries = proxyHostToCredsList[`${hostname}:${port}`];
+      tries.push({
+        username,
+        password: password || '',
+      });
+
+    });
 
     self.filteredCustomsString = '';
     if (customProxyArray.length) {
