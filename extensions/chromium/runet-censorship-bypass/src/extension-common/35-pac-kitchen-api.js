@@ -12,39 +12,22 @@
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
-  window.proxyHostToCredsList = {
-    // One host may be used several times with different creds.
-    /*
-    'blablabla:6110': [
-      { username: 'foo', password: 'bar' },
-      { username: 'foo1', password: 'bar' },
-      { username: 'foo2', password: 'bar' },
-      { username: 'foo3', password: 'bar' },
-      { username: 'foo4', password: 'bar' },
-      { username: 'foo5', password: 'bar' },
-      { username: 'foo6', password: 'bar' },
-    ],
-    */
-  };
+  let proxyHostToCredsList = {};
   const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !window.apis.version.ifMini;
   if (ifAuthSupported) {
 
-    console.log('WebRequest is supported!');
     const requestIdToTries = {};
 
     chrome.webRequest.onAuthRequired.addListener(
       (details) => {
 
-        console.log('AUTH REQUIRED.');
         if (!details.isProxy) {
-          console.log('Not from proxy.');
           return {};
         }
 
         const proxyHost = `${details.challenger.host}:${details.challenger.port}`;
         const credsList = proxyHostToCredsList[proxyHost];
         if (!credsList) {
-          console.log('Creds list is empty.');
           return {}; // No creds found for this proxy.
         }
         const requestId = details.requestId;
@@ -53,7 +36,6 @@
           return {}; // All creds for this proxy were tried already.
         }
         requestIdToTries[requestId] = tries + 1;
-        console.log('TRIES=', tries, 'for', requestId, 'CREDS', credsList[tries]);
         return {
           authCredentials: credsList[tries],
         };
