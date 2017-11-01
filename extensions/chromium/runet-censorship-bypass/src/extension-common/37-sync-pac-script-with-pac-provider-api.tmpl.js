@@ -511,7 +511,7 @@
          Better on each launch then on each pull.
     */
 
-    await new Promise((resolve) => {
+    await new Promise(async (resolve) => {
 
       const ifUpdating = antiCensorRu.version !== oldStorage.version;
       if (!ifUpdating) {
@@ -539,11 +539,12 @@
         const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
         const modsMutated = window.apis.pacKitchen.getPacModsRaw();
         modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
-        window.apis.pacKitchen.keepCookedNowAsync(modsMutated, ifUpdatedCb);
+        await new Promise(
+          (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
+        );
 
-      } else {
-        ifUpdatedCb();
       }
+      ifUpdatedCb();
 
     });
 
