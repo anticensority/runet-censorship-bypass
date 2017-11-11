@@ -55,7 +55,14 @@ export default function getModList(theState) {
             const child = ifMayHaveChild && this.state.checks[index]
               && createElement(
                 props.childrenOfMod[conf.key],
-                Object.assign({}, props, {conf, onNewValue: (ifValid, newValue) => this.handleNewValue(ifValid, confMeta, newValue)})
+                Object.assign(
+                  {},
+                  props,
+                  {
+                    conf,
+                    onNewValue: (ifValid, newValue) => this.handleNewValue(ifValid, confMeta, newValue),
+                  },
+                )
               );
 
             return (<InfoLi

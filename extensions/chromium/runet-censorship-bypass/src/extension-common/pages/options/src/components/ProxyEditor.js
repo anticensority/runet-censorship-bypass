@@ -64,7 +64,7 @@ export default function getProxyEditor(theState) {
     {
       text-align: center;
     }
-    table.editor tr.proxyRow input[name="hostname"] {
+    table.editor tr.proxyRow input[name="crededHostname"] {
       padding: 0;
     }
 
@@ -158,8 +158,14 @@ export default function getProxyEditor(theState) {
     return true;
 
   };
-  const splitBySemi = (proxyString) => proxyString.replace(/#.*$/mg, '').trim().split(/\s*;\s*/g).filter((s) => s);
-  const joinBySemi = (strs) => strs.join(';\n') + ';';
+  const splitBySemi = (proxyString) => proxyString
+    .replace(/#.*$/mg, '')
+    .trim()
+    .split(/\s*;\r?\n\s*/g)
+    .map((s) => s.trim())
+    .filter((s) => s);
+
+  const joinBySemi = (strs) => strs.join(';\n');
   const normalizeProxyString = (str) => joinBySemi(splitBySemi(str));
 
   const PROXY_TYPE_LABEL_PAIRS = [['PROXY', 'PROXY/HTTP'],['HTTPS'],['SOCKS4'],['SOCKS5'],['SOCKS']];
@@ -217,11 +223,11 @@ export default function getProxyEditor(theState) {
 
       }, {});
       const type = that.state.selectedNewType;
-      const hostname = elements.newHostname;
+      const crededHostname = elements.newHostname;
       const port = elements.newPort;
 
-      const newValue = `${that.props.proxyStringRaw}; ${type} ${hostname}:${port}`
-        .trim().replace(/(\s*;\s*)+/, '; ');
+      const newValue = `${that.props.proxyStringRaw};\n${type} ${crededHostname}:${port}`
+        .trim().replace(/(\s*;\n\s*)+/, ';\n');
       that.props.setProxyStringRaw(true, newValue);
 
     }
@@ -322,10 +328,17 @@ export default function getProxyEditor(theState) {
               </tr>
               {/* ADD NEW PROXY ENDS. */}
               {
-                splitBySemi(this.props.proxyStringRaw).map((proxyAsString, index) => {
+                splitBySemi(this.props.proxyStringRaw).map((proxyAsStringRaw, index) => {
 
-                  const [type, addr] = proxyAsString.trim().split(/\s+/);
-                  const [hostname, port] = addr.split(':');
+                  const proxyAsString = proxyAsStringRaw.trim();
+
+                  const {
+                    type,
+                    creds,
+                    hostname,
+                    port,
+                  } = theState.utils.parseProxyScheme(proxyAsString);
+
                   return (
                     <tr class={scopedCss.proxyRow}>
                       <td>
@@ -335,7 +348,7 @@ export default function getProxyEditor(theState) {
                         >X</button>
                       </td>
                       <td>{type}</td>
-                      <td><input value={hostname} name="hostname" readonly/></td>
+                      <td><input value={`${creds && `${creds}@`}${hostname}`} name="crededHostname" readonly/></td>
                       <td>{port}</td>
                       <td>
                         <button type="button" disabled={props.ifInputsDisabled}
@@ -350,6 +363,7 @@ export default function getProxyEditor(theState) {
               }
             </tbody>
           </table>
+          <a href="https://rebrand.ly/ac-protected-proxy">Запароленные прокси?</a>
         </form>
       );
     }
@@ -390,28 +404,34 @@ export default function getProxyEditor(theState) {
       const errors = splitBySemi(this.state.stashedExports)
         .map((proxyAsString) => {
 
-          const [rawType, addr, ...rest] = proxyAsString.split(/\s+/);
-          if (rest && rest.length) {
-            return new Error(
-              `"${rest.join(', ')}" кажется мне лишним. Вы забыли ";"?`
-            );
-          }
+          const {
+            type,
+            creds,
+            hostname,
+            port,
+            username,
+            password,
+          } = theState.utils.parseProxyScheme(proxyAsString);
+          const crededAddr = `${creds ? `${creds}@` : ''}${hostname}:${port}`;
+
           const knownTypes = PROXY_TYPE_LABEL_PAIRS.map(([type, label]) => type);
-          if( !knownTypes.includes(rawType.toUpperCase()) ) {
+          if( !knownTypes.includes(type.toUpperCase()) ) {
             return new Error(
-              `Неверный тип ${rawType}. Известные типы: ${knownTypes.join(', ')}.`
+              `Неверный тип ${type}. Известные типы: ${knownTypes.join(', ')}.`
             );
           }
-          if (!(addr && /^[^:]+:\d+$/.test(addr))) {
+          if (!(crededAddr && /^(?:.+@)?[^:]+:\d+$/.test(crededAddr))) {
             return new Error(
-              `Адрес прокси "${addr || ''}" не соответствует формату "<домен_или_IP>:<порт_из_цифр>".`
+              `Адрес прокси "${crededAddr || ''}" не соответствует формату "<опц_логин>:<опц_пароль>@<домен_или_IP>:<порт_из_цифр>".`
             );
           }
-          const [hostname, rawPort] = addr.split(':');
-          const port = parseInt(rawPort);
-          if (port < 0 || port > 65535) {
+          if (password && !username) {
+            return new Error('Вашему пользователю не хватает имени?');
+          }
+          const portInt = parseInt(port);
+          if (portInt < 0 || portInt > 65535) {
             return new Error(
-              `Порт "${rawPort}" должен быть целым числом от 0 до 65535.`
+              `Порт "${port}" должен быть целым числом от 0 до 65535.`
             );
           }
           return false;
@@ -495,7 +515,7 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
                     value={
                       this.state.stashedExports !== false
                         ? this.state.stashedExports
-                        : (this.props.proxyStringRaw || '').replace(/\s*;\s*/g, ';\n')
+                        : (this.props.proxyStringRaw || '').replace(/\s*;\n\s*/g, ';\n')
                     }
                   /></td>
               </tr>
@@ -514,10 +534,12 @@ PROXY foobar.com:8080; # Not HTTP!`.trim()}
     return proxyStringRaw
       .replace(/#.*$/mg, '') // Strip comments.
       .replace(/[^\S\r\n]*DIRECT[^\S\r\n]*/g, '') // Remove DIRECT from old versions.
+      /*
       .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
       .map( (p) => p.trim() )
       .filter((p) => p)
       .join(';\n');
+      */
 
   };
 
