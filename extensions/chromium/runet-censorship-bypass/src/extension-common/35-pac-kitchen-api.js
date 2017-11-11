@@ -473,7 +473,7 @@ ${        pacMods.filteredCustomsString
       ).then((details) => {
 
         if (
-          details.levelOfControl === 'controlled_by_this_extension'
+          details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
           const pac = window.utils.getProp(details, 'value.pacScript');
           if (pac && pac.data) {
