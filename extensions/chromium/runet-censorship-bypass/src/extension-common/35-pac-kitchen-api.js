@@ -12,6 +12,57 @@
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
+  let proxyHostToCredsList = {};
+  const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !window.apis.version.ifMini;
+  if (ifAuthSupported) {
+
+    const requestIdToTries = {};
+
+    chrome.webRequest.onAuthRequired.addListener(
+      (details) => {
+
+        if (!details.isProxy) {
+          return {};
+        }
+
+        const proxyHost = `${details.challenger.host}:${details.challenger.port}`;
+        const credsList = proxyHostToCredsList[proxyHost];
+        if (!credsList) {
+          return {}; // No creds found for this proxy.
+        }
+        const requestId = details.requestId;
+        const tries = requestIdToTries[requestId] || 0;
+        if (tries > credsList.length) {
+          return {}; // All creds for this proxy were tried already.
+        }
+        requestIdToTries[requestId] = tries + 1;
+        return {
+          authCredentials: credsList[tries],
+        };
+
+      },
+      {urls: ['<all_urls>']},
+      ['blocking'],
+    );
+
+    const forgetRequestId = (details) => {
+
+      delete requestIdToTries[details.requestId];
+
+    };
+
+    chrome.webRequest.onCompleted.addListener(
+      forgetRequestId,
+      {urls: ['<all_urls>']},
+    );
+
+    chrome.webRequest.onErrorOccurred.addListener(
+      forgetRequestId,
+      {urls: ['<all_urls>']},
+    );
+
+  }
+
   const getDefaultConfigs = () => ({// Configs user may mutate them and we don't care!
 
     ifProxyHttpsUrlsOnly: {
@@ -94,13 +145,13 @@
 
   };
 
-  const getCurrentConfigs = function getCurrentConfigs() {
+  const getCurrentConfigs = function getCurrentConfigs(ifRaw = false) {
 
     const oldMods = kitchenState(modsKey);
-    /*if (oldMods) {
+    if (ifRaw) {
       // No migration!
       return oldMods;
-    }*/
+    }
 
     // Client may expect mods.included and mods.excluded!
     // On first install they are not defined.
@@ -143,10 +194,12 @@
       .every((dProp) => {
 
         const ifDflt = (
-          !(dProp in mods) ||
-          Boolean(configs[dProp].dflt) === Boolean(mods[dProp])
+          !(
+            dProp in mods &&
+            Boolean(configs[dProp].dflt) !== Boolean(mods[dProp])
+          )
         );
-        const ifMods = configs[dProp].ifDfltMods;
+        const ifMods = configs[dProp].ifDfltMods; // If default value implies PAC-script modification.
         return ifDflt ? !ifMods : ifMods;
 
       });
@@ -159,9 +212,9 @@
     if (self.customProxyStringRaw) {
       customProxyArray = self.customProxyStringRaw
         .replace(/#.*$/mg, '') // Strip comments.
-        .split( /(?:[^\S\r\n]*(?:;|\r?\n)+[^\S\r\n]*)+/g )
+        .split( /(?:\s*(?:;\r?\n)+\s*)+/g )
         .map( (p) => p.trim() )
-        .filter( (p) => p && /\s+/g.test(p) );
+        .filter( (p) => p && /\s+/g.test(p) ); // At least one space is required.
       if (self.ifUseSecureProxiesOnly) {
         customProxyArray = customProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) );
       }
@@ -170,6 +223,38 @@
       self.torPoints = ['SOCKS5 localhost:9150', 'SOCKS5 localhost:9050'];
       customProxyArray.push(...self.torPoints);
     }
+
+    // Hanlde protected proxies in customProxyArray.
+    const protectedProxies = [];
+    customProxyArray = customProxyArray.map((proxyScheme) => {
+
+      if (proxyScheme.includes('@')) {
+
+        const proxy = window.utils.parseProxyScheme(proxyScheme);
+        protectedProxies.push(proxy);
+        return `${proxy.type} ${proxy.hostname}:${proxy.port}`;
+
+      }
+      return proxyScheme;
+
+    });
+
+    if (!ifAuthSupported && protectedProxies.length) {
+      return [new Error('Запароленные прокси не поддерживатюся в данной версии/платформе!')];
+    }
+
+    proxyHostToCredsList = {};
+    protectedProxies.forEach(({ hostname, port, username, password }) => {
+
+      proxyHostToCredsList[`${hostname}:${port}`] =
+        proxyHostToCredsList[`${hostname}:${port}`] || [];
+      const tries = proxyHostToCredsList[`${hostname}:${port}`];
+      tries.push({
+        username: username || '',
+        password: password || '',
+      });
+
+    });
 
     self.filteredCustomsString = '';
     if (customProxyArray.length) {
@@ -225,6 +310,7 @@
   window.apis.pacKitchen = {
 
     getPacMods: getCurrentConfigs,
+    getPacModsRaw: () => getCurrentConfigs(true),
     getOrderedConfigs: getOrderedConfigsForUser,
 
     cook(pacData, pacMods = mandatory()) {
@@ -382,12 +468,12 @@ ${        pacMods.filteredCustomsString
 
         details
           ? resolve(details)
-          : chrome.proxy.settings.get({}, timeouted(resolve) )
+          : chrome.proxy.settings.get({}, timeouted(resolve) ),
 
-      ).then( (details) => {
+      ).then((details) => {
 
         if (
-          details.levelOfControl === 'controlled_by_this_extension'
+          details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
           const pac = window.utils.getProp(details, 'value.pacScript');
           if (pac && pac.data) {
@@ -448,9 +534,14 @@ ${        pacMods.filteredCustomsString
             return cb(null, res, ...accWarns);
           }
           const newHosts = (pacMods.customProxyArray || []).map( (ps) => ps.split(/\s+/)[1] );
-          window.utils.fireRequest('ip-to-host-replace-all', newHosts, (err, res, ...moreWarns) => cb( err, res, ...accWarns.concat(moreWarns) ));
+          window.utils.fireRequest(
+            'ip-to-host-replace-all',
+            newHosts,
+            (err, res, ...moreWarns) =>
+              cb(err, res, ...accWarns, ...moreWarns),
+          );
 
-        }
+        },
       );
 
     },

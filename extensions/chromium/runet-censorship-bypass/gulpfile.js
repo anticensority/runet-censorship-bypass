@@ -43,7 +43,7 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
 
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build:beta']);
 
 gulp.task('clean', function(cb) {
 
@@ -120,4 +120,4 @@ gulp.task('_cp-beta', ['_cp-common'], function(cb) {
 });
 
 gulp.task('build:all', ['_cp-mini', '_cp-full', '_cp-beta']);
-gulp.task('build', ['_cp-full']);
+gulp.task('build:beta', ['_cp-beta']);

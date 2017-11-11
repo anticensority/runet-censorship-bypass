@@ -79,7 +79,8 @@ export default function getApp(theState) {
         headers: new Headers(headers),
       };
 
-      //const ghUrl = `https://api.github.com/repos/anticensority/chromium-extension/issues/10/comments${query}`;
+      // I comment and uncomment this variable manually before release or build:
+      // const ghUrl = `https://api.github.com/repos/anticensority/chromium-extension/issues/10/comments${query}`;
       const ghUrl = `https://api.github.com/repos/anticensority/for-testing/issues/1/comments${query}`;
 
       const [error, comments, etag] = await fetch(

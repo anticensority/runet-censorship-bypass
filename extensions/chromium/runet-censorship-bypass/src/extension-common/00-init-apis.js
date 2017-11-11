@@ -71,6 +71,19 @@
 
     },
 
+    getOrDie(cb = self.mandatory()) {
+
+      return self.chromified((err, ...args) => {
+
+        if (err) {
+          throw err;
+        }
+        cb(...args);
+
+      });
+
+    },
+
     getProp(obj, path = self.mandatory()) {
 
       const props = path.split('.');
@@ -183,12 +196,56 @@
 
     },
 
+    parseProxyScheme(proxyAsStringRaw) {
+
+      const proxyAsString = proxyAsStringRaw.trim();
+      const [type] = proxyAsString.split(/\s+/);
+      /*
+      if (!/^[a-zA-Z0-9]+$/.test(type)) {
+        throw new Error(`${type} is not a proxy type!`);
+      }
+        JS has no code blocks in RE, seems safe to omit this check.
+      */
+      const typeRe = new RegExp(`^${type}\\s+`, 'g');
+      const crededAddr = proxyAsString.replace(typeRe, '');
+
+      let parts;
+      parts = crededAddr.split('@');
+      let [creds, addr] = [parts.slice(0, -1).join('@'), parts[parts.length - 1]];
+
+      const [hostname, port] = addr.split(':');
+
+      parts = creds.split(':')
+      const username = parts[0];
+      const password = parts.slice(1).join(':');
+
+      return {
+        type,
+        username,
+        password,
+        hostname,
+        port,
+        creds,
+      }
+
+    },
+
   };
+
+  const max = 2**16;
+  const versionToArray = (v) => [ ...v.split('.'), 0, 0, 0].slice(0,4);
+  const versionToInt = (v) => versionToArray(v)
+    .reverse()
+    .reduce((acc, vv, i) => acc + parseInt(vv)*(max**i), 0);
+
+  const compareVersions = (a, b) => versionToInt(a) - versionToInt(b);
 
   window.apis = {
     version: {
       ifMini: false,
       build: chrome.runtime.getManifest().version.replace(/\d+\.\d+\./g, ''),
+
+      isLeq: (a, b) => compareVersions(a, b) <= 0,
     },
   };
 
