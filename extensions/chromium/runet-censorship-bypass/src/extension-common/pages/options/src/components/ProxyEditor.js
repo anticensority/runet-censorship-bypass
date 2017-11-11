@@ -363,6 +363,7 @@ export default function getProxyEditor(theState) {
               }
             </tbody>
           </table>
+          <a href="https://rebrand.ly/ac-protected-proxy">Пароли?</a>
         </form>
       );
     }
