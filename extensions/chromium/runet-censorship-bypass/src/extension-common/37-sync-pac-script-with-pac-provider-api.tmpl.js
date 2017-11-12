@@ -533,16 +533,22 @@
       });
 
       console.log('Updating from', oldStorage.version, 'to', antiCensorRu.version);
-      if (window.apis.version.isLeq(oldStorage.version, '0.0.1.5')) {
+      try {
+        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.5')) {
 
-        // Change semicolons to semicolons followed by newlines in proxy string (raw).
-        const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
-        const modsMutated = window.apis.pacKitchen.getPacModsRaw();
-        modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
-        await new Promise(
-          (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
-        );
+          // Change semicolons to semicolons followed by newlines in proxy string (raw).
+          const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
+          const modsMutated = window.apis.pacKitchen.getPacModsRaw();
+          if (modsMutated) {
+            modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
+            await new Promise(
+              (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
+            );
+          }
 
+        }
+      } catch (e) {
+        // Swallow update error.
       }
       ifUpdatedCb();
 
