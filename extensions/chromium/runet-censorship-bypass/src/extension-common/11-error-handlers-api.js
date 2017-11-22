@@ -8,6 +8,9 @@
   const errorJsonReplacer = function errorJsonReplacer(key, value) {
 
     // fooWindow.ErrorEvent !== barWindow.ErrorEvent
+    if (value === window) {
+      return; // STUPID, because other window object may be passed.
+    }
     if (!( value && value.constructor
       && ['Error', 'Event'].some(
         (suff) => value.constructor.name.endsWith(suff)
@@ -114,20 +117,22 @@
 
     isControllable(details) {
 
-      this.ifControllable = window.utils.areSettingsControllableFor(details);
+      if (details) {
+        this.ifControllable = window.utils.areSettingsControllableFor(details);
 
-      if (this.ifControllable) {
-        this.ifControlled = window.utils.areSettingsControlledFor(details);
-      } else {
-        this.ifControlled = false;
-      }
+        if (this.ifControllable) {
+          this.ifControlled = window.utils.areSettingsControlledFor(details);
+        } else {
+          this.ifControlled = false;
+        }
 
-      if (this.ifControlled) {
-        chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
-      } else {
-        chrome.browserAction.setIcon({
-          path: './icons/default-grayscale-128.png',
-        });
+        if (this.ifControlled) {
+          chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
+        } else {
+          chrome.browserAction.setIcon({
+            path: './icons/default-grayscale-128.png',
+          });
+        }
       }
 
       return this.ifControllable;
@@ -136,7 +141,9 @@
 
     isControlled(details) {
 
-      this.isControllable(details);
+      if (details) {
+        this.isControllable(details);
+      }
       return this.ifControlled;
 
     },
@@ -175,16 +182,15 @@
       const message = errOrMessage.message || errOrMessage.toString();
       chrome.notifications.create(
         id,
-        {
+        Object.assign({
           title: title,
           message: message,
           contextMessage: context,
-          requireInteraction: ifSticky,
           type: 'basic',
           iconUrl: './icons/' + icon,
           appIconMaskUrl: './icons/default-mask-128.png',
           isClickable: true,
-        }
+        }, window.apis.platform.ifFirefox ? {} : { requireInteraction: ifSticky }),
       );
 
     },

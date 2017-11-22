@@ -317,11 +317,11 @@
 
       return pacMods.ifNoMods ? pacData : pacData + `${ kitchenStartsMark }
 /******/
-/******/;+function(global) {
+/******/;(function(global) {
 /******/  "use strict";
 /******/
 /******/  const originalFindProxyForURL = FindProxyForURL;
-/******/  global.FindProxyForURL = function(url, host) {
+/******/  const tmp = function(url, host) {
 /******/
     ${
       function() {
@@ -453,7 +453,13 @@ ${        pacMods.filteredCustomsString
 
   };
 
-}(this);`;
+  if (global) {
+/******/  global.FindProxyForURL = tmp;
+  } else {
+/******/ FindProxyForURL = tmp;
+  }
+
+})(this);`;
 
     },
 
