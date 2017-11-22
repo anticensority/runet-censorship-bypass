@@ -47,7 +47,7 @@ exports.contexts.beta = Object.assign({}, commonContext, {
     // 'https://rebrand.ly/ac-beta-pac',
     ...pacUrls,
   ],
-  version: '1.6',
+  version: '1.11',
   versionSuffix: '',
   nameSuffixEn: ' FOR TESTING',
   nameSuffixRu: ' ДЛЯ ТЕСТОВ',
