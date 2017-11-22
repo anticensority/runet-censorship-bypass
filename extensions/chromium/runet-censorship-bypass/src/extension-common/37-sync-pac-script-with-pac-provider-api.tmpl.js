@@ -242,12 +242,6 @@
 
     },
 
-    clearLastModified() {
-
-      this.setLastModified(0);
-
-    },
-
     mustBeKey(key = mandatory()) {
 
       if ( !(key === null || this.pacProviders[key]) ) {
@@ -525,10 +519,6 @@
         // LAUNCH, RELOAD, ENABLE
         antiCensorRu.pacProviders = oldStorage.pacProviders;
         console.log('Extension launched, reloaded or enabled.');
-        if (window.apis.platform.ifFirefox) {
-          antiCensorRu.clearLastModified();
-          await new Promise((r) => antiCensorRu.syncWithPacProviderAsync(r)); // On each launch, ffx has no memory.
-        }
         return resolve();
 
       }
