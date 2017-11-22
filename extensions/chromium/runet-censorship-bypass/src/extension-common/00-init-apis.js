@@ -256,11 +256,13 @@
 
   if (!chrome.proxy.settings) {
 
-    let currentSettings = {};
+    const ffxStore = window.utils.createStorage('firefox-only');
+
 
     chrome.proxy.settings = {
       get: (_, cb) => {
 
+        let currentSettings = ffxStore('proxySettings') || {};
         currentSettings.levelOfControl = 'controlled_by_this_extension'; // May be lie, but this field is required.
         cb(currentSettings);
 
@@ -274,14 +276,19 @@
         browser.proxy.register('./default.pac.js');
 
 
-        browser.proxy.onProxyError.addListener((...err) => { console.log('ERROR IN PAC:', ...err)  });
+        // browser.proxy.onProxyError.addListener((...err) => { console.log('ERROR IN PAC:', ...err)  });
 
         browser.runtime.sendMessage(details, {toProxyScript: true});
-        currentSettings = details;
+        ffxStore('proxySettings', details);
         cb();
 
       },
     };
+    const proxySettings = ffxStore('proxySettings');
+    if (proxySettings) {
+      chrome.proxy.settings.set(proxySettings);
+    }
+
   }
 
 }
