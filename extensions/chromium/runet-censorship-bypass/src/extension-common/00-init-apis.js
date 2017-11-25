@@ -264,7 +264,7 @@
 
         let currentSettings = ffxStore('proxySettings') || {};
         currentSettings.levelOfControl = 'controlled_by_this_extension'; // May be lie, but this field is required.
-        cb(currentSettings);
+        cb && cb(currentSettings);
 
       },
       onChange: {
@@ -280,7 +280,7 @@
 
         browser.runtime.sendMessage(details, {toProxyScript: true});
         ffxStore('proxySettings', details);
-        cb();
+        cb && cb();
 
       },
     };
