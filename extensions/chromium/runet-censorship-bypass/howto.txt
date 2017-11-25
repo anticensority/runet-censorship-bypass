@@ -1,6 +1,0 @@
-npm instll
-cd src/extension-common/pages/options/
-npm install
-cd -
-npm start
-use your build/extension-beta
