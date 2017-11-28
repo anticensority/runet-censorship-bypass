@@ -423,7 +423,7 @@ ${        pacMods.filteredCustomsString
            pacMods.ifUsePacScriptProxies
         ) {
           return res + `
-/******/    return pacScriptProxies + directIfAllowed;`;
+/******/    return (pacScriptProxies + directIfAllowed) || "DIRECT";`;
         }
 
         return res + `
