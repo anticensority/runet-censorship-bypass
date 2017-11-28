@@ -27,6 +27,7 @@
     ${persistent}
     "scripts": [
         "00-init-apis.js"
+      ${scripts_0x}
       , "11-error-handlers-api.js"
       , "12-errors-lib.js"
       , "13-http-lib.js"
