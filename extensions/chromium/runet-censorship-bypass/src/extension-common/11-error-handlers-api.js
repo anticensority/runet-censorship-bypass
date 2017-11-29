@@ -272,7 +272,7 @@
     console.warn('PAC ERROR', details);
     // TOOD: add "view pac script at this line" button.
     handlers.mayNotify('pac-error', 'Ошибка PAC!',
-      details.error + '\n' + details.details,
+      (details.error || details.message /* Firefox */) + '\n' + details.details,
       {icon: 'pac-error-128.png'}
     );
 

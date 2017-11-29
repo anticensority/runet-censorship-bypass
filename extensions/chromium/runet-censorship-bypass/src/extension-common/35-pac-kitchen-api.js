@@ -451,15 +451,15 @@ ${        pacMods.filteredCustomsString
       }()
     }
 
-  };
+/******/  };
 
-  if (global) {
-/******/  global.FindProxyForURL = tmp;
-  } else {
-/******/ FindProxyForURL = tmp;
-  }
+/******/  if (global) {
+/******/    global.FindProxyForURL = tmp;
+/******/  } else {
+/******/    FindProxyForURL = tmp;
+/******/  }
 
-})(this);`;
+/*****/})(this);`;
 
     },
 
