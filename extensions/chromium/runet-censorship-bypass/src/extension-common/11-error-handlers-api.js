@@ -155,7 +155,9 @@
         timeouted(
           (details) => {
 
-            this.isControllable(details);
+            if (details) {
+              this.isControllable(details);
+            }
             cb();
 
           }
