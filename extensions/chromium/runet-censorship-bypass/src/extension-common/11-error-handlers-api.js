@@ -8,6 +8,9 @@
   const errorJsonReplacer = function errorJsonReplacer(key, value) {
 
     // fooWindow.ErrorEvent !== barWindow.ErrorEvent
+    if (value === window) {
+      return; // STUPID, because other window object may be passed.
+    }
     if (!( value && value.constructor
       && ['Error', 'Event'].some(
         (suff) => value.constructor.name.endsWith(suff)
@@ -114,20 +117,22 @@
 
     isControllable(details) {
 
-      this.ifControllable = window.utils.areSettingsControllableFor(details);
+      if (details) {
+        this.ifControllable = window.utils.areSettingsControllableFor(details);
 
-      if (this.ifControllable) {
-        this.ifControlled = window.utils.areSettingsControlledFor(details);
-      } else {
-        this.ifControlled = false;
-      }
+        if (this.ifControllable) {
+          this.ifControlled = window.utils.areSettingsControlledFor(details);
+        } else {
+          this.ifControlled = false;
+        }
 
-      if (this.ifControlled) {
-        chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
-      } else {
-        chrome.browserAction.setIcon({
-          path: './icons/default-grayscale-128.png',
-        });
+        if (this.ifControlled) {
+          chrome.browserAction.setIcon( {path: './icons/default-128.png'} );
+        } else {
+          chrome.browserAction.setIcon({
+            path: './icons/default-grayscale-128.png',
+          });
+        }
       }
 
       return this.ifControllable;
@@ -136,7 +141,9 @@
 
     isControlled(details) {
 
-      this.isControllable(details);
+      if (details) {
+        this.isControllable(details);
+      }
       return this.ifControlled;
 
     },
@@ -175,16 +182,15 @@
       const message = errOrMessage.message || errOrMessage.toString();
       chrome.notifications.create(
         id,
-        {
+        Object.assign({
           title: title,
           message: message,
           contextMessage: context,
-          requireInteraction: ifSticky,
           type: 'basic',
           iconUrl: './icons/' + icon,
           appIconMaskUrl: './icons/default-mask-128.png',
           isClickable: true,
-        }
+        }, window.apis.platform.ifFirefox ? {} : { requireInteraction: ifSticky }),
       );
 
     },
@@ -253,7 +259,11 @@
         error: "net::ERR_PAC_SCRIPT_FAILED",
         fatal: false,
     */
-    const ifConFail = details.error === 'net::ERR_PROXY_CONNECTION_FAILED';
+    const ifConFail = [
+      'net::ERR_TUNNEL_CONNECTION_FAILED',
+      'net::ERR_PROXY_CONNECTION_FAILED',
+    ].includes(details.error);
+
     if (ifConFail) {
       // Happens if you return neither prixies nor "DIRECT".
       // Ignore it.
@@ -262,7 +272,7 @@
     console.warn('PAC ERROR', details);
     // TOOD: add "view pac script at this line" button.
     handlers.mayNotify('pac-error', 'Ошибка PAC!',
-      details.error + '\n' + details.details,
+      (details.error || details.message /* Firefox */) + '\n' + details.details,
       {icon: 'pac-error-128.png'}
     );
 

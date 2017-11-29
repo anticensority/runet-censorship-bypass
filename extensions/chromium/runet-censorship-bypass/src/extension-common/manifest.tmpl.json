@@ -27,6 +27,7 @@
     ${persistent}
     "scripts": [
         "00-init-apis.js"
+      ${scripts_0x}
       , "11-error-handlers-api.js"
       , "12-errors-lib.js"
       , "13-http-lib.js"
@@ -45,5 +46,7 @@
   "options_ui": {
      "page": "/pages/options/index.html",
      "chrome_style": false
-   }
+   },
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

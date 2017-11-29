@@ -56,52 +56,31 @@ const contexts = require('./src/templates-data').contexts;
 
 const excFolder = (name) => [`!./src/**/${name}`, `!./src/**/${name}/**/*`];
 const excluded = [ ...excFolder('test') , ...excFolder('node_modules'), ...excFolder('src') ];
-const commonWoTests = ['./src/extension-common/**/*', ...excluded];
 
 const miniDst = './build/extension-mini';
 const fullDst = './build/extension-full';
 const betaDst = './build/extension-beta';
+const firefoxDst = './build/extension-firefox';
 
-gulp.task('_cp-common', ['clean'], function(cb) {
+const commonSrc = './src/extension-common/**/*';;
+const miniSrc = './src/extension-mini/**/*';
+const fullSrc = './src/extension-full/**/*';
+const firefoxSrc = './src/extension-firefox/**/*';
 
-  let fins = 0;
-  const intheend = () => {
-    if (++fins === 2) {
-      cb();
-    }
-  };
+const joinSrc = (...args) => [...args, ...excluded];
 
-  gulp.src(commonWoTests)
-    //.pipe(changed(miniDst))
-    .pipe(templatePlugin(contexts.mini))
-    .pipe(gulp.dest(miniDst))
-    .on('end', intheend);
+gulp.task('_cp-mini', function(cb) {
 
-  gulp.src(commonWoTests)
-    //.pipe(changed(fullDst))
-    .pipe(templatePlugin(contexts.full))
-    .pipe(gulp.dest(fullDst))
-    .on('end', intheend);
-
-  gulp.src(commonWoTests)
-    //.pipe(changed(fullDst))
-    .pipe(templatePlugin(contexts.beta))
-    .pipe(gulp.dest(betaDst))
-    .on('end', intheend);
-});
-
-gulp.task('_cp-mini', ['_cp-common'], function(cb) {
-
-  gulp.src(['./src/extension-mini/**/*', ...excluded])
+  gulp.src(joinSrc(commonSrc, miniSrc))
     //.pipe(changed(miniDst))
     .pipe(templatePlugin(contexts.mini))
     .pipe(gulp.dest(miniDst))
     .on('end', cb);
 });
 
-gulp.task('_cp-full', ['_cp-common'], function(cb) {
+gulp.task('_cp-full', function(cb) {
 
-  gulp.src(['./src/extension-full/**/*', ...excluded])
+  gulp.src(joinSrc(commonSrc, fullSrc))
     //.pipe(changed(fullDst))
     .pipe(templatePlugin(contexts.full))
     .pipe(gulp.dest(fullDst))
@@ -109,9 +88,19 @@ gulp.task('_cp-full', ['_cp-common'], function(cb) {
 
 });
 
-gulp.task('_cp-beta', ['_cp-common'], function(cb) {
+gulp.task('_cp-firefox', function(cb) {
 
-  gulp.src(['./src/extension-full/**/*', ...excluded])
+    gulp.src(joinSrc(commonSrc, fullSrc, firefoxSrc))
+    //.pipe(changed(fullDst))
+    .pipe(templatePlugin(contexts.firefox))
+    .pipe(gulp.dest(firefoxDst))
+    .on('end', cb);
+
+});
+
+gulp.task('_cp-beta', function(cb) {
+
+    gulp.src(joinSrc(commonSrc, fullSrc))
     //.pipe(changed(fullDst))
     .pipe(templatePlugin(contexts.beta))
     .pipe(gulp.dest(betaDst))
@@ -119,5 +108,6 @@ gulp.task('_cp-beta', ['_cp-common'], function(cb) {
 
 });
 
-gulp.task('build:all', ['_cp-mini', '_cp-full', '_cp-beta']);
+gulp.task('build:all', ['_cp-mini', '_cp-full', '_cp-beta', '_cp-firefox']);
 gulp.task('build:beta', ['_cp-beta']);
+gulp.task('build:firefox', ['_cp-firefox']);
