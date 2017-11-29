@@ -63,7 +63,7 @@ export default function getPacChooser(theState) {
       this.updatePac = function updatePac(onSuccess) {
         props.funs.conduct(
           'Обновляем...',
-          (cb) => props.apis.antiCensorRu.syncWithPacProviderAsync(cb),
+          (cb) => theState.apis.antiCensorRu.syncWithPacProviderAsync(cb),
           'Обновлено.',
           onSuccess
         );
@@ -75,7 +75,7 @@ export default function getPacChooser(theState) {
 
     getCurrentProviderId() {
 
-      return this.props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none';
+      return theState.apis.antiCensorRu.getCurrentPacProviderKey() || 'none';
 
     }
 
@@ -94,7 +94,7 @@ export default function getPacChooser(theState) {
       const pacKey = event.target.id;
       if (
         pacKey === (
-          this.props.apis.antiCensorRu.getCurrentPacProviderKey() || 'none'
+          theState.apis.antiCensorRu.getCurrentPacProviderKey() || 'none'
         )
       ) {
         return false;
@@ -102,7 +102,7 @@ export default function getPacChooser(theState) {
       if (pacKey === 'none') {
         this.props.funs.conduct(
           'Отключение...',
-          (cb) => this.props.apis.antiCensorRu.clearPacAsync(cb),
+          (cb) => theState.apis.antiCensorRu.clearPacAsync(cb),
           'Отключено.',
           () => this.setState({ chosenPacName: 'none' }),
           checkChosenProvider
@@ -110,7 +110,7 @@ export default function getPacChooser(theState) {
       } else {
         this.props.funs.conduct(
           'Установка...',
-          (cb) => this.props.apis.antiCensorRu.installPacAsync(pacKey, cb),
+          (cb) => theState.apis.antiCensorRu.installPacAsync(pacKey, cb),
           'PAC-скрипт установлен.',
           checkChosenProvider
         );
@@ -127,7 +127,7 @@ export default function getPacChooser(theState) {
           {props.flags.ifInsideOptionsPage && (<header>PAC-скрипт:</header>)}
           <ul>
             {
-              [...props.apis.antiCensorRu.getSortedEntriesForProviders(), {key: 'none', label: 'Отключить'}].map((provConf) =>
+              [...theState.apis.antiCensorRu.getSortedEntriesForProviders(), {key: 'none', label: 'Отключить'}].map((provConf) =>
                 (<InfoLi
                   onClick={this.radioClickHandler}
                   conf={provConf}
@@ -159,7 +159,7 @@ export default function getPacChooser(theState) {
 
     componentDidMount() {
 
-      if (this.props.apis.antiCensorRu.ifFirstInstall) {
+      if (theState.apis.antiCensorRu.ifFirstInstall) {
         this.updatePac();
       }
 

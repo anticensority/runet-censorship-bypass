@@ -241,6 +241,9 @@
   const compareVersions = (a, b) => versionToInt(a) - versionToInt(b);
 
   window.apis = {
+    platform: {
+      ifFirefox: navigator.userAgent.toLowerCase().includes('firefox'),
+    },
     version: {
       ifMini: false,
       build: chrome.runtime.getManifest().version.replace(/\d+\.\d+\./g, ''),
@@ -248,5 +251,44 @@
       isLeq: (a, b) => compareVersions(a, b) <= 0,
     },
   };
+
+  // Shims for FireFox
+
+  if (!chrome.proxy.settings) {
+
+    const ffxStore = window.utils.createStorage('firefox-only');
+
+
+    chrome.proxy.settings = {
+      get: (_, cb) => {
+
+        let currentSettings = ffxStore('proxySettings') || {};
+        currentSettings.levelOfControl = 'controlled_by_this_extension'; // May be lie, but this field is required.
+        cb && cb(currentSettings);
+
+      },
+      onChange: {
+        addListener: () => {},
+      },
+      set: (details, cb) => {
+
+        browser.proxy.unregister();
+        browser.proxy.register('./default.pac.js');
+
+
+        // browser.proxy.onProxyError.addListener((...err) => { console.log('ERROR IN PAC:', ...err)  });
+
+        browser.runtime.sendMessage(details, {toProxyScript: true});
+        ffxStore('proxySettings', details);
+        cb && cb();
+
+      },
+    };
+    const proxySettings = ffxStore('proxySettings');
+    if (proxySettings) {
+      chrome.proxy.settings.set(proxySettings);
+    }
+
+  }
 
 }
