@@ -1,30 +1,20 @@
-# Dev
+# Install
 
-Linting JS: `npm run lint`
+```
+npm instll
+cd src/extension-common/pages/options/
+npm install
+cd -
+npm start
+use your build/extension-beta
+```
 
-# О расширении
+# Release
 
-Обход интернет-цензуры в России пока что не является преступлением.
-
-Расширение позволяет обходить блокировки РосКомНадзора, давая вам доступ
-к библиотекам, энциклопедиям, сайтам оппозиционеров, а также к неповинным
-сайтам, случайно заблокированным в силу разных причин.
-
-Проксирует только заблокированные сайты, оставляя нетронутыми все остальные.
-
-Устанавливает PAC-скрипт, работающий через сервера anticenz.org и antizapret.prostovpn.org.
-
-Обновляет PAC-скрипт каждые 4 часа, что составляет примерно 7MB трафика в сутки.
-Также расширение постоянно потребляет ~15MB памяти для информирования о блокировках через иконку.
-
-Синяя лента – кампания фонда EFF в защиту свобод слова, прессы и союзов.
-
-Если расширение не работает: https://git.io/vgDDj
-
-Антицензура на Реддите: https://www.reddit.com/r/anticensorship_russia
-Группа в G+: https://goo.gl/Lh0Cjh
-История изменений: https://github.com/ilyaigpetrov/anti-censorship-russia/releases
-
-# Дополнительно
-
-Иконка синей ленты: http://www.iconsdb.com/icon-sets/cardboard-blue-icons/ribbon-12-icon.html
+1. `vim src/extension-common/pages/options/src/components/App.js`
+2. Change github link there.
+3. `npm run release`
+4. Change back: `vim src/extension-common/pages/options/src/components/App.js`
+5. `vim src/templates-data.js` and bump version.
+6. Commit bumped version.
+7. Merge development to production (usually after deployment and testing and many patches).
