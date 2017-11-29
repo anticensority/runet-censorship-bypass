@@ -259,7 +259,11 @@
         error: "net::ERR_PAC_SCRIPT_FAILED",
         fatal: false,
     */
-    const ifConFail = details.error === 'net::ERR_PROXY_CONNECTION_FAILED';
+    const ifConFail = [
+      'net::ERR_TUNNEL_CONNECTION_FAILED',
+      'net::ERR_PROXY_CONNECTION_FAILED',
+    ].includes(details.error);
+
     if (ifConFail) {
       // Happens if you return neither prixies nor "DIRECT".
       // Ignore it.
