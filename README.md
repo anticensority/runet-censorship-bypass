@@ -1,5 +1,8 @@
 If you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so.
 
+[oo1]: https://opencollective.com/anticensority 
+[![Backers](https://opencollective.com/anticensority/tiers/backer.svg?avatarHeight=100&width=600)][oo1]
+
 # Russian Anti-Censorship on PAC-Scripts
 
 This repo contains:
