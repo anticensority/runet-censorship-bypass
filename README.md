@@ -1,7 +1,11 @@
-If you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so.
+If you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so. 
+
+[d1]: https://img.shields.io/badge/Поддержать-❤-green.svg
+[d2]: https://rebrand.ly/ac-donate
 
 [oo1]: https://opencollective.com/anticensority 
-[![Backers](https://opencollective.com/anticensority/tiers/backer.svg?avatarHeight=100&width=600)][oo1]
+[![Backers](https://opencollective.com/anticensority/tiers/backer.svg?avatarHeight=100&width=600)][oo1]  
+[![Поддержать][d1]][d2]
 
 # Russian Anti-Censorship on PAC-Scripts
 
