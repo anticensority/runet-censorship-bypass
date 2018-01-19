@@ -46,7 +46,6 @@
   "options_ui": {
      "page": "/pages/options/index.html",
      "chrome_style": false
-   },
+   }
 
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
