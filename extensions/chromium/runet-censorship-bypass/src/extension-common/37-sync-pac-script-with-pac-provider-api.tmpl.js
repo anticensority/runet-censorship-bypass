@@ -97,7 +97,7 @@
 
   };
 
-  const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
+  const setPacScriptFromProviderAsync = async function setPacScriptFromProviderAsync(
     provider, lastModifiedStr = mandatory(), cb = throwIfError
   ) {
 
@@ -106,6 +106,29 @@
       'Getting PAC script from provider...', pacUrl,
       cb
     );
+    // TODO: dirty hack (labels should be UI related only)
+    if (provider.label === 'Антицензорити') {
+      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0];
+      console.log('HEADing antizapret...');
+      let headError = null;
+      const numberOfTries = 2;
+      let i = 0;
+      while (i++ < numberOfTries) {
+        await new Promise((resolve) =>
+          httpLib.head(azUrl, (err) => {
+            headError = err;
+            if (!headError) {
+              i = numberOfTries;
+            }
+            resolve();
+          })
+        );
+      }
+      if (headError) {
+        clarifyThen(\`\${azUrl} недоступен!\`, cb)(headError);
+        return;
+      }
+    }
 
     httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
 

@@ -315,6 +315,12 @@
 
     cook(pacData, pacMods = mandatory()) {
 
+      pacData = pacData.replace(
+        new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
+        ''
+      );
+      /a/.test('a'); // GC RegExp.input and friends.
+
       return pacMods.ifNoMods ? pacData : pacData + `${ kitchenStartsMark }
 /******/
 /******/;(function(global) {
@@ -483,12 +489,6 @@ ${        pacMods.filteredCustomsString
         ) {
           const pac = window.utils.getProp(details, 'value.pacScript');
           if (pac && pac.data) {
-            // Delete old kitchen modifications.
-            pac.data = pac.data.replace(
-              new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
-              ''
-            );
-            /a/.test('a'); // GC RegExp.input and friends.
             return chrome.proxy.settings.set(details, chromified(cb));
           }
         }

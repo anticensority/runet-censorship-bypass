@@ -1,6 +1,13 @@
-# [Maintainer Needed! Нужен разработчик!](https://github.com/anticensorship-russia/chromium-extension/issues/2)
+If you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so. 
 
-Also, if you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so.
+[d1]: https://img.shields.io/badge/Поддержать-❤-green.svg
+[d2]: https://rebrand.ly/ac-donate
+
+[oo1]: https://opencollective.com/anticensority 
+[![Backers](https://opencollective.com/anticensority/tiers/backer.svg?avatarHeight=100&width=600)][oo1]  
+[![Поддержать][d1]][d2]
+[![Backers on Open Collective](https://opencollective.com/anticensority/backers/badge.svg)](#backers)
+ [![Sponsors on Open Collective](https://opencollective.com/anticensority/sponsors/badge.svg)](#sponsors) 
 
 # Russian Anti-Censorship on PAC-Scripts
 
@@ -33,3 +40,33 @@ I decided to write an anti-censorship extension for Chromium before they strike 
 2. On every request PAC script checks if host is blocked or if its IP is blocked.
 3. If address is blocked PAC script returns proxy server to the browser, both Antizapret and Anticensority use Antizapret proxy servers.
 4. PAC scripts on servers are updated periodically from https://github.com/zapret-info/z-i.
+
+## Contributors
+
+This project exists thanks to all the people who contribute.
+<a href="graphs/contributors"><img src="https://opencollective.com/anticensority/contributors.svg?width=890&button=false" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/anticensority#backer)]
+
+<a href="https://opencollective.com/anticensority#backers" target="_blank"><img src="https://opencollective.com/anticensority/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/anticensority#sponsor)]
+
+<a href="https://opencollective.com/anticensority/sponsor/0/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/1/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/2/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/3/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/4/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/5/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/6/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/7/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/8/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/anticensority/sponsor/9/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/9/avatar.svg"></a>
+
+

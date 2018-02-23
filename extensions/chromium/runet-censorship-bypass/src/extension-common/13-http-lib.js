@@ -78,6 +78,31 @@
 
     },
 
+    head(url, cb = mandatory()) {
+
+      const start = Date.now();
+      fetch(url, {cache: 'no-store', method: 'HEAD'}).then(
+        (res) => {
+
+          const status = res.status;
+          if ( !( status >= 200 && status < 300 || status === 304 ) ) {
+            return cb(
+              errorsLib.clarify(
+                res,
+                'Получен ответ с неудачным HTTP-кодом ' + status + '.'
+              )
+            );
+          }
+
+          console.log('HEADed with success:', url, Date.now() - start);
+          cb();
+
+        },
+        errorsLib.clarifyThen(checkCon, cb)
+      );
+
+    },
+
   };
 
 }
