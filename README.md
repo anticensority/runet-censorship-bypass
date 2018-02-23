@@ -3,13 +3,11 @@ If you __unstar__, please, [leave us a note](https://github.com/anticensorship-r
 [d1]: https://img.shields.io/badge/Поддержать-❤-green.svg
 [d2]: https://rebrand.ly/ac-donate
 
-[oo1]: https://opencollective.com/anticensority 
-[![Backers](https://opencollective.com/anticensority/tiers/backer.svg?avatarHeight=100&width=600)][oo1]  
 [![Поддержать][d1]][d2]
 [![Backers on Open Collective](https://opencollective.com/anticensority/backers/badge.svg)](#backers)
  [![Sponsors on Open Collective](https://opencollective.com/anticensority/sponsors/badge.svg)](#sponsors) 
 
-# Russian Anti-Censorship on PAC-Scripts
+# Russian Anticensorship on PAC-Scripts
 
 This repo contains a chrome extension to bypass censorship in Russia: [WebStore](https://chrome.google.com/webstore/detail/npgcnondjocldhldegnakemclmfkngch)
 | [Sources](./extensions/chromium/runet-censorship-bypass).  
@@ -26,7 +24,7 @@ My maxim is _"Your freedom ends when it starts to confine the freedom of others"
 See [my other arguments against censorship (ru)](https://gist.github.com/ilyaigpetrov/9452b93ef3d7dd3d8cc2)
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313),
-I decided to write an anti-censorship extension for Chromium before they strike me first.
+I decided to write an anticensorship extension for Chromium before they strike me first.
 
 ## How it Works
 
