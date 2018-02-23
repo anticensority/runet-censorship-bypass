@@ -78,7 +78,9 @@
       openAndFocus(
         'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
-          '&version=' + chrome.runtime.getManifest().version
+          '&version=' + chrome.runtime.getManifest().version +
+          '&useragent=' + encodeURIComponent(navigator.userAgent) +
+          '&platform=' + encodeURIComponent(navigator.platform),
       );
 
     },
