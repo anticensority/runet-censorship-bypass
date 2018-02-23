@@ -3,7 +3,7 @@
 const Chai = require('chai');
 const Mocha = require('mocha');
 
-const CachelessRequire = require('_project-root/tools/cacheless-require')(module);
+const CachelessRequire = require('symlink-to/project-root/tools/cacheless-require')(module);
 
 Mocha.describe('window.utils', function () {
 

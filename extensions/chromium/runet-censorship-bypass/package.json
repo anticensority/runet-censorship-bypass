@@ -3,7 +3,6 @@
   "version": "0.0.19",
   "description": "Development tools for chromium extension",
   "scripts": {
-    "postinstall": "node --use_strict -e \"const fs = require('fs'), path = 'node_modules/_project-root'; fs.unlink(path, ()=> fs.symlinkSync('..', path, 'dir'));\"",
     "lint": "eslint ./src/**/*.js --ignore-pattern vendor",
     "gulp": "gulp",
     "test": "mocha --recursive ./src/**/test/*",
@@ -15,6 +14,7 @@
   "author": "Ilya Ig. Petrov",
   "license": "GPLv3",
   "devDependencies": {
+    "symlink-to": "^0.0.4",
     "chai": "^3.5.0",
     "eslint": "^3.15.0",
     "eslint-config-google": "^0.7.1",
