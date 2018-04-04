@@ -1,10 +1,10 @@
 'use strict';
 
-const Storage = require('_project-root/tools/sinon-storage');
+const Storage = require('symlink-to/project-root/tools/sinon-storage');
 const Chai = require('chai');
 const Mocha = require('mocha');
 
-const CachelessRequire = require('_project-root/tools/cacheless-require')(module);
+const CachelessRequire = require('symlink-to/project-root/tools/cacheless-require')(module);
 
 Mocha.describe('window.apis.pacKitchen', function () {
 

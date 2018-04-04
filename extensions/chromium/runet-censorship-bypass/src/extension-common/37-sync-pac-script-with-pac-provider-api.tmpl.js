@@ -125,8 +125,15 @@
         );
       }
       if (headError) {
-        clarifyThen(\`\${azUrl} недоступен!\`, cb)(headError);
+        const errText = \`\${azUrl} недоступен!\`;
+        console.log(errText);
+        /* Do nothing for now like it's not critical. Otherwise uncomment.
+        clarifyThen(
+          errText,
+          cb,
+        )(headError);
         return;
+        */
       }
     }
 
