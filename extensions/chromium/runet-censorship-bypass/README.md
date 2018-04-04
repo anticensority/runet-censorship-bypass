@@ -1,7 +1,7 @@
 # Install
 
 ```
-npm instll
+npm install
 cd src/extension-common/pages/options/
 npm install
 cd -
