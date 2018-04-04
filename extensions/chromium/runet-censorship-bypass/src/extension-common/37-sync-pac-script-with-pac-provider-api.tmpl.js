@@ -106,9 +106,15 @@
       'Getting PAC script from provider...', pacUrl,
       cb
     );
+
+    const warnings = [];
+    const originalCb = cb;
+    cb = (...args) => originalCb(...args, ...warnings);
+    const addWarning = (wText) => { warnings.push(new Warning(wText)) };
+
     // TODO: dirty hack (labels should be UI related only)
     if (provider.label === 'Антицензорити') {
-      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0];
+      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0] + "ERROR";
       console.log('HEADing antizapret...');
       let headError = null;
       const numberOfTries = 2;
@@ -125,8 +131,9 @@
         );
       }
       if (headError) {
-        const errText = \`\${azUrl} недоступен!\`;
+        const errText = \`\${azUrl} недоступен! <a href="https://rebrand.ly/ac-contact">Сообщите нам!</a>\`;
         console.log(errText);
+        addWarning(errText);
         /* Do nothing for now like it's not critical. Otherwise uncomment.
         clarifyThen(
           errText,
@@ -143,13 +150,13 @@
         const res = {lastModified: lastModifiedStr};
         const ifWasEverModified = lastModifiedStr !== new Date(0).toUTCString();
         if (ifWasEverModified) {
-          return cb(
-            null, res,
-            new Warning(
-              'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-                lastModifiedStr
-            )
+
+          addWarning(
+            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
+              lastModifiedStr
           );
+
+          return cb(null, res);
         }
       }
 
@@ -174,7 +181,7 @@
             pacData,
             (err, res) => cb(
               err,
-              Object.assign(res || {}, {lastModified: newLastModifiedStr})
+              Object.assign(res || {}, {lastModified: newLastModifiedStr}),
             )
           );
 
@@ -183,7 +190,7 @@
         clarifyThen(
           'Не удалось скачать PAC-скрипт с адресов: [ '
           + provider.pacUrls.join(' , ') + ' ].',
-          cb
+          cb,
         )
 
       );
