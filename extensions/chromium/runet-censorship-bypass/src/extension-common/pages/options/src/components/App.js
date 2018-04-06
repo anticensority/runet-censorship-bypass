@@ -47,7 +47,10 @@ export default function getApp(theState) {
 
       this.setStatusTo(
         <ol style="list-style-type: initial;">
-          {newsArr.map(([title, url]) => (<li><a href={url}>{title}</a></li>))}
+          {newsArr
+            .map(([title, url]) => (<li><a href={url}>{title}</a></li>))
+            .reverse() // News order.
+          }
         </ol>
       );
 
