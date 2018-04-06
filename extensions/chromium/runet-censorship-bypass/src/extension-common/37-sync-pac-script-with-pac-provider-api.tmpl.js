@@ -114,7 +114,7 @@
 
     // TODO: dirty hack (labels should be UI related only)
     if (provider.label === 'Антицензорити') {
-      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0] + "ERROR";
+      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0];
       console.log('HEADing antizapret...');
       let headError = null;
       const numberOfTries = 2;
