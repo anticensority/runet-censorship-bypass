@@ -68,7 +68,7 @@ export default function getApp(theState) {
       const query = comDate ? `?since=${comDate}` : '';
       const oldEtag = localStorage[uiComEtag];
       const headers = {
-        'User-Agent': 'anticensorship-russia',
+        'User-Agent': 'https://github.com/anticensority/runet-censorship-bypass',
       };
       if (oldEtag) {
         Object.assign(headers, {
