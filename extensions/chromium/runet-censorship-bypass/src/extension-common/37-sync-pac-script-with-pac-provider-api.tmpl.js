@@ -131,9 +131,10 @@
         );
       }
       if (headError) {
-        const errText = \`\${azUrl} недоступен! <a href="https://rebrand.ly/ac-contact">Сообщите нам!</a>\`;
+        const errText = \`\${azUrl} недоступен!
+          <a href="https://rebrand.ly/ac-contact">Сообщите нам</a>, если повторяется!\`;
         console.log(errText);
-        addWarning(errText);
+        //addWarning(errText); // Uncomment when needed.
         /* Do nothing for now like it's not critical. Otherwise uncomment.
         clarifyThen(
           errText,
