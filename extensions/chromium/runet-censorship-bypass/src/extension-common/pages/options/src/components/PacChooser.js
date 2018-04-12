@@ -55,7 +55,7 @@ export default function getPacChooser(theState) {
 
     constructor(props) {
 
-      super();
+      super(props);
       this.state = {
         chosenPacName: 'none',
       };

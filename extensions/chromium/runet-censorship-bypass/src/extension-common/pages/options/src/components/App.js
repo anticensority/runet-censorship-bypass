@@ -47,7 +47,10 @@ export default function getApp(theState) {
 
       this.setStatusTo(
         <ol style="list-style-type: initial;">
-          {newsArr.map(([title, url]) => (<li><a href={url}>{title}</a></li>))}
+          {newsArr
+            .map(([title, url]) => (<li><a href={url}>{title}</a></li>))
+            .reverse() // News order.
+          }
         </ol>
       );
 
@@ -68,7 +71,7 @@ export default function getApp(theState) {
       const query = comDate ? `?since=${comDate}` : '';
       const oldEtag = localStorage[uiComEtag];
       const headers = {
-        'User-Agent': 'anticensorship-russia',
+        'User-Agent': 'https://github.com/anticensority/runet-censorship-bypass',
       };
       if (oldEtag) {
         Object.assign(headers, {

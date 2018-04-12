@@ -106,6 +106,12 @@
       'Getting PAC script from provider...', pacUrl,
       cb
     );
+
+    const warnings = [];
+    const originalCb = cb;
+    cb = (...args) => originalCb(...args, ...warnings);
+    const addWarning = (wText) => { warnings.push(new Warning(wText)) };
+
     // TODO: dirty hack (labels should be UI related only)
     if (provider.label === 'Антицензорити') {
       const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0];
@@ -125,8 +131,10 @@
         );
       }
       if (headError) {
-        const errText = \`\${azUrl} недоступен!\`;
+        const errText = \`\${azUrl} недоступен!
+          <a href="https://rebrand.ly/ac-contact">Сообщите нам</a>, если повторяется!\`;
         console.log(errText);
+        //addWarning(errText); // Uncomment when needed.
         /* Do nothing for now like it's not critical. Otherwise uncomment.
         clarifyThen(
           errText,
@@ -143,13 +151,13 @@
         const res = {lastModified: lastModifiedStr};
         const ifWasEverModified = lastModifiedStr !== new Date(0).toUTCString();
         if (ifWasEverModified) {
-          return cb(
-            null, res,
-            new Warning(
-              'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-                lastModifiedStr
-            )
+
+          addWarning(
+            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
+              lastModifiedStr
           );
+
+          return cb(null, res);
         }
       }
 
@@ -174,7 +182,7 @@
             pacData,
             (err, res) => cb(
               err,
-              Object.assign(res || {}, {lastModified: newLastModifiedStr})
+              Object.assign(res || {}, {lastModified: newLastModifiedStr}),
             )
           );
 
@@ -183,7 +191,7 @@
         clarifyThen(
           'Не удалось скачать PAC-скрипт с адресов: [ '
           + provider.pacUrls.join(' , ') + ' ].',
-          cb
+          cb,
         )
 
       );
@@ -200,18 +208,18 @@
       Антизапрет: {
         label: 'Антизапрет',
         desc: \`Альтернативный PAC-скрипт от стороннего разработчика.
-               Работает быстрее, но охватывает меньше сайтов.
-               Блокировка определяется по доменному имени,
-               <br/> <a href="https://antizapret.prostovpn.org">Страница проекта</a>.\`,
+               Охватывет меньше сайтов.
+               Блокировка определяется по доменному имени.
+               <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.\`,
         order: 0,
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
         label: 'Антицензорити',
         desc: \`Основной PAC-скрипт от автора расширения.
-               Работает медленней, но охватывает больше сайтов.
-               Блокировка определятся по доменному имени или IP адресу.<br/>
-               <a href="https://rebrand.ly/ac-anticensority">Страница проекта</a>.\`,
+               Охватывает больше сайтов.
+               Блокировка определятся по доменному имени или IP адресу.
+               <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.\`,
         order: 1,
 
         /*
