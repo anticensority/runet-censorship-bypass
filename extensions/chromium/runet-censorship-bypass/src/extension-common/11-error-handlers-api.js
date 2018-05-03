@@ -284,7 +284,7 @@
 
   chrome.proxy.settings.onChange.addListener( timeouted( (details) => {
 
-    console.log('Proxy settings changed.', details);
+    console.log('Proxy settings changed:', details.levelOfControl);
     const noCon = 'no-control';
     const ifWasControllable = handlers.ifControllable;
     if ( !handlers.isControllable(details) && ifWasControllable ) {
