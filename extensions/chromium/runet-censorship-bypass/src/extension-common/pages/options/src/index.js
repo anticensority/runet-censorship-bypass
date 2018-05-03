@@ -49,7 +49,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
       );
       // READY TO RENDER
 
-      document.documentElement.style.display = 'initial';
+      setTimeout(() => { document.documentElement.style.display = 'initial'; }, 200); // Mac bug: https://bugs.chromium.org/p/chromium/issues/detail?id=428044
 
     }
   )
