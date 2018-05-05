@@ -49,7 +49,13 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
       );
       // READY TO RENDER
 
-      document.documentElement.style.display = 'initial';
+      const show = () => { document.documentElement.style.display = 'initial'; };
+
+      if (theState.flags.ifInsideOptionsPage) {
+        show();
+      } else {
+        setTimeout(show, 200); // Mac bug: https://bugs.chromium.org/p/chromium/issues/detail?id=428044
+      }
 
     }
   )
