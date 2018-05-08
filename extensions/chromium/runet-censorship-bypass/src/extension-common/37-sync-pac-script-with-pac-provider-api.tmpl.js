@@ -112,37 +112,19 @@
     cb = (...args) => originalCb(...args, ...warnings);
     const addWarning = (wText) => { warnings.push(new Warning(wText)) };
 
-    // TODO: dirty hack (labels should be UI related only)
-    if (provider.label === 'Антицензорити') {
-      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0];
-      console.log('HEADing antizapret...');
-      let headError = null;
-      const numberOfTries = 2;
-      let i = 0;
-      while (i++ < numberOfTries) {
-        await new Promise((resolve) =>
-          httpLib.head(azUrl, (err) => {
-            headError = err;
-            if (!headError) {
-              i = numberOfTries;
-            }
-            resolve();
-          })
-        );
-      }
-      if (headError) {
-        const errText = \`\${azUrl} недоступен!
-          <a href="https://rebrand.ly/ac-contact">Сообщите нам</a>, если повторяется!\`;
-        console.log(errText);
-        //addWarning(errText); // Uncomment when needed.
-        /* Do nothing for now like it's not critical. Otherwise uncomment.
-        clarifyThen(
-          errText,
-          cb,
-        )(headError);
+    if (provider.distinctKey === 'Anticensority') {
+
+      const pacMods = window.apis.pacKitchen.getPacMods();
+      if (!pacMods.filteredCustomsString) {
+        cb(new Error(
+          ```
+            Этот PAC-скрипт теперь работает только со <a href="https://rebrand.ly/ac-own-proxy">СВОИМИ</a>
+            прокси. Не найдено СВОИХ прокси. Отключите PAC-скрипт и добавьте их.
+          ```,
+        ));
         return;
-        */
       }
+
     }
 
     httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
@@ -192,7 +174,7 @@
           'Не удалось скачать PAC-скрипт с адресов: [ '
           + provider.pacUrls.join(' , ') + ' ].',
           cb,
-        )
+        ),
 
       );
 
@@ -206,6 +188,9 @@
 
     pacProviders: {
       Антизапрет: {
+        // Distinct keys are needed if you want to check if a given
+        // provider is this or that (distinct it from others).
+        distinctKey: 'Antizapret',
         label: 'Антизапрет',
         desc: \`Альтернативный PAC-скрипт от стороннего разработчика.
                Охватывет меньше сайтов.
@@ -215,6 +200,7 @@
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
+        distinctKey: 'Anticensority',
         label: 'Антицензорити',
         desc: \`Основной PAC-скрипт от автора расширения.
                Охватывает больше сайтов.
@@ -230,6 +216,7 @@
         pacUrls: ${JSON.stringify(anticensorityPacUrls, null, 2)},
       },
       onlyOwnSites: {
+        distinctKey: 'onlyOwnSites',
         label: 'Только свои сайты и свои прокси',
         desc: 'Проксируются только добавленные вручную сайты через СВОИ вручную добавленные прокси или через локальный Tor.',
         order: 99,
@@ -592,8 +579,8 @@
             return; // Not Anticensority.
           }
           const pacMods = window.apis.pacKitchen.getPacMods();
-          if (!pacMods.ifUsePacScriptProxies) {
-            return; // Pac script proxies are not used.
+          if (pacMods.filteredCustomsString) {
+            return; // Own proxies are defined.
           }
           antiCensorRu.setCurrentPacProviderKey('Антизапрет');
           await new Promise((resolveSwitch) =>
