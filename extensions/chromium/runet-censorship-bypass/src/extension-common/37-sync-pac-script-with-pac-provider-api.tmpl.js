@@ -245,7 +245,7 @@
 
     },
 
-    _currentPacProviderKey: 'Антицензорити',
+    _currentPacProviderKey: 'Антизапрет',
 
     /* Is it the first time extension installed?
        Do something, e.g. initiate PAC sync.
@@ -585,8 +585,40 @@
           }
 
         }
+        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.23')) {
+
+          // Switch to Antizapret automatically, only from Anitcensority without own proxies.
+          if (antiCensorRu.getCurrentPacProviderKey !== 'Антицензорити') {
+            return; // Not Anticensority.
+          }
+          const pacMods = window.apis.pacKitchen.getPacMods();
+          if (!pacMods.ifUsePacScriptProxies) {
+            return; // Pac script proxies are not used.
+          }
+          antiCensorRu.setCurrentPacProviderKey('Антизапрет');
+          await new Promise((resolveSwitch) =>
+
+            antiCensorRu.syncWithPacProviderAsync((err, res, warns) => {
+
+              if (warns) {
+                console.log(warns);
+              }
+              if (err) {
+                console.log('Ungraceful update from 1.23: couldn\'t fetch Antizapret:');
+                console.error(err);
+              } else {
+                console.log('Update from 1.23 applied successfully.');
+              }
+              resolveSwitch();
+
+            }),
+          );
+
+        }
       } catch (e) {
-        // Swallow update error.
+        // Log update error.
+        console.log('UPDATE ERROR:');
+        console.error(e);
       }
       ifUpdatedCb();
 
