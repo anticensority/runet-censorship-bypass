@@ -116,12 +116,15 @@
 
       const pacMods = window.apis.pacKitchen.getPacMods();
       if (!pacMods.filteredCustomsString) {
-        cb(new Error(
+        addWarning(
           ```
-            Этот PAC-скрипт теперь работает только со <a href="https://rebrand.ly/ac-own-proxy">СВОИМИ</a>
-            прокси. Не найдено СВОИХ прокси. Отключите PAC-скрипт и добавьте их.
+            Не найдено СВОИХ прокси. Этот PAC-скрипт
+            <a href="https://github.com/anticensority/runet-censorship-bypass/issues/10#issuecomment-387436191">теперь</a>
+            работает только со <a href="https://rebrand.ly/ac-own-proxy">СВОИМИ прокси</a>
+            (по умолчанию — локальный <a href="https://rebrand.ly/ac-tor">TOR</a>, для его отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
           ```,
-        ));
+        );
+        cb();
         return;
       }
 
