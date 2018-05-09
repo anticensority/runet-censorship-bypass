@@ -1,5 +1,8 @@
 # Install
 
+Nodejs 10 and gulp have [issues](https://github.com/nodejs/node/issues/20285),
+use nodejs 8 instead for a while.
+
 ```
 npm install
 cd src/extension-common/pages/options/
