@@ -109,7 +109,7 @@
 
     const warnings = [];
     const originalCb = cb;
-    cb = (...args) => originalCb(...args, ...warnings);
+    cb = (err, res, ...warns) => originalCb(err, res, ...warns, ...warnings);
     const addWarning = (wText) => { warnings.push(new Warning(wText)) };
 
     if (provider.distinctKey === 'Anticensority') {
@@ -124,8 +124,6 @@
             (по умолчанию — локальный <a href="https://rebrand.ly/ac-tor">TOR</a>, для его отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
           \`,
         );
-        cb();
-        return;
       }
 
     }
