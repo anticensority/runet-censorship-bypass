@@ -181,7 +181,7 @@
 
       searchSettingsForUrl(niddle) {
 
-        return 'chrome://settings/search#' + (chrome.i18n.getMessage(niddle) || niddle);
+        return 'chrome://settings/?search=' + (chrome.i18n.getMessage(niddle) || niddle);
 
       },
 
