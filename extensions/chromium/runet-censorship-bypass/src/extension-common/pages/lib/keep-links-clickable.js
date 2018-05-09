@@ -16,7 +16,7 @@ Use only if really required because of performance penalty.
       const location = ln.href;
       ln.onclick = function() {
 
-        chrome.tabs.create({active: !this.dataset.inBg, url: location});
+        chrome.tabs.create({active: this.dataset.inBg === "false", url: location});
         return false;
 
       };
