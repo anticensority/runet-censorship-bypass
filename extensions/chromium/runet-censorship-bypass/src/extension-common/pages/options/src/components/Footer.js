@@ -27,7 +27,7 @@ export default function getFooter() {
 
         <footer class={scopedCss.controlRow + ' horFlex nowrap'}>
           <input type="button" value="Готово" disabled={props.ifInputsDisabled} onClick={() => window.close()} />
-          <a href="../troubleshoot/index.html">
+          <a data-in-bg="false" href="../troubleshoot/index.html">
             Проблемы?
           </a>
         </footer>
