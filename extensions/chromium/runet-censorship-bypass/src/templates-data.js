@@ -57,8 +57,9 @@ exports.contexts.firefox = Object.assign({}, commonContext, {
 
 exports.contexts.beta = Object.assign({}, commonContext, {
   anticensorityPacUrls: [
+    'https://raw.githubusercontent.com/anticensority/for-testing/master/anticensority.pac',
+    'https://anticensority.github.io/for-testing/anticensority.pac',
     'https://rebrand.ly/ac-beta-pac',
-    ...pacUrls,
   ],
   version: '1.14',
   versionSuffix: '',
