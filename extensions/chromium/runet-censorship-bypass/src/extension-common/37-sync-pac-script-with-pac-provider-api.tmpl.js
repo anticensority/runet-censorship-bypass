@@ -121,7 +121,7 @@
             Не найдено СВОИХ прокси. Этот PAC-скрипт
             <a href="https://github.com/anticensority/runet-censorship-bypass/issues/10#issuecomment-387436191">теперь</a>
             работает только со <a href="https://rebrand.ly/ac-own-proxy">СВОИМИ прокси</a>
-            (по умолчанию — локальный <a href="https://rebrand.ly/ac-tor">TOR</a>, для его отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
+            (по умолчанию используется локальный <a href="https://rebrand.ly/ac-tor">TOR</a> и прокси "Антизапрет", для их отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
           \`,
         );
       }
@@ -575,13 +575,16 @@
         }
         if (window.apis.version.isLeq(oldStorage.version, '0.0.1.23')) {
 
-          // Switch to Antizapret automatically, only from Anitcensority without own proxies.
-          if (antiCensorRu.getCurrentPacProviderKey !== 'Антицензорити') {
+          console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
+          const provKey = antiCensorRu.getCurrentPacProviderKey();
+          if (provKey !== 'Антицензорити') {
+            console.log('Current provider', provKey, '!== Anticensority');
             return; // Not Anticensority.
           }
           const pacMods = window.apis.pacKitchen.getPacMods();
           if (pacMods.filteredCustomsString) {
-            return; // Own proxies are defined.
+            console.log('Proxies found:', pacMods.filteredCustomsString);
+            return; // Own proxies or Tor are used.
           }
           antiCensorRu.setCurrentPacProviderKey('Антизапрет');
           await new Promise((resolveSwitch) =>
