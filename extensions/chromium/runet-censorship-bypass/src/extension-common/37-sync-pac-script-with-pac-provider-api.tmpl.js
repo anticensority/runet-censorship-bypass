@@ -573,12 +573,12 @@
           }
 
         }
-        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.23')) {
+        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.25')) {
 
           console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
           const provKey = antiCensorRu.getCurrentPacProviderKey();
-          if (provKey !== 'Антицензорити') {
-            console.log('Current provider', provKey, '!== Anticensority');
+          if (provKey !== 'Антицензорити' && provKey !== 'Антизапрет') {
+            console.log('Current provider', provKey, '!== Anticensority or Antizapret');
             return; // Not Anticensority.
           }
           const pacMods = window.apis.pacKitchen.getPacMods();
@@ -587,6 +587,7 @@
             return; // Own proxies or Tor are used.
           }
           antiCensorRu.setCurrentPacProviderKey('Антизапрет');
+          antiCensorRu.setLastModified(0);
           await new Promise((resolveSwitch) =>
 
             antiCensorRu.syncWithPacProviderAsync((err, res, warns) => {
@@ -596,11 +597,11 @@
               }
               if (err) {
                 console.log(
-                  'Ungraceful update from 1.23: couldn\\'t fetch Antizapret:',
+                  'Ungraceful update from 1.25: couldn\\'t fetch Antizapret:',
                 );
                 console.error(err);
               } else {
-                console.log('Update from 1.23 applied successfully.');
+                console.log('Update from 1.25 applied successfully.');
               }
               resolveSwitch();
 
