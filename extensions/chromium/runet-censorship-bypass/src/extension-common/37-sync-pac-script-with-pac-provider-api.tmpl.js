@@ -109,40 +109,23 @@
 
     const warnings = [];
     const originalCb = cb;
-    cb = (...args) => originalCb(...args, ...warnings);
+    cb = (err, res, ...warns) => originalCb(err, res, ...warns, ...warnings);
     const addWarning = (wText) => { warnings.push(new Warning(wText)) };
 
-    // TODO: dirty hack (labels should be UI related only)
-    if (provider.label === 'Антицензорити') {
-      const azUrl = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0];
-      console.log('HEADing antizapret...');
-      let headError = null;
-      const numberOfTries = 2;
-      let i = 0;
-      while (i++ < numberOfTries) {
-        await new Promise((resolve) =>
-          httpLib.head(azUrl, (err) => {
-            headError = err;
-            if (!headError) {
-              i = numberOfTries;
-            }
-            resolve();
-          })
+    if (provider.distinctKey === 'Anticensority') {
+
+      const pacMods = window.apis.pacKitchen.getPacMods();
+      if (!pacMods.filteredCustomsString) {
+        addWarning(
+          \`
+            Не найдено СВОИХ прокси. Этот PAC-скрипт
+            <a href="https://github.com/anticensority/runet-censorship-bypass/issues/10#issuecomment-387436191">теперь</a>
+            работает только со <a href="https://rebrand.ly/ac-own-proxy">СВОИМИ прокси</a>
+            (по умолчанию используется локальный <a href="https://rebrand.ly/ac-tor">TOR</a> и прокси "Антизапрет", для их отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
+          \`,
         );
       }
-      if (headError) {
-        const errText = \`\${azUrl} недоступен!
-          <a href="https://rebrand.ly/ac-contact">Сообщите нам</a>, если повторяется!\`;
-        console.log(errText);
-        //addWarning(errText); // Uncomment when needed.
-        /* Do nothing for now like it's not critical. Otherwise uncomment.
-        clarifyThen(
-          errText,
-          cb,
-        )(headError);
-        return;
-        */
-      }
+
     }
 
     httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
@@ -192,7 +175,7 @@
           'Не удалось скачать PAC-скрипт с адресов: [ '
           + provider.pacUrls.join(' , ') + ' ].',
           cb,
-        )
+        ),
 
       );
 
@@ -206,6 +189,9 @@
 
     pacProviders: {
       Антизапрет: {
+        // Distinct keys are needed if you want to check if a given
+        // provider is this or that (distinct it from others).
+        distinctKey: 'Antizapret',
         label: 'Антизапрет',
         desc: \`Альтернативный PAC-скрипт от стороннего разработчика.
                Охватывет меньше сайтов.
@@ -215,6 +201,7 @@
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
+        distinctKey: 'Anticensority',
         label: 'Антицензорити',
         desc: \`Основной PAC-скрипт от автора расширения.
                Охватывает больше сайтов.
@@ -230,6 +217,7 @@
         pacUrls: ${JSON.stringify(anticensorityPacUrls, null, 2)},
       },
       onlyOwnSites: {
+        distinctKey: 'onlyOwnSites',
         label: 'Только свои сайты и свои прокси',
         desc: 'Проксируются только добавленные вручную сайты через СВОИ вручную добавленные прокси или через локальный Tor.',
         order: 99,
@@ -245,7 +233,7 @@
 
     },
 
-    _currentPacProviderKey: 'Антицензорити',
+    _currentPacProviderKey: 'Антизапрет',
 
     /* Is it the first time extension installed?
        Do something, e.g. initiate PAC sync.
@@ -585,8 +573,45 @@
           }
 
         }
+        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.23')) {
+
+          console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
+          const provKey = antiCensorRu.getCurrentPacProviderKey();
+          if (provKey !== 'Антицензорити') {
+            console.log('Current provider', provKey, '!== Anticensority');
+            return; // Not Anticensority.
+          }
+          const pacMods = window.apis.pacKitchen.getPacMods();
+          if (pacMods.filteredCustomsString) {
+            console.log('Proxies found:', pacMods.filteredCustomsString);
+            return; // Own proxies or Tor are used.
+          }
+          antiCensorRu.setCurrentPacProviderKey('Антизапрет');
+          await new Promise((resolveSwitch) =>
+
+            antiCensorRu.syncWithPacProviderAsync((err, res, warns) => {
+
+              if (warns) {
+                console.log(warns);
+              }
+              if (err) {
+                console.log(
+                  'Ungraceful update from 1.23: couldn\\'t fetch Antizapret:',
+                );
+                console.error(err);
+              } else {
+                console.log('Update from 1.23 applied successfully.');
+              }
+              resolveSwitch();
+
+            }),
+          );
+
+        }
       } catch (e) {
-        // Swallow update error.
+        // Log update error.
+        console.log('UPDATE ERROR:');
+        console.error(e);
       }
       ifUpdatedCb();
 
