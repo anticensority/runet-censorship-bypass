@@ -10,7 +10,7 @@ const pacUrls = [
 ];
 
 const commonContext = {
-  version: '1.25',
+  version: '1.26',
   anticensorityPacUrls: [
     ...pacUrls,
   ],
