@@ -80,6 +80,7 @@
     privates._strToHostObj = {
       [_antizapret.host]: _antizapret,
       [proxyForRanges]: { host: proxyForRanges },
+      ['localhost']: { host: 'localhost' },
     };
 
     privates._ipToHostObj = {};
