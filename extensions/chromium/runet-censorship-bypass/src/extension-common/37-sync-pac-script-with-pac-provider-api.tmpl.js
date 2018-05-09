@@ -117,12 +117,12 @@
       const pacMods = window.apis.pacKitchen.getPacMods();
       if (!pacMods.filteredCustomsString) {
         addWarning(
-          ```
+          \`
             Не найдено СВОИХ прокси. Этот PAC-скрипт
             <a href="https://github.com/anticensority/runet-censorship-bypass/issues/10#issuecomment-387436191">теперь</a>
             работает только со <a href="https://rebrand.ly/ac-own-proxy">СВОИМИ прокси</a>
             (по умолчанию — локальный <a href="https://rebrand.ly/ac-tor">TOR</a>, для его отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
-          ```,
+          \`,
         );
         cb();
         return;
@@ -594,7 +594,9 @@
                 console.log(warns);
               }
               if (err) {
-                console.log('Ungraceful update from 1.23: couldn\'t fetch Antizapret:');
+                console.log(
+                  'Ungraceful update from 1.23: couldn\\'t fetch Antizapret:',
+                );
                 console.error(err);
               } else {
                 console.log('Update from 1.23 applied successfully.');
