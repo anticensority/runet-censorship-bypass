@@ -5,16 +5,16 @@
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "babel-loader": "^7.0.0",
-    "babel-plugin-dynamic-import-webpack": "^1.0.1",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-dynamic-import-webpack": "^1.0.2",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
-    "concat-stream": "^1.6.0",
+    "concat-stream": "^1.6.2",
     "csjs-inject": "^1.0.1",
     "flow-bin": "^0.45.0",
     "inferno": "~3.2.0",
-    "inferno-component": "^3.1.2",
-    "inferno-create-element": "^3.1.2",
+    "inferno-component": "^3.10.1",
+    "inferno-create-element": "^3.10.1",
     "webpack": "^2.5.1"
   },
   "scripts": {
@@ -27,6 +27,6 @@
     "start": "cd .. && npm start"
   },
   "dependencies": {
-    "babel-plugin-inferno": "^3.2.0"
+    "babel-plugin-inferno": "^3.5.1"
   }
 }
