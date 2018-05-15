@@ -142,6 +142,23 @@
     if (!host) {
       return;
     }
+    {
+      /*
+        If we fetch a resource from a proxy address it is almost never proxied and
+        shouldn't be shown.
+        Think about localhost as a proxy and a user working with a web site on localhost.
+      */
+      /*
+        Host is constructed from hostname and port. Hostname never contains port,
+        it is an ip or a domain name. See hostname and host
+        in `new URL('https://localhost:8080')`.
+      */
+      const hostnameFromUrl = new URL(requestDetails.url).hostname;
+      const hostnameFromProxy = new URL(`https://${host}`).hostname;
+      if (hostnameFromUrl === requestDetails.ip || hostnameFromUrl === hostnameFromProxy) {
+        return;
+      }
+    }
 
     const ifMainFrame = requestDetails.type === 'main_frame';
 
