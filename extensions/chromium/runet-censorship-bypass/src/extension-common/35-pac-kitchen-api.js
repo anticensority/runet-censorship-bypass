@@ -364,7 +364,7 @@
         if (pacMods.filteredCustomsString) {
           res += `
 /******/
-/******/    const filteredCustomProxies = "; ${pacMods.filteredCustomsString}";
+/******/    const filteredCustomProxies = "${pacMods.filteredCustomsString}; ";
 /******/`;
         }
 
@@ -440,6 +440,7 @@ ${        pacMods.filteredCustomsString
 /******/      return "DIRECT";
 /******/    }
 /******/    return ` +
+        (pacMods.filteredCustomsString ? 'filteredCustomProxies + ' : '') +
         function() {
 
           if (!pacMods.ifUsePacScriptProxies) {
@@ -452,7 +453,7 @@ ${        pacMods.filteredCustomsString
           }
           return filteredPacExp + ' + ';
 
-        }() + `${pacMods.filteredCustomsString ? 'filteredCustomProxies + ' : ''}directIfAllowed;`; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+        }() + `directIfAllowed;`; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
       }()
     }
