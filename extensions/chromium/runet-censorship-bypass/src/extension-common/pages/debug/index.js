@@ -25,7 +25,6 @@ chrome.runtime.getBackgroundPage((bgWin) => {
         control = red(control);
       }
       setStatusTo(control);
-      console.log(details);
       const pac = details.value.pacScript;
       const data = pac && pac.data || 'PAC скрипт не установлен.';
       editor.setValue( data );
