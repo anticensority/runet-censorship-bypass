@@ -359,12 +359,12 @@
         }
         res += `
 /******/
-/******/    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"; DIRECT"'};
+/******/    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"DIRECT"'};
 /******/`;
         if (pacMods.filteredCustomsString) {
           res += `
 /******/
-/******/    const filteredCustomProxies = "${pacMods.filteredCustomsString}; ";
+/******/    const filteredCustomProxies = "${pacMods.filteredCustomsString}";
 /******/`;
         }
 
@@ -412,7 +412,7 @@
 /******/      }
 /******/      // Always proxy it!
 ${        pacMods.filteredCustomsString
-            ? `/******/      return filteredCustomProxies + directIfAllowed;`
+            ? `/******/      return filteredCustomProxies + "; " + directIfAllowed;`
             : '/******/      /* No custom proxies -- continue. */'
 }
 /******/    }
@@ -421,7 +421,9 @@ ${        pacMods.filteredCustomsString
         }
         res += `
 /******/    const pacScriptProxies = originalFindProxyForURL(url, host)${
-/******/          pacMods.ifProxyOrDie ? '.replace(/DIRECT/g, "")' : ' + directIfAllowed'
+/******/          pacMods.ifProxyOrDie
+                    ? '.replace(/DIRECT/g, "")'
+                    : ' + "; " + directIfAllowed'
         };`;
         if(
           !pacMods.ifUseSecureProxiesOnly &&
@@ -429,7 +431,8 @@ ${        pacMods.filteredCustomsString
            pacMods.ifUsePacScriptProxies
         ) {
           return res + `
-/******/    return (pacScriptProxies + directIfAllowed) || "DIRECT";`;
+/******/    return [pacScriptProxies, directIfAllowed]
+              .filter((p) => p).join("; ") || "DIRECT";`;
         }
 
         return res + `
@@ -440,7 +443,10 @@ ${        pacMods.filteredCustomsString
 /******/      return "DIRECT";
 /******/    }
 /******/    return ` +
-        (pacMods.filteredCustomsString ? 'filteredCustomProxies + ' : '') +
+        (pacMods.filteredCustomsString
+          ? 'filteredCustomProxies + "; " + '
+          : ''
+        ) +
         function() {
 
           if (!pacMods.ifUsePacScriptProxies) {
@@ -451,9 +457,9 @@ ${        pacMods.filteredCustomsString
             filteredPacExp =
               'pacProxyArray.filter( (pStr) => /^HTTPS\\s/.test(pStr) ).join("; ")';
           }
-          return filteredPacExp + ' + ';
+          return filteredPacExp + ' + "; " + ';
 
-        }() + `directIfAllowed;`; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+        }() + 'directIfAllowed;'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
       }()
     }
