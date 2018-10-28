@@ -37,7 +37,7 @@ I decided to write an anticensorship extension for Chromium before they strike m
 ## Contributors
 
 This project exists thanks to all the people who contribute.
-<a href="graphs/contributors"><img src="https://opencollective.com/anticensority/contributors.svg?width=890&button=false" /></a>
+<a href="graphs/contributors"><img src="https://opencollective.com/anticensority/contributors.svg?width=890&button=false?force" /></a>
 
 
 ## Backers
