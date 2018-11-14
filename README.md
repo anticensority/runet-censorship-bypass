@@ -21,7 +21,7 @@ I believe __information mustn't be blocked based on political or other subjectiv
 
 My maxim is _"Your freedom ends when it starts to confine the freedom of others"_.
 
-See [my other arguments against censorship (ru)](https://gist.github.com/ilyaigpetrov/9452b93ef3d7dd3d8cc2)
+See [my other arguments against censorship (ru)](https://rebrand.ly/ac-arguments)
 
 Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313),
 I decided to write an anticensorship extension for Chromium before they strike me first.
