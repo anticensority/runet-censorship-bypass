@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "opencollective postinstall"
   },
-  "author": "ilyaigpetrov",
+  "author": "anticensority+owners@googlegroups.com",
   "license": "ISC",
   "dependencies": {
     "opencollective": "^1.0.3"

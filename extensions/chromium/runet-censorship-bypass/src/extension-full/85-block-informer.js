@@ -9,8 +9,6 @@
   to "loading".
   So if you set a title earlier it may be cleared by browser.
   It pertains not only to page refesh but to newly opened pages too.
-  Also on loosing title see:
-    https://github.com/ilyaigpetrov/repository-for-chrome-bugs/blob/master/browserAction-title-lost-after-setting/background.js
   Crazy parallel Chrome.
 **/
 
