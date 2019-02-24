@@ -127,9 +127,8 @@
         addWarning(
           \`
             Не найдено СВОИХ прокси. Этот PAC-скрипт
-            <a href="https://github.com/anticensority/runet-censorship-bypass/issues/10#issuecomment-387436191">теперь</a>
             работает только со <a href="https://git.io/ac-own-proxy">СВОИМИ прокси</a>
-            (по умолчанию используется локальный <a href="https://git.io/ac-tor">TOR</a> и прокси "Антизапрет", для их отключения: Свои прокси -> откл. "Использовать прокси PAC-скрипта").
+            (по умолчанию будет использоваться локальный <a href="https://git.io/ac-tor">Tor</a>).
           \`,
         );
       }
