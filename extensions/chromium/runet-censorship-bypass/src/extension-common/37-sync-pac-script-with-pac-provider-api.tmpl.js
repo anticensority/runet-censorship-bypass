@@ -19,6 +19,14 @@
 
 */
 
+/*
+  Due to History
+
+  - *Async suffix usually means that function requires a cb.
+    It may not be related to async (returning a Promise).
+    This naming is confusing and should be reconsidered.
+*/
+
 { // Private namespace starts.
 
   const mandatory = window.utils.mandatory;
@@ -97,7 +105,7 @@
 
   };
 
-  const setPacScriptFromProviderAsync = async function setPacScriptFromProviderAsync(
+  const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
     provider, lastModifiedStr = mandatory(), cb = throwIfError
   ) {
 
