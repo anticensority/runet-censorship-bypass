@@ -138,7 +138,6 @@
     httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
 
       if (!newLastModifiedStr) {
-        const res = {lastModified: lastModifiedStr};
         const ifWasEverModified = lastModifiedStr !== new Date(0).toUTCString();
         if (ifWasEverModified) {
 
@@ -146,7 +145,7 @@
             'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
               lastModifiedStr
           );
-
+          const res = {lastModified: lastModifiedStr};
           return cb(null, res);
         }
       }
