@@ -8,8 +8,8 @@
     "test": "mocha --recursive ./src/**/test/*",
     "subpages": "cd ./src/extension-common/pages/options/ && npm run build && cd -",
     "subpages:dev": "cd ./src/extension-common/pages/options/ && npm run build:dev:nocomp && cd -",
-    "start": "npm run subpages:dev && npm run gulp build:beta",
-    "release": "npm run subpages && npm run gulp build:all"
+    "start": "npm run subpages:dev && npm run gulp buildAll",
+    "release": "npm run subpages && npm run gulp buildAll"
   },
   "author": "Ilya Ig. Petrov",
   "license": "GPLv3",
@@ -23,8 +23,9 @@
     "symlink-to": "^0.0.4"
   },
   "dependencies": {
-    "del": "^2.2.2",
-    "gulp": "^3.9.1",
-    "through2": "^2.0.3"
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
+    "plugin-error": "^1.0.1",
+    "through2": "^3.0.0"
   }
 }
