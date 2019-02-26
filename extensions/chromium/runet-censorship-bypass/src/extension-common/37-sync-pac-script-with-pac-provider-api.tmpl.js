@@ -58,7 +58,7 @@
   };
 
   const setPacAsync = function setPacAsync(
-    pacData = mandatory(), cb = throwIfError
+    pacData = mandatory(), cb = throwIfError,
   ) {
 
     const config = {
@@ -80,7 +80,7 @@
 
           console.warn('Failed, other extension is in control.');
           return cb(
-            new Error( window.utils.messages.whichExtensionHtml() )
+            new Error( window.utils.messages.whichExtensionHtml() ),
           );
 
         }
@@ -99,20 +99,20 @@
 
     cb = asyncLogGroup(
       'Getting IPs for PAC hosts...',
-      cb
+      cb,
     );
     window.utils.fireRequest('ip-to-host-update-all', cb);
 
   };
 
   const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
-    provider, lastModifiedStr = mandatory(), cb = throwIfError
+    provider, lastModifiedStr = mandatory(), cb = throwIfError,
   ) {
 
     const pacUrl = provider.pacUrls[0];
     cb = asyncLogGroup(
       'Getting PAC script from provider...', pacUrl,
-      cb
+      cb,
     );
 
     const warnings = [];
@@ -143,7 +143,7 @@
 
           addWarning(
             'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-              lastModifiedStr
+              lastModifiedStr,
           );
           const res = {lastModified: lastModifiedStr};
           return cb(null, res);
@@ -156,11 +156,11 @@
           () => new Promise(
             (resolve, reject) => httpLib.get(
               url,
-              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData)
-            )
-          )
+              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData),
+            ),
+          ),
         ),
-        Promise.reject()
+        Promise.reject(),
       );
 
       pacDataPromise.then(
@@ -172,7 +172,7 @@
             (err, res) => cb(
               err,
               Object.assign(res || {}, {lastModified: newLastModifiedStr}),
-            )
+            ),
           );
 
         },
@@ -229,7 +229,7 @@
         order: 99,
         pacUrls: [
           'data:application/x-ns-proxy-autoconfig,' + escape('function FindProxyForURL(){ return "DIRECT"; }'),
-        ]
+        ],
       }
     },
 
@@ -290,7 +290,7 @@
 
     setCurrentPacProviderKey(
       newKey = mandatory(),
-      lastModified = new Date().toUTCString()
+      lastModified = new Date().toUTCString(),
     ) {
 
       this.mustBeKey(newKey);
@@ -330,7 +330,7 @@
       chrome.storage.local.clear(
         () => chrome.storage.local.set(
           onlySettable,
-          chromified(cb)
+          chromified(cb),
         )
       );
 
@@ -374,8 +374,8 @@
 
       const ipsErrorPromise = new Promise(
         (resolve, reject) => updatePacProxyIps(
-          resolve
-        )
+          resolve,
+        ),
       );
 
       Promise.all([pacSetPromise, ipsErrorPromise]).then(
@@ -389,7 +389,7 @@
             warns.push(ipsErr);
           }
           this.pushToStorageAsync(
-            (pushErr) => cb(pacErr || pushErr, null, ...warns)
+            (pushErr) => cb(pacErr || pushErr, null, ...warns),
           );
 
         },
@@ -416,7 +416,7 @@
 
       console.log(
         'Next PAC update is scheduled on',
-        new Date(nextUpdateMoment).toLocaleString('ru-RU')
+        new Date(nextUpdateMoment).toLocaleString('ru-RU'),
       );
 
       chrome.alarms.create(
@@ -459,11 +459,11 @@
             }
             this.setCurrentPacProviderKey(null);
             this.pushToStorageAsync(
-              () => handlers.updateControlState(cb)
+              () => handlers.updateControlState(cb),
             );
 
-          })
-        )
+          }),
+        ),
       );
 
     },
@@ -491,7 +491,7 @@
         if (alarm.name === antiCensorRu._periodicUpdateAlarmReason) {
           console.log(
             'Periodic PAC update triggered:',
-            new Date().toLocaleString('ru-RU')
+            new Date().toLocaleString('ru-RU'),
           );
           antiCensorRu.syncWithPacProviderAsync(() => {/* swallow */});
         }
@@ -531,7 +531,7 @@
       || antiCensorRu._currentPacProviderLastModified;
     console.log(
       'Last PAC update was on',
-      new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU')
+      new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU'),
     );
 
 
