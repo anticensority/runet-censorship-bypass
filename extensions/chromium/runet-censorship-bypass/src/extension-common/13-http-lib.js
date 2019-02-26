@@ -11,30 +11,38 @@
 
     ifModifiedSince(
       url,
-      lastModified,
-      cb = mandatory()
+      cacheImprints,
+      cb = mandatory(),
     ) {
 
+      if (!cacheImprints.eTag && !cacheImprints.lastModifiedStr) {
+        throw new TypeError('No cacheImprints provided!');
+      }
       if (url.startsWith('data:')) {
         return cb(null, false);
       }
-      const wasModifiedIn1970 = new Date(0).toUTCString();
       const notModifiedCode = 304;
       fetch(url, {
         method: 'HEAD',
-        headers: new Headers({
-          'If-Modified-Since': lastModified,
-        }),
+        headers: new Headers(
+          cacheImprints.eTag
+            ? {'If-None-Match': cacheImprints.eTag}
+            : {'If-Modified-Since': cacheImprints.lastModifiedStr},
+        ),
       }).then(
         (res) => {
+
+          const eTag = res.headers.get('ETag');
+          const lastModifiedStr = res.headers.get('Last-Modified');
+          const newCacheImprints = (eTag || lastModifiedStr) ? { eTag, lastModifiedStr } : undefined;
           cb(
             null,
-            res.status === notModifiedCode ?
-              false :
-              (res.headers.get('Last-Modified') || wasModifiedIn1970)
+            res.status === notModifiedCode
+              ? undefined
+              : newCacheImprints,
           );
         },
-        errorsLib.clarifyThen(checkCon, (err) => cb(err, wasModifiedIn1970))
+        errorsLib.clarifyThen(checkCon, (err) => cb(err)),
       );
 
     },
@@ -42,6 +50,7 @@
     get(url, cb = mandatory()) {
 
       const start = Date.now();
+      // 'no-store' disables cache completely, we handle caching manually instead.
       fetch(url, {cache: 'no-store'}).then(
         (res) => {
 
@@ -54,7 +63,7 @@
                   console.log('Calling CB...');
                   cb(err, text);
                 },
-                cb
+                cb,
               );
 
             };
@@ -64,8 +73,8 @@
             return textCb(
               errorsLib.clarify(
                 res,
-                'Получен ответ с неудачным HTTP-кодом ' + status + '.'
-              )
+                'Получен ответ с неудачным HTTP-кодом ' + status + '.',
+              ),
             );
           }
 
@@ -73,7 +82,7 @@
           textCb();
 
         },
-        errorsLib.clarifyThen(checkCon, cb)
+        errorsLib.clarifyThen(checkCon, cb),
       );
 
     },
@@ -98,7 +107,7 @@
           cb();
 
         },
-        errorsLib.clarifyThen(checkCon, cb)
+        errorsLib.clarifyThen(checkCon, cb),
       );
 
     },

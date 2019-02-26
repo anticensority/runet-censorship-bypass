@@ -94,7 +94,7 @@
   };
 
   const updatePacProxyIps = function updatePacProxyIps(
-    cb = throwIfError
+    cb = throwIfError,
   ) {
 
     cb = asyncLogGroup(
@@ -106,7 +106,7 @@
   };
 
   const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
-    provider, lastModifiedStr = mandatory(), cb = throwIfError,
+    provider, cacheImprints = mandatory(), cb = throwIfError,
   ) {
 
     const pacUrl = provider.pacUrls[0];
@@ -135,18 +135,19 @@
 
     }
 
-    httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
+    httpLib.ifModifiedSince(pacUrl, cacheImprints, (err, newCacheImprints) => {
 
-      if (!newLastModifiedStr) {
-        const ifWasEverModified = lastModifiedStr !== new Date(0).toUTCString();
-        if (ifWasEverModified) {
+      // Always empty or non-empty object:
+      const cacheImprintsForCb = newCacheImprints || cacheImprints;
+      if (!err && !newCacheImprints) {
+        const { eTag, lastModifiedStr } = cacheImprints;
+        if (eTag || lastModifiedStr) {
 
           addWarning(
-            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-              lastModifiedStr,
+            'Ваш PAC-скрипт не нуждается в обновлении. Его ' +
+             (lastModifiedStr ? 'дата (на сервере): ' + lastModifiedStr : 'ETag: ' + eTag),
           );
-          const res = {lastModified: lastModifiedStr};
-          return cb(null, res);
+          return cb(null, cacheImprintsForCb);
         }
       }
 
@@ -169,9 +170,9 @@
 
           setPacAsync(
             pacData,
-            (err, res) => cb(
+            (err) => cb(
               err,
-              Object.assign(res || {}, {lastModified: newLastModifiedStr}),
+              cacheImprintsForCb,
             ),
           );
 
@@ -263,20 +264,22 @@
 
     },
 
-    _currentPacProviderLastModified: 0,
+    _currentPacProviderLastModified: 0, // Milliseconds or as a string.
+    _currentPacProviderETag: '',
 
-    getLastModifiedForKey(key = mandatory()) {
+    getCacheImprintsForKey(key = mandatory()) {
 
       if (this._currentPacProviderKey === key) {
-        return new Date(this._currentPacProviderLastModified).toUTCString();
+        return {
+          lastModifiedStr: new Date(this._currentPacProviderLastModified).toUTCString(),
+          eTag: this._currentPacProviderETag,
+        };
       }
-      return new Date(0).toUTCString();
-
-    },
-
-    setLastModified(newValue = mandatory()) {
-
-      this._currentPacProviderLastModified = newValue;
+      // If it's not for the current provider then lie we have very old imprints. TODO: reconsider.
+      return {
+        lastModifiedStr: new Date(0).toUTCString(),
+        eTag: '',
+      };
 
     },
 
@@ -296,12 +299,16 @@
 
     setCurrentPacProviderKey(
       newKey = mandatory(),
-      lastModified = new Date().toUTCString(),
+      {
+        lastModifiedStr = new Date().toUTCString(),
+        eTag = '',
+      } = {},
     ) {
 
       this.mustBeKey(newKey);
       this._currentPacProviderKey = newKey;
-      this._currentPacProviderLastModified = lastModified;
+      this._currentPacProviderLastModified = lastModifiedStr;
+      this._currentPacProviderETag = eTag;
 
     },
 
@@ -361,11 +368,11 @@
       const pacSetPromise = new Promise(
         (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
-          this.getLastModifiedForKey(key),
-          (err, res, ...warns) => {
+          this.getCacheImprintsForKey(key),
+          (err, cacheImprints, ...warns) => {
 
             if (!err) {
-              this.setCurrentPacProviderKey(key, res.lastModified);
+              this.setCurrentPacProviderKey(key, cacheImprints);
               this.lastPacUpdateStamp = Date.now();
               this.ifFirstInstall = false;
               this.setAlarms();
@@ -535,6 +542,9 @@
     antiCensorRu._currentPacProviderLastModified =
       oldStorage._currentPacProviderLastModified
       || antiCensorRu._currentPacProviderLastModified;
+    antiCensorRu._currentPacProviderETag =
+      oldStorage._currentPacProviderETag
+      || antiCensorRu._currentPacProviderETag;
     console.log(
       'Last PAC update was on',
       new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU'),
@@ -598,8 +608,7 @@
             console.log('Proxies found:', pacMods.filteredCustomsString);
             return; // Own proxies or Tor are used.
           }
-          antiCensorRu.setCurrentPacProviderKey('Антизапрет');
-          antiCensorRu.setLastModified(0);
+          antiCensorRu.setCurrentPacProviderKey('Антизапрет', { lastModifiedStr: new Date(0).toUTCString() });
           await new Promise((resolveSwitch) =>
 
             antiCensorRu.syncWithPacProviderAsync((err, res, warns) => {
