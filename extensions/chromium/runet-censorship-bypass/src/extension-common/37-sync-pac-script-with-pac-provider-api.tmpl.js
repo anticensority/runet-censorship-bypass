@@ -245,6 +245,12 @@
        Do something, e.g. initiate PAC sync.
     */
     ifFirstInstall: false,
+    /* We have .lastPacUpdateStamp and ._currentPacProviderLastModified.
+       LastModified is received from a server, we kind of don't trust it,
+       just use it for cache and maybe show to the user.
+       UpdateStamp is got from client and we base our timers on it,
+       malicious server can't interfere with it.
+    */
     lastPacUpdateStamp: 0,
 
     setTitle() {
@@ -257,7 +263,7 @@
 
     },
 
-    _currentPacProviderLastModified: 0, // Not initialized.
+    _currentPacProviderLastModified: 0,
 
     getLastModifiedForKey(key = mandatory()) {
 
