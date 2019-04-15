@@ -3,7 +3,7 @@
 const gulp = require('gulp');
 const del = require('del');
 const through = require('through2');
-const PluginError = require('gulp-util').PluginError;
+const PluginError = require('plugin-error');
 const changed = require('gulp-changed');
 
 const PluginName = 'Template literals';
@@ -29,7 +29,7 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
 
       }, { keys: [], values: [] });
       try {
-        file.contents = new Buffer(
+        file.contents = Buffer.from(
           (new Function(...keys, 'return `' + String(file.contents) + '`;'))(...values)
         );
       } catch(e) {
@@ -43,14 +43,13 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
 
 });
 
-gulp.task('default', ['build:beta']);
 
-gulp.task('clean', function(cb) {
+const clean = function(cb) {
 
   //return del.sync('./build');
   return cb();
 
-});
+};
 
 const contexts = require('./src/templates-data').contexts;
 
@@ -69,16 +68,16 @@ const firefoxSrc = './src/extension-firefox/**/*';
 
 const joinSrc = (...args) => [...args, ...excluded];
 
-gulp.task('_cp-mini', function(cb) {
+const copyMini = function(cb) {
 
   gulp.src(joinSrc(commonSrc, miniSrc))
     //.pipe(changed(miniDst))
     .pipe(templatePlugin(contexts.mini))
     .pipe(gulp.dest(miniDst))
     .on('end', cb);
-});
+};
 
-gulp.task('_cp-full', function(cb) {
+const copyFull = function(cb) {
 
   gulp.src(joinSrc(commonSrc, fullSrc))
     //.pipe(changed(fullDst))
@@ -86,19 +85,9 @@ gulp.task('_cp-full', function(cb) {
     .pipe(gulp.dest(fullDst))
     .on('end', cb);
 
-});
+};
 
-gulp.task('_cp-firefox', function(cb) {
-
-    gulp.src(joinSrc(commonSrc, fullSrc, firefoxSrc))
-    //.pipe(changed(fullDst))
-    .pipe(templatePlugin(contexts.firefox))
-    .pipe(gulp.dest(firefoxDst))
-    .on('end', cb);
-
-});
-
-gulp.task('_cp-beta', function(cb) {
+const copyBeta = function(cb) {
 
     gulp.src(joinSrc(commonSrc, fullSrc))
     //.pipe(changed(fullDst))
@@ -106,8 +95,13 @@ gulp.task('_cp-beta', function(cb) {
     .pipe(gulp.dest(betaDst))
     .on('end', cb);
 
-});
+};
 
-gulp.task('build:all', ['_cp-mini', '_cp-full', '_cp-beta', '_cp-firefox']);
-gulp.task('build:beta', ['_cp-beta']);
-gulp.task('build:firefox', ['_cp-firefox']);
+const buildAll = gulp.parallel(copyMini, copyFull, copyBeta);
+const buildBeta = copyBeta;
+
+module.exports = {
+  default: buildAll,
+  buildAll,
+  buildBeta,
+};

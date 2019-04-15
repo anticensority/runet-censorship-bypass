@@ -69,31 +69,21 @@
 
   const reinit = function reinit() {
 
-    // Defaults.
-    const _antizapret = {
-      /* Don't use directly, please.
-         Encoded to counter abuse. */
-      host: '\x70\x72\x6f\x78\x79\x2e\x61\x6e\x74\x69\x7a\x61\x70\x72\x65\x74\x2e\x70\x72\x6f\x73\x74\x6f\x76\x70\x6e\x2e\x6f\x72\x67',
-    };
-    const proxyForRanges =
-      '\x63\x63\x61\x68\x69\x68\x61\x2e\x61\x6e\x74\x69\x7a\x61\x70\x72\x65\x74\x2e\x70\x72\x6f\x73\x74\x6f\x76\x70\x6e\x2e\x6f\x72\x67';
-    privates._strToHostObj = {
-      [_antizapret.host]: _antizapret,
-      [proxyForRanges]: { host: proxyForRanges },
-      ['localhost']: { host: 'localhost' },
-    };
+    /* Don't use directly, please.
+       Encoded to counter abuse.
+    */
+    privates._strToHostObj = [
+      // antizapret.prostovpn.org:
+      '\x70\x72\x6f\x78\x79\x2e\x61\x6e\x74\x69\x7a\x61\x70\x72\x65\x74\x2e\x70\x72\x6f\x73\x74\x6f\x76\x70\x6e\x2e\x6f\x72\x67', // Antizapret old.
+      '\x63\x63\x61\x68\x69\x68\x61\x2e\x61\x6e\x74\x69\x7a\x61\x70\x72\x65\x74\x2e\x70\x72\x6f\x73\x74\x6f\x76\x70\x6e\x2e\x6f\x72\x67', // Antizapret for ranges.
+      '\x70\x72\x6f\x78\x79\x2d\x73\x73\x6c\x2e\x61\x6e\x74\x69\x7a\x61\x70\x72\x65\x74\x2e\x70\x72\x6f\x73\x74\x6f\x76\x70\x6e\x2e\x6f\x72\x67', // Antizapret SSL.
+      '\x70\x72\x6f\x78\x79\x2d\x6e\x6f\x73\x73\x6c\x2e\x61\x6e\x74\x69\x7a\x61\x70\x72\x65\x74\x2e\x70\x72\x6f\x73\x74\x6f\x76\x70\x6e\x2e\x6f\x72\x67', // Antizapret w/o SSL.
+    ].reduce((acc, hostname) => ({...acc, [hostname]: { host: hostname }}), {
+      // Defaults:
+      localhost: { host: 'localhost' },
+    });
 
     privates._ipToHostObj = {};
-    for( const ip of [
-      // IPs of Antizapret.
-      '195.123.209.38',
-      '137.74.171.91',
-      '51.15.39.201',
-      '2001:bc8:4700:2300::1:d07',
-      '2a02:27ac::10',
-    ] ) {
-      privates._ipToHostObj[ip] = _antizapret;
-    }
 
     // Persisted.
     const ipToHost = _state(ip2host);
