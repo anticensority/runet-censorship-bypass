@@ -49,7 +49,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
       );
       // READY TO RENDER
 
-      const show = () => { document.documentElement.style.display = 'initial'; };
+      const show = () => { document.documentElement.style.visibility = 'initial'; };
 
       if (theState.flags.ifInsideOptionsPage) {
         show();
