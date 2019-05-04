@@ -1,12 +1,12 @@
 {
-  "name": "hello-react",
+  "name": "options-page-builder",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
+  "license": "GPLv3",
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "babel-loader": "^7.1.4",
-    "babel-plugin-dynamic-import-webpack": "^1.0.2",
+    "babel-loader": "^7.1.5",
+    "babel-plugin-dynamic-import-webpack": "^1.1.0",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
     "concat-stream": "^1.6.2",

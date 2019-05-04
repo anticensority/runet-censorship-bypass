@@ -11,7 +11,52 @@
   "noControl": {
     "message": "Другое расширение контролирует настройки прокси!"
   },
-  "which": {
+  "WhichQ": {
     "message": "Какое?"
+  },
+  "update": {
+    "message": "обновить"
+  },
+  "ProblemsQ": {
+    "message": "Проблемы?"
+  },
+  "Finish": {
+    "message": "Готово"
+  },
+  "Disable": {
+    "message": "Отключить"
+  },
+  "Only_own_sites_and_only_own_proxies": {
+    "message": "Только свои сайты и свои прокси"
+  },
+  "Antizapret": {
+    "message": "Антизапрет"
+  },
+  "Anticensority": {
+    "message": "Антицензорити"
+  },
+  "PAC_script": {
+    "message": "PAC-скрипт"
+  },
+  "Exceptions": {
+    "message": "Исключения"
+  },
+  "Own_proxies": {
+    "message": "Свои прокси"
+  },
+  "Modifiers": {
+    "message": "Модификаторы"
+  },
+  "Notifications": {
+    "message": "Уведомления"
+  },
+  "Error": {
+    "message": "Ошибка"
+  },
+  "Non_critical_error": {
+    "message": "Некритичная ошибка"
+  },
+  "Donate": {
+    "message": "Поддержать"
   }
 }

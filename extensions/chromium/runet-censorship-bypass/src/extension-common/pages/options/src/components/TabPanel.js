@@ -54,7 +54,7 @@ export default function getTabPannel({ flags, baseCss }) {
     .navLabels {
       background-color: var(--cr-grey-panel);
       text-align: center;
-      min-width: 24em;
+      min-width: 25em;
     }
     .navLabels li label {
       display: inline-block;

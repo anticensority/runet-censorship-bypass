@@ -144,17 +144,17 @@ export default function getMain(theState) {
       return createElement(TabPanel, Object.assign({}, props, {
         tabs: [
           {
-            label: 'PAC-скрипт',
+            label: chrome.i18n.getMessage('PAC_script'),
             content: createElement(PacChooser, props),
             key: 'pacScript',
           },
           {
-            label: 'Исключения',
+            label: chrome.i18n.getMessage('Exceptions'),
             content: createElement(Exceptions, props),
             key: 'exceptions',
           },
           {
-            label: 'Свои прокси',
+            label: chrome.i18n.getMessage('Own_proxies'),
             content: createElement(
               ModList,
               Object.assign({}, props, {
@@ -168,7 +168,7 @@ export default function getMain(theState) {
             key: 'ownProxies',
           },
           {
-            label: 'Модификаторы',
+            label: chrome.i18n.getMessage('Modifiers'),
             content: createElement(
               ModList,
               Object.assign({}, props, {
@@ -183,7 +183,7 @@ export default function getMain(theState) {
             key: 'applyMods',
           },
           {
-            label: 'Уведомления',
+            label: chrome.i18n.getMessage('Notifications'),
             content: createElement(Notifications, props),
             key: 'notifications',
           },

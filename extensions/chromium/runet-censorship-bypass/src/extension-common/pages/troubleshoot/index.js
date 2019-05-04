@@ -4,15 +4,22 @@ chrome.runtime.getBackgroundPage( (backgroundPage) =>
   backgroundPage.apis.errorHandlers.installListenersOn(
     window, 'TRBL', () => {
 
-      document.getElementById('reset-settings').onclick = () => {
+      document.querySelectorAll('.reset-settings').forEach((el) => {
 
-        backgroundPage.localStorage.clear();
-        chrome.storage.local.clear( () => chrome.runtime.reload() );
+        el.onclick = () => {
 
-      };
+          backgroundPage.localStorage.clear();
+          chrome.storage.local.clear( () => chrome.runtime.reload() );
 
-      document.getElementById('view-errors').onclick = () =>
-        backgroundPage.apis.errorHandlers.viewError('all');
+        };
+      });
 
-    })
+      document.querySelectorAll('.view-errors').forEach((el) => {
+
+        el.onclick = () =>
+          backgroundPage.apis.errorHandlers.viewError('all');
+      });
+
+    },
+  ),
 );

@@ -227,7 +227,10 @@ export default function getApp(theState) {
       this.setStatusTo(
         (<span>
           <span style="color:red">
-            {err ? <span><span class="emoji">🔥</span> Ошибка!</span> : 'Некритичная oшибка.'}
+            {err
+              ? <span><span class="emoji">🔥</span> {chrome.i18n.getMessage('Error')}!</span>
+              : `${chrome.i18n.getMessage('Non_critical_error')}.`
+            }
           </span>
           <br/>
           <span style="font-size: 0.9em; color: darkred" dangerouslySetInnerHTML={{__html: messageHtml}}></span>

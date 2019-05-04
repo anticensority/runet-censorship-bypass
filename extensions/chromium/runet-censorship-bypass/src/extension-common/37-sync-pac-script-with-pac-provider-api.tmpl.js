@@ -198,7 +198,7 @@
         // Distinct keys are needed if you want to check if a given
         // provider is this or that (distinct it from others).
         distinctKey: 'Antizapret',
-        label: 'Антизапрет',
+        label: chrome.i18n.getMessage('Antizapret'),
         desc: \`Альтернативный PAC-скрипт от стороннего разработчика.
                Охватывет меньше сайтов.
                Блокировка определяется по доменному имени.
@@ -208,7 +208,7 @@
       },
       Антицензорити: {
         distinctKey: 'Anticensority',
-        label: 'Антицензорити',
+        label: chrome.i18n.getMessage('Anticensority'),
         desc: \`Основной PAC-скрипт от автора расширения.
                Охватывает больше сайтов.
                Блокировка определятся по доменному имени или IP адресу.
@@ -224,7 +224,7 @@
       },
       onlyOwnSites: {
         distinctKey: 'onlyOwnSites',
-        label: 'Только свои сайты и свои прокси',
+        label: chrome.i18n.getMessage('Only_own_sites_and_only_own_proxies'),
         desc: 'Проксируются только добавленные вручную сайты через СВОИ вручную добавленные прокси или через локальный Tor.',
         order: 99,
         pacUrls: [
