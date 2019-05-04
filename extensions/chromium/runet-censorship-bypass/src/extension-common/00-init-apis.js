@@ -189,7 +189,7 @@
 
         return chrome.i18n.getMessage('noControl') +
           ` <a href="${ this.searchSettingsForUrl('proxy') }">
-            ${ chrome.i18n.getMessage('which') }
+            ${ chrome.i18n.getMessage('WhichQ') }
           </a>`;
 
       },

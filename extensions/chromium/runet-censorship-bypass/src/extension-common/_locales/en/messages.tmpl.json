@@ -11,7 +11,52 @@
   "noControl": {
     "message": "Other extension controls proxy!"
   },
-  "which": {
+  "WhichQ": {
     "message": "Which?"
+  },
+  "update": {
+    "message": "update"
+  },
+  "ProblemsQ": {
+    "message": "Problems?"
+  },
+  "Finish": {
+    "message": "OK"
+  },
+  "Disable": {
+    "message": "Disable"
+  },
+  "Only_own_sites_and_only_own_proxies": {
+    "message": "Only own sites and only own proxies"
+  },
+  "Antizapret": {
+    "message": "Antizapret"
+  },
+  "Anticensority": {
+    "message": "Anticensority"
+  },
+  "PAC_script": {
+    "message": "PAC-script"
+  },
+  "Exceptions": {
+    "message": "Exceptions"
+  },
+  "Own_proxies": {
+    "message": "Own proxies"
+  },
+  "Modifiers": {
+    "message": "Modifiers"
+  },
+  "Notifications": {
+    "message": "Notifications"
+  },
+  "Error": {
+    "message": "Error"
+  },
+  "Non_critical_error": {
+    "message": "Non-critical error"
+  },
+  "Donate": {
+    "message": "Donate"
   }
 }

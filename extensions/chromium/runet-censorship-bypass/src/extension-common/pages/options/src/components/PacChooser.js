@@ -124,10 +124,10 @@ export default function getPacChooser(theState) {
       const iddyToCheck = this.getCurrentProviderId();
       return (
         <div>
-          {props.flags.ifInsideOptionsPage && (<header>PAC-скрипт:</header>)}
+          {props.flags.ifInsideOptionsPage && (<header>{chrome.i18n.getMessage('PAC_script')}:</header>)}
           <ul>
             {
-              [...theState.apis.antiCensorRu.getSortedEntriesForProviders(), {key: 'none', label: 'Отключить'}].map((provConf) =>
+              [...theState.apis.antiCensorRu.getSortedEntriesForProviders(), {key: 'none', label: chrome.i18n.getMessage('Disable')}].map((provConf) =>
                 (<InfoLi
                   onClick={this.radioClickHandler}
                   conf={provConf}
@@ -135,7 +135,7 @@ export default function getPacChooser(theState) {
                   name="pacProvider"
                   checked={iddyToCheck === provConf.key}
                   ifInputsDisabled={props.ifInputsDisabled}
-                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={this.updateClickHandler}>[обновить]</a>}
+                  nodeAfterLabel={<a href="" class={scopedCss.updateButton} onClick={this.updateClickHandler}>[{chrome.i18n.getMessage('update')}]</a>}
                 />)
               )
             }

@@ -26,9 +26,10 @@ export default function getFooter() {
         </section>
 
         <footer class={scopedCss.controlRow + ' horFlex nowrap'}>
-          <input type="button" value="Готово" disabled={props.ifInputsDisabled} onClick={() => window.close()} />
+          <input type="button" value={chrome.i18n.getMessage('Finish')} disabled={props.ifInputsDisabled} onClick={() => window.close()} />
+          <a href="https://rebrand.ly/ac-donate">{chrome.i18n.getMessage('Donate')}</a>
           <a data-in-bg="false" href="../troubleshoot/index.html">
-            Проблемы?
+            {chrome.i18n.getMessage('ProblemsQ')}
           </a>
         </footer>
       </div>
