@@ -17,7 +17,7 @@ export default function append(document, { flags }) {
           // options page width may be jerking
           // in size when scrolling is showed.
           ? 'width: 20em'
-          : 'max-width: 24em;' }
+          : 'max-width: 25em;' }
     }
 
     /* BASE ELEMENTS */
