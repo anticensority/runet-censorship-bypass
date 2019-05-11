@@ -17,12 +17,15 @@ export default function getApp(theState) {
     constructor(props) {
 
       super(props);
-      const hash = window.location.hash.substr(1);
-      const hashParams = new URLSearchParams(hash);
+
+      const sanitizedUrl = theState.flags.ifOpenedUnsafely ? { hash: '', search: '' } : window.location;
+      const hashParams = new URLSearchParams(sanitizedUrl.hash.substr(1));
+      const searchParams = new URLSearchParams(sanitizedUrl.search.substr(1));
       this.state = {
         status: 'Загрузка...',
         ifInputsDisabled: false,
-        hashParams: hashParams,
+        hashParams,
+        searchParams,
       };
 
       this.setStatusTo = this.setStatusTo.bind(this);
@@ -62,9 +65,9 @@ export default function getApp(theState) {
       const uiComEtag = 'ui-last-comments-etag';
       const uiLastNewsArr = 'ui-last-news-arr';
 
-      const statusFromHash = this.state.hashParams.get('status');
-      if (statusFromHash) {
-        return this.setStatusTo(statusFromHash);
+      const statusFromUrl = this.state.searchParams.get('status');
+      if (statusFromUrl) {
+        return this.setStatusTo(statusFromUrl);
       }
 
       const comDate = localStorage[uiComDate];
