@@ -17,24 +17,22 @@ export default function getFooter() {
 
   `;
 
-  return function (props) {
+  return (props) => (
+    <div class="horPadded">
+      <section class={scopedCss.statusRow}>
+        <div class={scopedCss.status} style="will-change: contents">
+          {typeof(props.status) === 'string' ? <div dangerouslySetInnerHTML={{ __html: props.status }}></div> : props.status}
+        </div>
+      </section>
 
-    return (
-      <div class="horPadded">
-        <section class={scopedCss.statusRow}>
-          <div clss={scopedCss.status} style="will-change: contents">{props.status}</div>
-        </section>
-
-        <footer class={scopedCss.controlRow + ' horFlex nowrap'}>
-          <input type="button" value={chrome.i18n.getMessage('Finish')} disabled={props.ifInputsDisabled} onClick={() => window.close()} />
-          <a href="https://rebrand.ly/ac-donate">{chrome.i18n.getMessage('Donate')}</a>
-          <a data-in-bg="false" href="../troubleshoot/index.html">
-            {chrome.i18n.getMessage('ProblemsQ')}
-          </a>
-        </footer>
-      </div>
-    );
-
-  };
+      <footer class={scopedCss.controlRow + ' horFlex nowrap'}>
+        <input type="button" value={chrome.i18n.getMessage('Finish')} disabled={props.ifInputsDisabled} onClick={() => window.close()} />
+        <a href="https://rebrand.ly/ac-donate">{chrome.i18n.getMessage('Donate')}</a>
+        <a data-in-bg="false" href="../troubleshoot/index.html">
+          {chrome.i18n.getMessage('ProblemsQ')}
+        </a>
+      </footer>
+    </div>
+  );
 
 };

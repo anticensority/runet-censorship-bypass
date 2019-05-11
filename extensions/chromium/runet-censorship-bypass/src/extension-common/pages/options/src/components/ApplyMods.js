@@ -4,7 +4,7 @@ export default function getApplyMods(theState) {
 
   const resetMods = function resetMods(props) {
 
-    const ifSure = props.bgWindow.confirm('Сбросиь все модификаторы и ИСКЛЮЧЕНИЯ?');
+    const ifSure = props.bgWindow.confirm('Сбросить все модификаторы и ИСКЛЮЧЕНИЯ?');
     if (!ifSure) {
       return false;
     }

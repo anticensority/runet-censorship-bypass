@@ -41,7 +41,7 @@
 
   const setRedBadge = (opts) => {
 
-    window.chrome.browserAction.setBadgeBackgroundColor({
+    chrome.browserAction.setBadgeBackgroundColor({
       color: '#db4b2f',
     });
     chrome.browserAction.setBadgeText(opts);
