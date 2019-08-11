@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "GPLv3",
   "devDependencies": {
-    "babel-cli": "^6.24.1",
+    "babel-cli": "^6.26.0",
     "babel-loader": "^7.1.5",
     "babel-plugin-dynamic-import-webpack": "^1.1.0",
     "babel-preset-flow": "^6.23.0",
