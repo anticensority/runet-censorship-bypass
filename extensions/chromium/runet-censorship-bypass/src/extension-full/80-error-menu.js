@@ -50,6 +50,9 @@
     }
     const popup = `${popupPrefix}${urlToA(details.url)}${fromPageHtml}</span>. Это могло быть намеренно или по ошибке.${youMayReportHtml}#tab=exceptions`;
 
+    if (tabId < 0) {
+      throw new Error(`Вы выйграли экзотичную ошибку! Пожалуйста, сообщите нам о ней вместе с адресами ${details.url} и ${fromPageHref}.`);
+    }
     chrome.browserAction.setPopup({
       tabId,
       popup,
