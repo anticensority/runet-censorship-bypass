@@ -36,8 +36,10 @@
         ),
       )}</b> администратору прокси.`;
     } catch(e) {
-      /* Suppress for malformed urls. */
+      /* For malformed urls. */
       console.log('Error handling malformed URLs:', details);
+      const msg = `Error handling malformed URLs: ${JSON.stringify(details, null, 2)}`;
+      throw new TypeError(msg);
     }
 
     const tabId = details.tabId;
