@@ -1,4 +1,4 @@
-If you __unstar__, please, [leave us a note](https://github.com/anticensorship-russia/chromium-extension/issues) why you do so. 
+If you __unstar__, please, [leave us a note](https://github.com/anticensority/runet-censorship-bypass/issues) why you do so. 
 
 [d1]: https://img.shields.io/badge/Поддержать-❤-green.svg
 [d2]: https://rebrand.ly/ac-donate
@@ -37,7 +37,7 @@ I decided to write an anticensorship extension for Chromium before they strike m
 ## Contributors
 
 This project exists thanks to all the people who contribute.
-<a href="graphs/contributors"><img src="https://opencollective.com/anticensority/contributors.svg?width=890&button=false?force" /></a>
+<a href="https://github.com/anticensority/runet-censorship-bypass/graphs/contributors"><img src="https://opencollective.com/anticensority/contributors.svg?width=890&button=false?force" /></a>
 
 
 ## Backers

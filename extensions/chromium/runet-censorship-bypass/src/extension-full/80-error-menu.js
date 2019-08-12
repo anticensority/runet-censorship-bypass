@@ -18,6 +18,7 @@
       return;
     }
     let fromPageHref = '';
+    let toUrlHref = '';
     let fromPageHtml = '';
     let youMayReportHtml = '';
     const initiator = details.initiator !== 'null' && details.initiator;
@@ -26,18 +27,21 @@
         fromPageHref = new URL(initiator).href; // Sanitize: only urls, not other stuff.
         fromPageHtml = ` со страницы ${urlToA(fromPageHref)}`;
       }
+      toUrlHref = new URL(details.url).href;
       youMayReportHtml = ` Вы можете <b>${'сообщить об ошибке'.link(
         encodeURIComponent(
           '/pages/report-proxy-error/index.html?' +
           new URLSearchParams({
             fromPageHref,
-            requestFailedTo: new URL(details.url).href,
+            requestFailedTo: toUrlHref,
           }),
         ),
       )}</b> администратору прокси.`;
     } catch(e) {
-      /* Suppress for malformed urls. */
+      /* For malformed urls. */
       console.log('Error handling malformed URLs:', details);
+      const msg = `Error handling malformed URLs: ${JSON.stringify(details, null, 2)}`;
+      throw new TypeError(msg);
     }
 
     const tabId = details.tabId;
@@ -48,6 +52,9 @@
     }
     const popup = `${popupPrefix}${urlToA(details.url)}${fromPageHtml}</span>. Это могло быть намеренно или по ошибке.${youMayReportHtml}#tab=exceptions`;
 
+    if (tabId < 0) {
+      throw new Error(`Вы выйграли экзотичную ошибку! Пожалуйста, сообщите нам о ней вместе с адресами ${toUrlHref} и ${fromPageHref}.`);
+    }
     chrome.browserAction.setPopup({
       tabId,
       popup,
