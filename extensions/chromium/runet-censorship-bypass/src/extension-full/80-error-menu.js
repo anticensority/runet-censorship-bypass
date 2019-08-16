@@ -2,6 +2,8 @@
 
 {
 
+  const timeouted = window.utils.timeouted;
+
   const proxySideErrors = [
     'net::ERR_TUNNEL_CONNECTION_FAILED',
   ];
@@ -44,17 +46,32 @@
       throw new TypeError(msg);
     }
 
-    const tabId = details.tabId;
+    // Service workers have tabId = -1, get active tubId for them.
+    const tabId = details.tabId < 0
+      ? await new Promise((resolve) => chrome.tabs.query(
+          { active: true },
+          ([tab]) => resolve(tab.id)),
+        )
+      : details.tabId;
+
+    const [oldPopup, oldText, oldColor] = await new Promise((resolve) =>
+      chrome.browserAction.getPopup({ tabId }, (oldPopup) =>
+        chrome.browserAction.getBadgeText({ tabId }, (oldText) =>
+          chrome.browserAction.getBadgeBackgroundColor({ tabId }, (oldColor) => resolve([
+            oldPopup,
+            oldText,
+            oldColor,
+          ])),
+        ),
+      )
+    );
+
     const popupPrefix = chrome.runtime.getURL(`/pages/options/index.html?status=<span style="color: red">🔥 Прокси-сервер отказался обслуживать запрос к `);
-    const oldPopup = await new Promise((resolve) => chrome.browserAction.getPopup({ tabId }, resolve));
     if (decodeURIComponent(oldPopup).startsWith(popupPrefix)) {
       return true;
     }
     const popup = `${popupPrefix}${urlToA(details.url)}${fromPageHtml}</span>. Это могло быть намеренно или по ошибке.${youMayReportHtml}#tab=exceptions`;
 
-    if (tabId < 0) {
-      throw new Error(`Вы выйграли экзотичную ошибку! Пожалуйста, сообщите нам о ней вместе с адресами ${toUrlHref} и ${fromPageHref}.`);
-    }
     chrome.browserAction.setPopup({
       tabId,
       popup,
@@ -68,6 +85,7 @@
       tabId,
       text: '❗',
     });
+
     let limit = 5;
     let ifOnTurn = true;
     let ifError = false;
@@ -87,10 +105,32 @@
     };
     flip();
     const timer = setInterval(flip, 500);
+
+    const restoringHandler = timeouted((eventDetails) => {
+
+      if(eventDetails && tabId !== ((eventDetails.currentTab || eventDetails).id || eventDetails.tabId)) {
+        return;
+      }
+      clearInterval(timer);
+
+      chrome.browserAction.setPopup({ tabId, popup: oldPopup});
+      chrome.browserAction.setBadgeBackgroundColor({ tabId, color: oldColor});
+      chrome.browserAction.setBadgeText({ tabId, text: oldText});
+
+      chrome.runtime.onMessage.removeListener(restoringHandler);
+      chrome.tabs.onRemoved.removeListener(restoringHandler);
+      chrome.tabs.onReplaced.removeListener(restoringHandler);
+      chrome.webNavigation.onBeforeNavigate.removeListener(restoringHandler);
+    });
+    chrome.runtime.onMessage.addListener(restoringHandler);
+    chrome.tabs.onRemoved.addListener(restoringHandler);
+    chrome.tabs.onReplaced.addListener(restoringHandler); // When does it happen?
+    chrome.webNavigation.onBeforeNavigate.addListener(restoringHandler);
+
     return true;
   };
 
-  chrome.webNavigation.onErrorOccurred.addListener(async (details) => {
+  chrome.webNavigation.onErrorOccurred.addListener(timeouted(async (details) => {
 
     const tabId = details.tabId;
     if ( !(details.frameId === 0 && tabId >= 0) ||
@@ -118,10 +158,10 @@
       text: '●●●',
     });
 
-  });
+  }));
 
   chrome.webRequest.onErrorOccurred.addListener(
-    isProxyErrorHandledAsync,
+    timeouted(isProxyErrorHandledAsync),
     {urls: ['<all_urls>']},
   );
 

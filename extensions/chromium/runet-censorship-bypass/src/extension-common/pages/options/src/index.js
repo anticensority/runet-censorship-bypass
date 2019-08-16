@@ -40,6 +40,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
           ([tab]) => resolve(tab),
         )
       );
+      winChrome.runtime.sendMessage({ currentTab, eventName: 'POPUP_OPENED' });
 
       theState.flags.ifInsideOptionsPage = !currentTab || currentTab.url.startsWith('chrome://extensions/?options=') || currentTab.url.startsWith('about:addons');
       theState.currentTab = currentTab;
