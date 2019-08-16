@@ -38,6 +38,7 @@
       , "75-context-menus.js"
     ]
   },
+
   "browser_action": {
     "default_title": "Этот сайт благословлён | Версия ${version + versionSuffix}",
     "default_popup": "/pages/options/index.html"
