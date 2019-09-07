@@ -62,9 +62,9 @@ export default function getPacChooser(theState) {
 
       this.updatePac = function updatePac(onSuccess) {
         props.funs.conduct(
-          'Обновляем...',
+          chrome.i18n.getMessage('UpdatingDDD'),
           (cb) => theState.apis.antiCensorRu.syncWithPacProviderAsync(cb),
-          'Обновлено.',
+          chrome.i18n.getMessage('UpdatedD'),
           onSuccess
         );
       };
@@ -101,17 +101,17 @@ export default function getPacChooser(theState) {
       }
       if (pacKey === 'none') {
         this.props.funs.conduct(
-          'Отключение...',
+          chrome.i18n.getMessage('DisablingDDD'),
           (cb) => theState.apis.antiCensorRu.clearPacAsync(cb),
-          'Отключено.',
+          chrome.i18n.getMessage('DisabledD'),
           () => this.setState({ chosenPacName: 'none' }),
           checkChosenProvider
         );
       } else {
         this.props.funs.conduct(
-          'Установка...',
+          chrome.i18n.getMessage('InstallingDDD'),
           (cb) => theState.apis.antiCensorRu.installPacAsync(pacKey, cb),
-          'PAC-скрипт установлен.',
+          chrome.i18n.getMessage('PacScriptWasInstalledD'),
           checkChosenProvider
         );
       }
@@ -146,9 +146,9 @@ export default function getPacChooser(theState) {
               {
                 props.flags.ifMini
                   ? (<a class={scopedCss.otherVersion + ' emoji'} href="https://rebrand.ly/ac-versions"
-                      title="Полная версия">🏋</a>)
+                      title={chrome.i18n.getMessage("FullVersion")}>🏋</a>)
                   : (<a class={scopedCss.otherVersion + ' emoji'} href="https://rebrand.ly/ac-versions"
-                      title="Версия для слабых машин">🐌</a>)
+                      title={chrome.i18n.getMessage("VersionForSlowMachines")}>🐌</a>)
               }
             </div>
           </div>

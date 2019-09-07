@@ -32,9 +32,11 @@ export default function append(document, { flags }) {
     a:hover {
       text-decoration: underline;
     }
+    /*
     label {
       user-select: none;
     }
+    */
     div, section, header, ul, ol {
       margin: 0;
       padding: 0;

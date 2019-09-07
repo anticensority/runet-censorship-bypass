@@ -29,6 +29,8 @@
 
 { // Private namespace starts.
 
+  const ifRu = chrome.i18n.getMessage('@@ui_locale').startsWith('ru');
+  console.log('Russian?', ifRu);
   const mandatory = window.utils.mandatory;
   const throwIfError = window.utils.throwIfError;
   const chromified = window.utils.chromified;
@@ -125,11 +127,17 @@
       const pacMods = window.apis.pacKitchen.getPacMods();
       if (!pacMods.filteredCustomsString) {
         addWarning(
-          \`
-            Не найдено СВОИХ прокси. Этот PAC-скрипт
-            работает только со <a href="https://git.io/ac-own-proxy">СВОИМИ прокси</a>
-            (по умолчанию будет использоваться локальный <a href="https://git.io/ac-tor">Tor</a>).
-          \`,
+          ifRu
+            ? \`
+              Не найдено СВОИХ прокси. Этот PAC-скрипт
+              работает только со <a href="https://git.io/ac-own-proxy">СВОИМИ прокси</a>
+              (по умолчанию будет использоваться локальный <a href="https://git.io/ac-tor">Tor</a>).
+            \`
+            : \`
+              Couldn't find OWN proxies. This PAC-script
+              works only with <a href="https://git.io/ac-own-proxy">OWN proxies</a>
+              (by default local <a href="https://git.io/ac-tor">Tor</a> will be used).
+            \`,
         );
       }
 
@@ -142,8 +150,10 @@
         if (ifWasEverModified) {
 
           addWarning(
-            'Ваш PAC-скрипт не нуждается в обновлении. Его дата: ' +
-              lastModifiedStr,
+            (ifRu
+              ? 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: '
+              : 'Your PAC-script doesn\\'t need to be updated. It\\'s date: '
+            ) + lastModifiedStr,
           );
           const res = {lastModified: lastModifiedStr};
           return cb(null, res);
@@ -178,7 +188,7 @@
         },
 
         clarifyThen(
-          'Не удалось скачать PAC-скрипт с адресов: [ '
+          chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
           + provider.pacUrls.join(' , ') + ' ].',
           cb,
         ),
@@ -199,20 +209,36 @@
         // provider is this or that (distinct it from others).
         distinctKey: 'Antizapret',
         label: chrome.i18n.getMessage('Antizapret'),
-        desc: \`Альтернативный PAC-скрипт от стороннего разработчика.
-               Охватывет меньше сайтов.
-               Блокировка определяется по доменному имени.
-               <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.\`,
+        desc: ifRu
+                ? \`Основной PAC-скрипт от автора проекта «Антизапрет».
+                    Охватывет меньше сайтов.
+                    Блокировка определяется по доменному имени и при необходимости по IP.
+                    <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.
+                  \`
+                : \`The main PAC-script from the author of project "Antizapret"\.
+                    Covers fewer sites.
+                    Block is detected based on a domain name and, if necessary, on an IP.
+                    <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
+                  \`,
         order: 0,
         pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
         distinctKey: 'Anticensority',
         label: chrome.i18n.getMessage('Anticensority'),
-        desc: \`Основной PAC-скрипт от автора расширения.
-               Охватывает больше сайтов.
-               Блокировка определятся по доменному имени или IP адресу.
-               <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.\`,
+        desc: ifRu
+                ? \`Альтернативный PAC-скрипт от автора расширения.
+                    Охватывает больше сайтов.
+                    Блокировка определятся по доменному имени или IP адресу.
+                    Подходит для провайдеров, блокирующих все сайты на одном IP.
+                    <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.
+                  \`
+                : \`Alternative PAC-script from the author of this extension.
+                    Covers more sites.
+                    Block is detected based on a domain name and on an IP address.
+                    Better fits providers that block all sites on one IP.
+                    <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
+                  \`,
         order: 1,
 
         /*
@@ -225,7 +251,9 @@
       onlyOwnSites: {
         distinctKey: 'onlyOwnSites',
         label: chrome.i18n.getMessage('Only_own_sites_and_only_own_proxies'),
-        desc: 'Проксируются только добавленные вручную сайты через СВОИ вручную добавленные прокси или через локальный Tor.',
+        desc: ifRu
+                ? 'Проксируются только добавленные вручную адреса через СВОИ вручную добавленные прокси или через локальный Tor.'
+                : 'Only added manually urls are proxied via your OWN manually added proxies or via Tor.',
         order: 99,
         pacUrls: [
           'data:application/x-ns-proxy-autoconfig,' + escape('function FindProxyForURL(){ return "DIRECT"; }'),
@@ -258,7 +286,7 @@
       const upDate = new Date(this.lastPacUpdateStamp).toLocaleString('ru-RU')
         .replace(/:\\d+$/, '').replace(/\\.\\d{4}/, '');
       chrome.browserAction.setTitle({
-        title: \`Обновлялись \${upDate} | Версия \${window.apis.version.build}\`,
+        title: \`\${chrome.i18n.getMessage('Updated')} \${upDate} | \${chrome.i18n.getMessage('Version')} \${window.apis.version.build}\`,
       });
 
     },
@@ -353,7 +381,7 @@
 
       if (key === null) {
         // No pac provider set.
-        return clarifyThen('Сперва выберите PAC-провайдера.', cb);
+        return clarifyThen(chrome.i18n.getMessage('ChoosePacProviderFirstD'), cb);
       }
 
       const pacProvider = this.getPacProvider(key);

@@ -17,6 +17,39 @@
   "update": {
     "message": "обновить"
   },
+  "UpdatingDDD": {
+    "message": "Обновляем..."
+  },
+  "UpdatedD": {
+    "message": "Обновлено."
+  },
+  "DisablingDDD": {
+    "message": "Отключение..."
+  },
+  "DisabledD": {
+    "message": "Отключено."
+  },
+  "InstallingDDD": {
+    "message": "Установка..."
+  },
+  "PacScriptWasInstalledD": {
+    "message": "PAC-скрипт установлен."
+  },
+  "Version": {
+    "message": "Версия"
+  },
+  "FullVersion": {
+    "message": "Полная версия"
+  },
+  "VersionForSlowMachines": {
+    "message": "Версия для слабых машин"
+  },
+  "FailedToDownloadPacScriptFromAddresses": {
+    "message": "Не удалось скачать PAC-скрипт с адресов"
+  },
+  "ChoosePacProviderFirstD": {
+    "message": "Сперва выберите PAC-провайдера."
+  },
   "ProblemsQ": {
     "message": "Проблемы?"
   },
@@ -58,5 +91,50 @@
   },
   "Donate": {
     "message": "Поддержать"
+  },
+  "Updated": {
+    "message": "Обновлялись"
+  },
+  "ago": {
+    "message": "назад"
+  },
+  "never": {
+    "message": "никогда"
+  },
+  "ms": {
+    "message": "мс"
+  },
+  "s": {
+    "message": "с"
+  },
+  "min": {
+    "message": "мин"
+  },
+  "h": {
+    "message": "ч"
+  },
+  "d": {
+    "message": "дн"
+  },
+  "w": {
+    "message": " недель"
+  },
+  "m": {
+    "message": " месяцев"
+  },
+  "ProxyTheDomainNameBelowQ": {
+    "message": "Проксировать указанное доменное имя?"
+  },
+  "auto": {
+    "message": "авто"
+  },
+  "yes": {
+    "message": "да"
+  },
+  "no": {
+    "message": "нет"
+  },
+  "noOwnProxiesError": {
+    "message": "Проксировать СВОИ сайты можно только при наличии СВОИХ прокси. Нет своих прокси, удовлетворяющих вашим требованиям."
   }
 }
