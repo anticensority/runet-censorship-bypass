@@ -22,17 +22,17 @@ export default function getLastUpdateDate(theState) {
 
     getDate(antiCensorRu) {
 
-      let dateForUser = 'никогда';
+      let dateForUser = chrome.i18n.getMessage('never');
       if( antiCensorRu.lastPacUpdateStamp ) {
         let diff = Date.now() - antiCensorRu.lastPacUpdateStamp;
-        let units = 'мс';
+        let units = chrome.i18n.getMessage('ms');
         const gauges = [
-          [1000, 'с'],
-          [60, 'мин'],
-          [60, 'ч'],
-          [24, 'дн'],
-          [7, ' недель'],
-          [4, ' месяцев'],
+          [1000, chrome.i18n.getMessage('s')],
+          [60,   chrome.i18n.getMessage('min')],
+          [60,   chrome.i18n.getMessage('h')],
+          [24,   chrome.i18n.getMessage('d')],
+          [7,    chrome.i18n.getMessage('w')],
+          [4,    chrome.i18n.getMessage('m')],
         ];
         for(const g of gauges) {
           const diffy = Math.floor(diff / g[0]);
@@ -41,10 +41,10 @@ export default function getLastUpdateDate(theState) {
           diff = diffy;
           units = g[1];
         }
-        dateForUser = diff + units + ' назад';
+        dateForUser = diff + units + ' ' + chrome.i18n.getMessage('ago');
       }
       return {
-        text: `${dateForUser} / ${antiCensorRu.pacUpdatePeriodInMinutes/60}ч`,
+        text: `${dateForUser} / ${antiCensorRu.pacUpdatePeriodInMinutes/60}${chrome.i18n.getMessage('h')}`,
         title: new Date(antiCensorRu.lastPacUpdateStamp).toLocaleString('ru-RU'),
       };
 
@@ -53,7 +53,7 @@ export default function getLastUpdateDate(theState) {
     render(props) {
 
       const date = this.getDate(props.apis.antiCensorRu);
-      return (<div>Обновлялись: <span class="updateDate" title={date.title}>{ date.text }</span></div>);
+      return (<div>{chrome.i18n.getMessage('Updated')}: <span class="updateDate" title={date.title}>{ date.text }</span></div>);
 
     }
 

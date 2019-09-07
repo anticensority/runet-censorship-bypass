@@ -17,6 +17,15 @@
   "update": {
     "message": "обновить"
   },
+  "Version": {
+    "message": "Версия"
+  },
+  "FailedToDownloadPacScriptFromAddresses": {
+    "message": "Не удалось скачать PAC-скрипт с адресов"
+  },
+  "ChoosePacProviderFirstD": {
+    "message": "Сперва выберите PAC-провайдера."
+  },
   "ProblemsQ": {
     "message": "Проблемы?"
   },
@@ -58,5 +67,35 @@
   },
   "Donate": {
     "message": "Поддержать"
+  },
+  "Updated": {
+    "message": "Обновлялись"
+  },
+  "ago": {
+    "message": "назад"
+  },
+  "never": {
+    "message": "никогда"
+  },
+  "ms": {
+    "message": "мс"
+  },
+  "s": {
+    "message": "с"
+  },
+  "min": {
+    "message": "мин"
+  },
+  "h": {
+    "message": "ч"
+  },
+  "d": {
+    "message": "дн"
+  },
+  "w": {
+    "message": " недель"
+  },
+  "m": {
+    "message": " месяцев"
   }
 }

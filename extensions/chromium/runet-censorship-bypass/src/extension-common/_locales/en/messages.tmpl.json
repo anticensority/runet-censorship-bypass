@@ -17,6 +17,15 @@
   "update": {
     "message": "update"
   },
+  "Version": {
+    "message": "Version"
+  },
+  "FailedToDownloadPacScriptFromAddresses": {
+    "message": "Failed to download PAC-script from addresses"
+  },
+  "ChoosePacProviderFirstD": {
+    "message": "Choose PAC-provider first."
+  },
   "ProblemsQ": {
     "message": "Problems?"
   },
@@ -58,5 +67,35 @@
   },
   "Donate": {
     "message": "Donate"
+  },
+  "Updated": {
+    "message": "Updated"
+  },
+  "ago": {
+    "message": "ago"
+  },
+  "never": {
+    "message": "never"
+  },
+  "ms": {
+    "message": "ms"
+  },
+  "s": {
+    "message": "s"
+  },
+  "min": {
+    "message": "min"
+  },
+  "h": {
+    "message": "h"
+  },
+  "d": {
+    "message": "d"
+  },
+  "w": {
+    "message": "w"
+  },
+  "m": {
+    "message": "m"
   }
 }
