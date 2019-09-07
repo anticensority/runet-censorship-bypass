@@ -121,5 +121,20 @@
   },
   "m": {
     "message": "m"
+  },
+  "ProxyTheDomainNameBelowQ": {
+    "message": "Proxy the domain name below?"
+  },
+  "auto": {
+    "message": "auto"
+  },
+  "yes": {
+    "message": "yes"
+  },
+  "no": {
+    "message": "no"
+  },
+  "noOwnProxiesError": {
+    "message": "Proxying of OWN sites is possible only via OWN proxies. No own proxies found that satisfy your requirements."
   }
 }

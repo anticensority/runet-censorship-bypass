@@ -137,7 +137,7 @@ export default function getExcEditor(theState) {
           case 'this-no':
             if (ifYesClicked && !pacMods.filteredCustomsString) {
               this.props.funs.showErrors( new TypeError(
-                'Проксировать СВОИ сайты можно только при наличии СВОИХ прокси. Нет своих прокси, удовлетворяющих вашим требованиям.'
+                chrome.i18n.getMessage('noOwnProxiesError'),
               ));
               return false;
             }
@@ -293,7 +293,7 @@ export default function getExcEditor(theState) {
 
       return (
         <section style="padding-bottom: 1em;">
-          <div>Проксировать указанный сайт?</div>
+          <div>{chrome.i18n.getMessage('ProxyTheDomainNameBelowQ')}</div>
           <div id="exc-address-container">
             <div id="exc-address" class={inputProxyingState !== undefined ? ( inputProxyingState === true ? scopedCss.ifYes : scopedCss.ifNo ) : ''}>
               <span>*.</span><input placeholder="navalny.com" list="exc-list" id="exc-editor"
@@ -327,19 +327,19 @@ export default function getExcEditor(theState) {
             <li><input id="this-auto" type="radio" checked name="if-proxy-this-site" onClick={this.handleRadioClick}/>{' '}
                   <label for="this-auto">{/*<span class="emoji">🔄(looks fat)</span>*/}<svg
                     class="icon"
-                    style="position: relative; top: 0.15em;"><use xlink:href="#iconLoopRound"></use></svg>&nbsp;авто</label>
+                    style="position: relative; top: 0.15em;"><use xlink:href="#iconLoopRound"></use></svg>&nbsp;{chrome.i18n.getMessage('auto')}</label>
             </li>
             <li>
               <input id="this-yes" type="radio" name="if-proxy-this-site" checked={inputProxyingState === true} onClick={this.handleRadioClick}/>
               {' '}<label for="this-yes">
                     <span
                       class="emoji____buggy"
-                    >✔</span>&nbsp;да
+                    >✔</span>&nbsp;{chrome.i18n.getMessage('yes')}
                   </label>
             </li>
             <li>
               <input id="this-no" type="radio" name="if-proxy-this-site" checked={inputProxyingState === false} onClick={this.handleRadioClick}/>
-              {' '}<label for="this-no"><span class="emoji">✘</span>&nbsp;нет</label></li>
+              {' '}<label for="this-no"><span class="emoji">✘</span>&nbsp;{chrome.i18n.getMessage('no')}</label></li>
           </ol>
         </section>
       );
