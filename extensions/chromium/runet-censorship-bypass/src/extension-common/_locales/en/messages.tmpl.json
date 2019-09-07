@@ -17,8 +17,32 @@
   "update": {
     "message": "update"
   },
+  "UpdatingDDD": {
+    "message": "Updating..."
+  },
+  "UpdatedD": {
+    "message": "Updated."
+  },
+  "DisablingDDD": {
+    "message": "Disabling..."
+  },
+  "DisabledD": {
+    "message": "Disabled."
+  },
+  "InstallingDDD": {
+    "message": "Installing..."
+  },
+  "PacScriptWasInstalledD": {
+    "message": "PAC-script was installed."
+  },
   "Version": {
     "message": "Version"
+  },
+  "FullVersion": {
+    "message": "Full version"
+  },
+  "VersionForSlowMachines": {
+    "message": "Version for slow machines"
   },
   "FailedToDownloadPacScriptFromAddresses": {
     "message": "Failed to download PAC-script from addresses"

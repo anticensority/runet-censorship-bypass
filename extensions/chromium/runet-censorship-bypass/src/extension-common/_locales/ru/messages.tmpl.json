@@ -17,8 +17,32 @@
   "update": {
     "message": "обновить"
   },
+  "UpdatingDDD": {
+    "message": "Обновляем..."
+  },
+  "UpdatedD": {
+    "message": "Обновлено."
+  },
+  "DisablingDDD": {
+    "message": "Отключение..."
+  },
+  "DisabledD": {
+    "message": "Отключено."
+  },
+  "InstallingDDD": {
+    "message": "Установка..."
+  },
+  "PacScriptWasInstalledD": {
+    "message": "PAC-скрипт установлен."
+  },
   "Version": {
     "message": "Версия"
+  },
+  "FullVersion": {
+    "message": "Полная версия"
+  },
+  "VersionForSlowMachines": {
+    "message": "Версия для слабых машин"
   },
   "FailedToDownloadPacScriptFromAddresses": {
     "message": "Не удалось скачать PAC-скрипт с адресов"
