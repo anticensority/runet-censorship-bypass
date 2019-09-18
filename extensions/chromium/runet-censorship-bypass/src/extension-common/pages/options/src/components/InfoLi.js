@@ -25,6 +25,9 @@ export default function getInfoLi() {
     .infoRow {
       position: relative;
     }
+    .infoRow a {
+      text-decoration: underline;
+    }
     .infoRow > input[type="checkbox"] {
       position: relative;
       top: -0.08em;

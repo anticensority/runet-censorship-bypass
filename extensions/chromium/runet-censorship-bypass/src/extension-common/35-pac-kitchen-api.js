@@ -130,6 +130,14 @@
       desc: 'Проксировать особые домены. Необходима поддержка со стороны СВОИХ прокси.',
       order: 8,
     },
+    replaceDirectWith: {
+      ifDisabled: true,
+      dflt: false,
+      category: 'ownProxies',
+      label: 'подменять DIRECT на',
+      desc: 'Использовать в PAC-скрипте указанную строку для запросов напрямую (вместо директивы DIRECT). Данная строка не проверяется на требования к шифрованию связи до прокси! Строка должна соответствовать формату возвращаемого значения PAC-скрипта, который подобен <a href="https://rebrand.ly/ac-own-proxies#user-content-Формат">формату своих прокси</a>.',
+      order: 9,
+    },
 
   });
 
@@ -327,7 +335,7 @@
 /******/  "use strict";
 /******/
 /******/  const originalFindProxyForURL = FindProxyForURL;
-/******/  const tmp = function(url, host) {
+/******/  let tmp = function(url, host) {
 /******/
     ${
       function() {
@@ -465,7 +473,16 @@ ${        pacMods.filteredCustomsString
     }
 
 /******/  };
-
+${
+      !pacMods.replaceDirectWith
+        ? ''
+        : `
+/******/  const oldTmp = tmp;
+/******/  tmp = function(url, host) {
+/******/    return oldTmp.call(this, url, host).replace(/(;|^)\\s*DIRECT\\s*(?=;|$)/g, "$1${pacMods.replaceDirectWith}");
+/******/  };
+          `
+}
 /******/  if (global) {
 /******/    global.FindProxyForURL = tmp;
 /******/  } else {
