@@ -52,7 +52,7 @@ export default function getInfoLi() {
       position: absolute;
       white-space: initial;
       word-break: initial;
-      top: 100%;
+      /* top: 100%; Commented to get rid of bug when tooltip is placed below InfoLi children fields. */
       left: 0;
       right: 1em;
       z-index: 1;
