@@ -31,6 +31,7 @@ export default function getMain(theState) {
   const Notifications = getNotifications(theState);
 
   const checksName = 'pacMods';
+  let selection = [0, 0]; // TODO: dirty hack but seems ok.
 
   return class Main extends Component {
 
@@ -161,6 +162,26 @@ export default function getMain(theState) {
                 orderedConfigs: this.state.catToOrderedMods['ownProxies'],
                 childrenOfMod: {
                   customProxyStringRaw: ProxyEditor,
+                  replaceDirectWith: ({ conf, onNewValue, ifInputsDisabled }) =>
+                    (<input
+                      style="width: 100%; margin: 0.5em 0"
+                      disabled={ifInputsDisabled}
+                      value={conf.value || ''}
+                      onInput={(event) => {
+
+                        const t = event.target;
+                        selection = [t.selectionStart, t.selectionEnd];
+                        onNewValue(true, t.value);
+                      }}
+                      ref={(input) => {
+
+                        if (input) {
+                          input.focus();
+                          input.selectionStart = selection[0];
+                          input.selectionEnd = selection[1];
+                        }
+                      }}
+                    />),
                 },
                 name: checksName,
               }, modsHandlers)
