@@ -75,11 +75,16 @@ export default function getExcEditor(theState) {
     constructor(props) {
 
       super(props);
+      const trimmedInputValueOrSpace =
+        props.currentTab &&
+        props.currentTab.url &&
+        !props.currentTab.url.startsWith('chrome')
+          ? new URL(props.currentTab.url).hostname
+          : '';
 
       const pacMods = props.apis.pacKitchen.getPacMods();
       this.state = {
-        trimmedInputValueOrSpace:
-          props.currentTab && !props.currentTab.url.startsWith('chrome') ? new URL(props.currentTab.url).hostname : '',
+        trimmedInputValueOrSpace,
         sortedListOfOptions: this.modsToOpts(pacMods),
         isHostHidden: {}
       };
