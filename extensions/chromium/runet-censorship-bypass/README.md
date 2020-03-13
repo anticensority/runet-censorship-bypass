@@ -1,5 +1,7 @@
 # Install
 
+Tested on NodeJS versoin: 12.
+
 ```
 npm install
 cd src/extension-common/pages/options/
