@@ -7,8 +7,14 @@ npm install
 cd src/extension-common/pages/options/
 npm install
 cd -
-npm start
-use your build/extension-beta
+
+# For debugging:
+npm start 
+# Use your build/extension-beta
+
+# For production:
+npm run release
+# Use your build/extension-full or build/extension-mini
 ```
 
 # Release
