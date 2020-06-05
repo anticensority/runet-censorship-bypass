@@ -146,7 +146,14 @@
     httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
 
       if (!newLastModifiedStr) {
-        const ifWasEverModified = lastModifiedStr !== new Date(0).toUTCString();
+        /*
+          TODO: Get rid of this dirty hack
+          IPFS used by AntiZapret always returns last-modified date as new Date(1000) which is 1 sec since unix epoch.
+          Last-modified isn't changed but target redireciton URL is and this URL should be compared to the last cached URL.
+          Hack here is to consider 5 seconds since epoch time the same way as the unix epoch start.
+          If you think etags are the solution then know that etags can't be read from the fetch API, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers.
+        */
+        const ifWasEverModified = new Date(lastModifiedStr) - new Date(0) > 5000;
         if (ifWasEverModified) {
 
           addWarning(
