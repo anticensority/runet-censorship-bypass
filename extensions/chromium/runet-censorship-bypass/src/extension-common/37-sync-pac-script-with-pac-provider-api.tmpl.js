@@ -145,27 +145,28 @@
 
     httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
 
-      if (!newLastModifiedStr) {
-        /*
-          TODO: Get rid of this dirty hack
-          IPFS used by AntiZapret always returns last-modified date as new Date(1000) which is 1 sec since unix epoch.
-          Last-modified isn't changed but target redireciton URL is and this URL should be compared to the last cached URL.
-          Hack here is to consider 5 seconds since epoch time the same way as the unix epoch start.
-          If you think etags are the solution then know that etags can't be read from the fetch API, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers.
-        */
-        const ifWasEverModified = new Date(lastModifiedStr) - new Date(0) > 5000;
-        if (ifWasEverModified) {
+      /*
+        TODO: Get rid of this dirty hack
+        IPFS used by AntiZapret always returns last-modified date as new Date(1000) which is 1 sec since unix epoch.
+        Last-modified isn't changed but target redireciton URL is and this URL should be compared to the last cached URL.
+        Hack here is to consider 5 seconds since epoch time the same way as the unix epoch start.
+        If you think etags are the solution then know that etags can't be read from the fetch API, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers.
+      */
+      /*
+      TODO: I turn off caching for now because I see no easy way out.
 
-          addWarning(
-            (ifRu
-              ? 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: '
-              : 'Your PAC-script doesn\\'t need to be updated. It\\'s date: '
-            ) + lastModifiedStr,
-          );
-          const res = {lastModified: lastModifiedStr};
-          return cb(null, res);
-        }
+      const ifWasEverModified = new Date(lastModifiedStr) - new Date(0) > 5000;
+      if (!newLastModifiedStr && ifWasEverModified) {
+        addWarning(
+          (ifRu
+            ? 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: '
+            : 'Your PAC-script doesn\\'t need to be updated. It\\'s date: '
+          ) + lastModifiedStr,
+        );
+        const res = {lastModified: lastModifiedStr};
+        return cb(null, res);
       }
+      */
 
       // Employ all urls, the latter are fallbacks for the former.
       const pacDataPromise = provider.pacUrls.reduce(
