@@ -23,15 +23,15 @@ My maxim is _"Your freedom ends when it starts to confine the freedom of others"
 
 See [my other arguments against censorship (ru)](https://rebrand.ly/ac-arguments)
 
-Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks [critics of Putin](http://www.reuters.com/article/2014/03/13/us-russia-internet-idUSBREA2C21L20140313),
+Looking at how Russian government [distorts TV](https://therussianreader.wordpress.com/2015/11/22/russian-truckers-strike-dagestan/) and blocks [critics of Putin](https://www.reuters.com/article/us-russia-internet-idUSBREA2C21L20140313),
 I decided to write an anticensorship extension for Chromium before they strike me first.
 
 ## How it Works
 
 0. PAC script is a JavaScript file, triggered on every URL request, which says browser which proxy to use if any for this particular URL.
-1. The Chrome Extension sets PAC script in browser settings and keeps it synced with PAC script on the server (offering Antizapret (hosted on a dedicated server) or Anticensority (hosted on GitHub + CloudFlare)).
+1. The Chrome Extension sets PAC script in browser settings and keeps it synced with PAC script on the server (offering Antizapret (hosted on a dedicated server) or Anticensority (hosted on GitHub)).
 2. On every request PAC script checks if host is blocked or if its IP is blocked.
-3. If address is blocked PAC script returns proxy server to the browser, both Antizapret and Anticensority use Antizapret proxy servers.
+3. If address is blocked PAC script returns proxy server to the browser. Antizapret PAC-script uses its own proxy servers and Anticensority PAC-script uses local Tor.
 4. PAC scripts on servers are updated periodically from https://github.com/zapret-info/z-i.
 
 ## Contributors

@@ -79,7 +79,7 @@ export default function getExcEditor(theState) {
         props.currentTab &&
         props.currentTab.url &&
         !props.currentTab.url.startsWith('chrome')
-          ? new URL(props.currentTab.url).hostname
+          ? new URL(props.currentTab.url).hostname.replace(/^www\./g, '')
           : '';
 
       const pacMods = props.apis.pacKitchen.getPacMods();

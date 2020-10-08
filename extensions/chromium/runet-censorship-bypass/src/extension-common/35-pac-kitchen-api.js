@@ -122,6 +122,13 @@
       url: 'https://rebrand.ly/ac-own-proxy',
       order: 7,
     },
+    ifUseOwnProxiesOnlyForOwnSites: {
+      dflt: false,
+      category: 'ownProxies',
+      label: 'СВОИ прокси только для СВОИХ сайтов',
+      desc: 'Не использовать СВОИ прокси для всех сайтов из PAC-скрипта, а только для добавленных вручную исключений.',
+      order: 7.5,
+    },
     ifProxyMoreDomains: {
       ifDisabled: true,
       dflt: false,
@@ -451,7 +458,7 @@ ${        pacMods.filteredCustomsString
 /******/      return "DIRECT";
 /******/    }
 /******/    return ` +
-        (pacMods.filteredCustomsString
+        ((pacMods.filteredCustomsString && !pacMods.ifUseOwnProxiesOnlyForOwnSites)
           ? 'filteredCustomProxies + "; " + '
           : ''
         ) +
