@@ -76,7 +76,7 @@
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
       openAndFocus(
-        'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
+        'https://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
           '&version=' + chrome.runtime.getManifest().version +
           '&useragent=' + encodeURIComponent(navigator.userAgent) +
@@ -252,7 +252,7 @@
 
   handlers.installListenersOn(window, 'BG');
 
-  chrome.proxy.onProxyError.addListener( timeouted( (details) => {
+  (chrome.proxy.onProxyError || chrome.proxy.onError).addListener( timeouted( (details) => {
 
     if (!handlers.ifControlled) {
       return;

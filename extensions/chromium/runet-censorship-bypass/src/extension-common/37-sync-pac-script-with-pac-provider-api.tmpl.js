@@ -59,40 +59,69 @@
 
   };
 
+  const doWithoutProxyAsync = (createPromise) => new Promise((resolve, reject) => {
+    chrome.proxy.settings.get({}, chromified((getErr, settings) => {
+      if (getErr) {
+        reject(getErr);
+        return;
+      }
+      delete settings.levelOfControl;
+      const setProxyAsync = () => new Promise((setResolve, setReject) =>
+        chrome.proxy.settings.set(
+          settings,
+          chromified((err) => err ? setReject(err) : setResolve()),
+        ),
+      );
+      chrome.proxy.settings.clear({}, chromified((clearErr) => {
+        if (clearErr) {
+          reject(clearErr);
+          return;
+        }
+        return createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)));
+      }));
+    }));
+  });
+
   const setPacAsync = function setPacAsync(
     pacData = mandatory(), cb = throwIfError,
   ) {
 
-    const config = {
-      mode: 'pac_script',
-      pacScript: {
-        mandatory: false,
-        data: pacData,
-      },
-    };
-    console.log('Setting chrome proxy settings...');
-    chrome.proxy.settings.set( {value: config}, chromified((err) => {
+    console.log('Clearing chrome proxy settings...');
+    chrome.proxy.settings.clear({}, chromified((clearErr) => {
 
-      if (err) {
-        return cb(err);
+      if (clearErr) {
+        return cb(clearErr);
       }
-      handlers.updateControlState( () => {
+      const config = {
+        mode: 'pac_script',
+        pacScript: {
+          mandatory: false,
+          data: pacData,
+        },
+      };
+      console.log('Setting chrome proxy settings...');
+      chrome.proxy.settings.set( { value: config }, chromified((err) => {
 
-        if ( !handlers.ifControlled ) {
-
-          console.warn('Failed, other extension is in control.');
-          return cb(
-            new Error( window.utils.messages.whichExtensionHtml() ),
-          );
-
+        if (err) {
+          return cb(err);
         }
-        console.log('Successfuly set PAC in proxy settings..');
-        cb();
+        handlers.updateControlState( () => {
 
-      });
+          if ( !handlers.ifControlled ) {
 
+            console.warn('Failed, other extension is in control.');
+            return cb(
+              new Error( window.utils.messages.whichExtensionHtml() ),
+            );
+
+          }
+          console.log('Successfuly set PAC in proxy settings..');
+          cb();
+
+        });
+
+      }));
     }));
-
   };
 
   const updatePacProxyIps = function updatePacProxyIps(
@@ -143,68 +172,44 @@
 
     }
 
-    httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
-
-      /*
-        TODO: Get rid of this dirty hack
-        IPFS used by AntiZapret always returns last-modified date as new Date(1000) which is 1 sec since unix epoch.
-        Last-modified isn't changed but target redireciton URL is and this URL should be compared to the last cached URL.
-        Hack here is to consider 5 seconds since epoch time the same way as the unix epoch start.
-        If you think etags are the solution then know that etags can't be read from the fetch API, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers.
-      */
-      /*
-      TODO: I turn off caching for now because I see no easy way out.
-
-      const ifWasEverModified = new Date(lastModifiedStr) - new Date(0) > 5000;
-      if (!newLastModifiedStr && ifWasEverModified) {
-        addWarning(
-          (ifRu
-            ? 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: '
-            : 'Your PAC-script doesn\\'t need to be updated. It\\'s date: '
-          ) + lastModifiedStr,
-        );
-        const res = {lastModified: lastModifiedStr};
-        return cb(null, res);
-      }
-      */
-
+    console.log('Clearing chrome proxy settings...');
+    const pacDataPromise = doWithoutProxyAsync(
       // Employ all urls, the latter are fallbacks for the former.
-      const pacDataPromise = provider.pacUrls.reduce(
-        (promise, url) => promise.catch(
-          () => new Promise(
-            (resolve, reject) => httpLib.get(
-              url,
-              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData),
+      () =>
+        provider.pacUrls.reduce(
+          (promise, url) => promise.catch(
+            () => new Promise(
+              (resolve, reject) => httpLib.get(
+                url,
+                (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData),
+              ),
             ),
           ),
+          Promise.reject(),
         ),
-        Promise.reject(),
-      );
+    );
 
-      pacDataPromise.then(
+    pacDataPromise.then(
 
-        (pacData) => {
+      (pacData) => {
 
-          setPacAsync(
-            pacData,
-            (err, res) => cb(
-              err,
-              Object.assign(res || {}, {lastModified: newLastModifiedStr}),
-            ),
-          );
+        setPacAsync(
+          pacData,
+          (err, res) => cb(
+            err,
+            Object.assign(res || {}, {lastModified: lastModifiedStr}),
+          ),
+        );
 
-        },
+      },
 
-        clarifyThen(
-          chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
-          + provider.pacUrls.join(' , ') + ' ].',
-          cb,
-        ),
+      clarifyThen(
+        chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
+        + provider.pacUrls.join(' , ') + ' ].',
+        cb,
+      ),
 
-      );
-
-    });
-
+    );
   };
 
   window.apis.antiCensorRu = {

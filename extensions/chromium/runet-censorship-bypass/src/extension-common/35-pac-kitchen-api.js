@@ -541,9 +541,11 @@ ${
 
       ).then((details) => {
 
+        console.log('DEEETAILS:', details); // TODO:
         if (
           details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
+          console.log('TODODOODODODOD:', details); // TODO:
           const pac = window.utils.getProp(details, 'value.pacScript');
           if (pac && pac.data) {
             return chrome.proxy.settings.set(details, chromified(cb));
@@ -551,6 +553,7 @@ ${
         }
 
         kitchenState(ifIncontinence, true);
+        console.log('TYYYYPE ERRROR');
         cb(null, null, new TypeError(
           'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
         ));
@@ -562,7 +565,7 @@ ${
     checkIncontinence(details) {
 
       if ( kitchenState(ifIncontinence) ) {
-        this.setNowAsync(details, () => {/* Swallow. */});
+        this.setNowAsync(details, (err) => { if (err) { throw err; } }); // TODO: suppress?
       }
 
     },
@@ -625,19 +628,44 @@ ${
 
   chrome.proxy.settings.set = function(details, cb) {
 
-    const pac = window.utils.getProp(details, 'value.pacScript');
-    if (!(pac && pac.data)) {
+    const pac = window.utils.getProp(details, 'value.pacScript') || {};
+    const autoConfigUrl = window.utils.getProp(details, 'value.autoConfigUrl');
+    const ifNothingToCook = !(pac && pac.data || autoConfigUrl);
+    if (ifNothingToCook) {
       return originalSet(details, cb);
     }
-    const pacMods = getCurrentConfigs();
-    pac.data = pacKitchen.cook( pac.data, pacMods );
-    originalSet({value: details.value}, (/* No args. */) => {
+    const getPacData = (cb) =>
+      pac.data ? cb(null, pac.data) : window.apis.httpLib.get(autoConfigUrl, cb);
 
-      kitchenState(ifIncontinence, null);
-      cb && cb();
+    getPacData((err, pacData) => {
+      if (err) {
+        cb(err);
+        return;
+      }
+      const pacMods = getCurrentConfigs();
+      const cookedData = pacKitchen.cook( pacData, pacMods );
 
+      if (window.apis.platform.ifFirefox) {
+        const autoConfigUrl = URL.createObjectURL(new Blob([cookedData], {
+          type: 'application/x-ns-proxy-autoconfig',
+        }));
+        originalSet({
+          value: {
+            proxyType: 'autoConfig',
+            autoConfigUrl,
+          },
+        }, chromified(cb));
+        return;
+      }
+
+      details.value.pacScript.data = cookedData;
+      originalSet({value: details.value}, (/* No args. */) => {
+
+        kitchenState(ifIncontinence, null);
+        cb && cb();
+
+      });
     });
-
   };
 
   pacKitchen.checkIncontinence();
