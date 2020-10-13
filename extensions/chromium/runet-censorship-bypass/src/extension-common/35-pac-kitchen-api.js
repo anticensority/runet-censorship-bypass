@@ -634,8 +634,8 @@ ${
     if (ifNothingToCook) {
       return originalSet(details, cb);
     }
-    const getPacData = (cb) =>
-      pac.data ? cb(null, pac.data) : window.apis.httpLib.get(autoConfigUrl, cb);
+    const getPacData = (getPacCb) =>
+      pac.data ? getPacCb(null, pac.data) : window.apis.httpLib.get(autoConfigUrl, getPacCb);
 
     getPacData((err, pacData) => {
       if (err) {
@@ -644,27 +644,27 @@ ${
       }
       const pacMods = getCurrentConfigs();
       const cookedData = pacKitchen.cook( pacData, pacMods );
+      const setCb = (/* No args. */) => {
+
+        kitchenState(ifIncontinence, null);
+        cb && cb();
+
+      };
 
       if (window.apis.platform.ifFirefox) {
         const autoConfigUrl = URL.createObjectURL(new Blob([cookedData], {
           type: 'application/x-ns-proxy-autoconfig',
         }));
-        originalSet({
+        return originalSet({
           value: {
             proxyType: 'autoConfig',
             autoConfigUrl,
           },
-        }, chromified(cb));
-        return;
+        }, setCb);
       }
 
       details.value.pacScript.data = cookedData;
-      originalSet({value: details.value}, (/* No args. */) => {
-
-        kitchenState(ifIncontinence, null);
-        cb && cb();
-
-      });
+      return originalSet({ value: details.value }, setCb);
     });
   };
 

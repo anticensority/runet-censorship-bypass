@@ -66,12 +66,15 @@
         return;
       }
       delete settings.levelOfControl;
-      const setProxyAsync = () => new Promise((setResolve, setReject) =>
+      const setProxyAsync = () => new Promise((setResolve, setReject) => {
+
+        console.log('Restoring chrome proxy settings...');
         chrome.proxy.settings.set(
           settings,
           chromified((err) => err ? setReject(err) : setResolve()),
-        ),
-      );
+        );
+      });
+      console.log('Clearing chrome proxy settings...');
       chrome.proxy.settings.clear({}, chromified((clearErr) => {
         if (clearErr) {
           reject(clearErr);
@@ -86,41 +89,35 @@
     pacData = mandatory(), cb = throwIfError,
   ) {
 
-    console.log('Clearing chrome proxy settings...');
-    chrome.proxy.settings.clear({}, chromified((clearErr) => {
+    const config = {
+      mode: 'pac_script',
+      pacScript: {
+        mandatory: false,
+        data: pacData,
+      },
+    };
+    console.log('Setting chrome proxy settings...');
+    chrome.proxy.settings.set( { value: config }, chromified((err) => {
 
-      if (clearErr) {
-        return cb(clearErr);
+      console.log('ERRORR?:', err);
+      if (err) {
+        return cb(err);
       }
-      const config = {
-        mode: 'pac_script',
-        pacScript: {
-          mandatory: false,
-          data: pacData,
-        },
-      };
-      console.log('Setting chrome proxy settings...');
-      chrome.proxy.settings.set( { value: config }, chromified((err) => {
+      handlers.updateControlState( () => {
 
-        if (err) {
-          return cb(err);
+        if ( !handlers.ifControlled ) {
+
+          console.warn('Failed, other extension is in control.');
+          return cb(
+            new Error( window.utils.messages.whichExtensionHtml() ),
+          );
+
         }
-        handlers.updateControlState( () => {
+        console.log('Successfuly set PAC in proxy settings.');
+        cb();
 
-          if ( !handlers.ifControlled ) {
+      });
 
-            console.warn('Failed, other extension is in control.');
-            return cb(
-              new Error( window.utils.messages.whichExtensionHtml() ),
-            );
-
-          }
-          console.log('Successfuly set PAC in proxy settings..');
-          cb();
-
-        });
-
-      }));
     }));
   };
 
@@ -186,7 +183,15 @@
             ),
           ),
           Promise.reject(),
-        ),
+        )/*
+        .catch(
+          clarifyThen(
+            chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
+            + provider.pacUrls.join(' , ') + ' ].',
+            cb,
+          ),
+        )
+        */
     );
 
     pacDataPromise.then(
@@ -200,7 +205,6 @@
             Object.assign(res || {}, {lastModified: lastModifiedStr}),
           ),
         );
-
       },
 
       clarifyThen(
@@ -208,7 +212,6 @@
         + provider.pacUrls.join(' , ') + ' ].',
         cb,
       ),
-
     );
   };
 
@@ -540,7 +543,7 @@
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU'),
           );
-          antiCensorRu.syncWithPacProviderAsync(() => {/* swallow */});
+          antiCensorRu.syncWithPacProviderAsync(() => { /* Swallow. */ });
         }
 
       })
@@ -564,7 +567,8 @@
       // INSTALL
       console.log('Installing...');
       handlers.switch('on', 'ext-error');
-      return chrome.runtime.openOptionsPage();
+      chrome.runtime.openOptionsPage();
+      return;
     }
 
     // LAUNCH, RELOAD, UPDATE
