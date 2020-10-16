@@ -1,6 +1,6 @@
 # Install
 
-Tested on NodeJS versoin: 12.
+Tested on NodeJS versoin: 14.
 
 ```
 npm install
@@ -9,11 +9,11 @@ npm install
 cd -
 
 # For debugging:
-npm start 
+npm start
 # Use your build/extension-beta
 
 # For production:
-npm run release
+npm start
 # Use your build/extension-full or build/extension-mini
 ```
 
