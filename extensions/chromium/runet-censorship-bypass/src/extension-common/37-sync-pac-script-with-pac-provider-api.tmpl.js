@@ -65,6 +65,11 @@
         reject(getErr);
         return;
       }
+      const ifWeAreInControl = window.utils.areSettingsControlledFor(settings);
+      if (!ifWeAreInControl) {
+        resolve(createPromise());
+        return;
+      }
       delete settings.levelOfControl;
       const setProxyAsync = () => new Promise((setResolve, setReject) => {
 
@@ -80,7 +85,7 @@
           reject(clearErr);
           return;
         }
-        return createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)));
+        createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)));
       }));
     }));
   });
@@ -168,7 +173,7 @@
 
     }
 
-    console.log('Clearing chrome proxy settings...');
+    console.log('Doing without proxy...');
     const pacDataPromise = doWithoutProxyAsync(
       // Employ all urls, the latter are fallbacks for the former.
       () =>

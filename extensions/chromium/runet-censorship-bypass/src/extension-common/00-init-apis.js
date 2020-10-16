@@ -1,5 +1,7 @@
 'use strict';
 
+console.log('Extension started.');
+
 {
 
   const IF_DEBUG = true;
