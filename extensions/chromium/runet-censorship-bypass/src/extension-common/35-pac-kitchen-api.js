@@ -541,11 +541,9 @@ ${
 
       ).then((details) => {
 
-        console.log('DEEETAILS:', details); // TODO:
         if (
           details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
-          console.log('TODODOODODODOD:', details); // TODO:
           const pac = window.utils.getProp(details, 'value.pacScript');
           if (pac && pac.data) {
             return chrome.proxy.settings.set(details, chromified(cb));
@@ -553,7 +551,6 @@ ${
         }
 
         kitchenState(ifIncontinence, true);
-        console.log('TYYYYPE ERRROR');
         cb(null, null, new TypeError(
           'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
         ));
@@ -652,9 +649,7 @@ ${
       };
 
       if (window.apis.platform.ifFirefox) {
-        const autoConfigUrl = URL.createObjectURL(new Blob([cookedData], {
-          type: 'application/x-ns-proxy-autoconfig',
-        }));
+        const autoConfigUrl = `data:application/x-ns-proxy-autoconfig,${escape(cookedData)}`;
         return originalSet({
           value: {
             proxyType: 'autoConfig',

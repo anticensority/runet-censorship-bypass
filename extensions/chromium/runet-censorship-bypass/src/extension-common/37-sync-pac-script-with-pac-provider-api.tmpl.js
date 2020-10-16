@@ -99,7 +99,6 @@
     console.log('Setting chrome proxy settings...');
     chrome.proxy.settings.set( { value: config }, chromified((err) => {
 
-      console.log('ERRORR?:', err);
       if (err) {
         return cb(err);
       }
@@ -183,21 +182,18 @@
             ),
           ),
           Promise.reject(),
-        )/*
+        )
         .catch(
           clarifyThen(
             chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
             + provider.pacUrls.join(' , ') + ' ].',
             cb,
           ),
-        )
-        */
+        ),
     );
 
     pacDataPromise.then(
-
       (pacData) => {
-
         setPacAsync(
           pacData,
           (err, res) => cb(
@@ -206,12 +202,6 @@
           ),
         );
       },
-
-      clarifyThen(
-        chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
-        + provider.pacUrls.join(' , ') + ' ].',
-        cb,
-      ),
     );
   };
 
