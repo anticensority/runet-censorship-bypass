@@ -46,7 +46,7 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
 
 const clean = function(cb) {
 
-  //return del.sync('./build');
+  del.sync('./build');
   return cb();
 
 };
@@ -97,7 +97,7 @@ const copyBeta = function(cb) {
 
 };
 
-const buildAll = gulp.parallel(copyMini, copyFull, copyBeta);
+const buildAll = gulp.series(clean, gulp.parallel(copyMini, copyFull, copyBeta));
 const buildBeta = copyBeta;
 
 module.exports = {
