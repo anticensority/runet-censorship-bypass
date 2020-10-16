@@ -1,6 +1,10 @@
 # Install
 
-Tested on NodeJS versoin: 12.
+Tested on:
+
+NodeJS: v14.13.1.
+NPM: 6.14.8.
+OS: Linux Mint 20 Xfce Edition.
 
 ```
 npm install
@@ -13,11 +17,11 @@ npm start
 # Use your build/extension-beta
 
 # For production:
-npm run release
+npm start
 # Use your build/extension-full or build/extension-mini
 ```
 
-# Release
+# Release Instructions
 
 1. `npm run release`
 2. `vim src/templates-data.js` and bump version.
