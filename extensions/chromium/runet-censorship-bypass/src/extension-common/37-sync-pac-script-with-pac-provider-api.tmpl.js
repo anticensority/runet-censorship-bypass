@@ -105,6 +105,14 @@
     chrome.proxy.settings.set( { value: config }, chromified((err) => {
 
       if (err) {
+        if (err.message === 'proxy.settings requires private browsing permission.') {
+          window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
+          clarifyThen(
+            chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
+            cb,
+          )(err);
+          return;
+        }
         return cb(err);
       }
       handlers.updateControlState( () => {

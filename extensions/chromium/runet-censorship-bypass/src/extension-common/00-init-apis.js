@@ -232,6 +232,15 @@ console.log('Extension started.');
 
     },
 
+    openAndFocus(url) {
+
+      chrome.tabs.create(
+        {url: url},
+        (tab) => chrome.windows.update(tab.windowId, {focused: true})
+      );
+
+    },
+
   };
 
   const max = 2**16;

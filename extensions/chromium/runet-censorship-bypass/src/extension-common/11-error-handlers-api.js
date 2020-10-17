@@ -53,15 +53,6 @@
 
   };
 
-  const openAndFocus = function openAndFocus(url) {
-
-    chrome.tabs.create(
-      {url: url},
-      (tab) => chrome.windows.update(tab.windowId, {focused: true})
-    );
-
-  };
-
   const ifPrefix = 'if-on-';
   const extName = chrome.runtime.getManifest().name;
   const extVersion = window.apis.version.build;
@@ -75,7 +66,7 @@
       const errors = err ? {[type]: err} : this.idToError;
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
-      openAndFocus(
+      window.utils.openAndFocus(
         'https://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
           '&version=' + chrome.runtime.getManifest().version +
@@ -242,7 +233,7 @@
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return openAndFocus(
+      return window.utils.openAndFocus(
         window.utils.messages.searchSettingsForUrl('proxy')
       );
     }
