@@ -21,6 +21,20 @@ npm start
 # Use your build/extension-full or build/extension-mini
 ```
 
+# For Reviewers
+
+Steps to reproduce the same zip:
+```
+npm ci
+cd src/extension-common/pages/options/
+npm ci
+cd -
+npm start
+# See ./build/extension-full
+cd ./build/extension-full
+zip -r runet-censorship-bypass-full.zip ./*
+```
+
 # Release Instructions
 
 1. `npm run release`
