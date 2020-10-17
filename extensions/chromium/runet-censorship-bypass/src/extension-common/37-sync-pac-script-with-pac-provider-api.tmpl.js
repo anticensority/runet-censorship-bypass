@@ -106,7 +106,7 @@
 
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
-          window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
+          // window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
           clarifyThen(
             chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
             cb,
