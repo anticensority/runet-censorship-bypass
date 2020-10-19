@@ -62,4 +62,10 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/anticensority/sponsor/8/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/8/avatar.svg"></a>
 <a href="https://opencollective.com/anticensority/sponsor/9/website" target="_blank"><img src="https://opencollective.com/anticensority/sponsor/9/avatar.svg"></a>
 
+## Установка / Install
 
+1. [Chrome Web Store](https://rebrand.ly/ac-webstore)
+2. [Chrome Web Store (MINI)](https://rebrand.ly/ac-webstore-mini)
+3. [Microsoft Edge Add-ons](https://rebrand.ly/ac-msstore)
+4. [Microsoft Edge Add-ons (MINI)](https://rebrand.ly/ac-msstore-mini)
+5. [FireFox Add-ons (Beta)](https://rebrand.ly/ac-firefox)
