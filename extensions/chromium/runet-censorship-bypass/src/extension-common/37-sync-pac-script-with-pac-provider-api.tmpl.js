@@ -190,18 +190,12 @@
             () => new Promise(
               (resolve, reject) => httpLib.get(
                 url,
-                (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData),
+                (newErr, pacData) =>
+                  newErr ? reject(newErr) : resolve(pacData),
               ),
             ),
           ),
           Promise.reject(),
-        )
-        .catch(
-          clarifyThen(
-            chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
-            + provider.pacUrls.join(' , ') + ' ].',
-            cb,
-          ),
         ),
     );
 
@@ -215,6 +209,11 @@
           ),
         );
       },
+      clarifyThen(
+        chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
+        + provider.pacUrls.join(' , ') + ' ].',
+        cb,
+      ),
     );
   };
 

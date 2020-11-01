@@ -282,7 +282,7 @@
       handlers.mayNotify(
         noCon,
         chrome.i18n.getMessage('noControl'),
-        chrome.i18n.getMessage('which'),
+        chrome.i18n.getMessage('WhichQ'),
         {icon: 'no-control-128.png', ifSticky: false}
       );
     } else {
