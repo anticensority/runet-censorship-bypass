@@ -544,10 +544,7 @@ ${
         if (
           details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
-          const pac = window.utils.getProp(details, 'value.pacScript');
-          if (pac && pac.data) {
-            return chrome.proxy.settings.set(details, chromified(cb));
-          }
+          return chrome.proxy.settings.set(details, chromified(cb));
         }
 
         kitchenState(ifIncontinence, true);

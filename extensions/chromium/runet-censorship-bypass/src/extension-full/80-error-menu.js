@@ -4,11 +4,12 @@
 
   const timeouted = window.utils.timeouted;
 
+  const isProxied = (requestDetails) => false;
   const isProxySideError = (details) =>
     /* About !main_frame: Main frame websocket errors are followed by webnavigation errors
        which chrome-internals code resets the state of the popup.
     */
-    details.error === 'net::ERR_TUNNEL_CONNECTION_FAILED' && details.type !== 'main_frame' ||
+    details.error === 'net::ERR_TUNNEL_CONNECTION_FAILED' && details.type !== 'main_frame' && isProxied(details) ||
     details.error === 'NS_ERROR_CONNECTION_REFUSED' && Boolean(details.proxyInfo);
 
   const urlToA = (url) => new URL(url).host.link(
@@ -165,5 +166,4 @@
     timeouted(isProxyErrorHandledAsync),
     {urls: ['<all_urls>']},
   );
-
 }
