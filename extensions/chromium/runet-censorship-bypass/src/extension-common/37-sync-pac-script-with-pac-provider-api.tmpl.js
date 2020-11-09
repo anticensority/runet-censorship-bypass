@@ -37,6 +37,7 @@
   const timeouted = window.utils.timeouted;
 
   const clarifyThen = window.apis.errorsLib.clarifyThen;
+  const clarify = window.apis.errorsLib.clarify;
   const Warning = window.apis.errorsLib.Warning;
 
   const httpLib = window.apis.httpLib;
@@ -85,7 +86,7 @@
           reject(clearErr);
           return;
         }
-        createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)));
+        createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)), reject);
       }));
     }));
   });
@@ -196,10 +197,14 @@
             ),
           ),
           Promise.reject(),
+        ).catch(
+          (err) => Promise.reject(clarify(
+              err,
+              chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
+              + provider.pacUrls.join(' , ') + ' ].',
+          )),
         ),
-    );
-
-    pacDataPromise.then(
+    ).then(
       (pacData) => {
         setPacAsync(
           pacData,
@@ -209,11 +214,7 @@
           ),
         );
       },
-      clarifyThen(
-        chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
-        + provider.pacUrls.join(' , ') + ' ].',
-        cb,
-      ),
+      cb,
     );
   };
 
@@ -390,7 +391,6 @@
 
     syncWithPacProviderAsync(
       key = this.currentPacProvierKey, cb = throwIfError) {
-
       if( typeof(key) === 'function' ) {
         cb = key;
         key = this.getCurrentPacProviderKey();
