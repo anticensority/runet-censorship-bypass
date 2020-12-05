@@ -544,7 +544,10 @@ ${
         if (
           details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
-          return chrome.proxy.settings.set(details, chromified(cb));
+          const pac = window.utils.getProp(details, 'value.pacScript');
+          if (pac && pac.data) {
+            return chrome.proxy.settings.set(details, chromified(cb));
+          }
         }
 
         kitchenState(ifIncontinence, true);
@@ -621,50 +624,21 @@ ${
   const originalSet = chrome.proxy.settings.set.bind( chrome.proxy.settings );
 
   chrome.proxy.settings.set = function(details, cb) {
-
-    const pac = window.utils.getProp(details, 'value.pacScript') || {};
-    const autoConfigUrl = window.utils.getProp(details, 'value.autoConfigUrl');
-    const ifNothingToCook = !(pac && pac.data || autoConfigUrl);
-    if (ifNothingToCook) {
+    const pac = window.utils.getProp(details, 'value.pacScript');
+    if (!(pac && pac.data)) {
       return originalSet(details, cb);
     }
-    const getPacData = (getPacCb) =>
-      pac.data ? getPacCb(null, pac.data) : window.apis.httpLib.get(autoConfigUrl, getPacCb);
+    const pacMods = getCurrentConfigs();
+    pac.data = pacKitchen.cook( pac.data, pacMods );
+    originalSet({value: details.value}, window.utils.chromified((err) => {
 
-    getPacData((err, pacData) => {
       if (err) {
-        cb(err);
-        return;
+        throw err;
       }
-      const pacMods = getCurrentConfigs();
-      const cookedData = pacKitchen.cook( pacData, pacMods );
-      const setCb = (/* No args. */) => {
+      kitchenState(ifIncontinence, null);
+      cb && cb();
 
-        kitchenState(ifIncontinence, null);
-        cb && cb();
-
-      };
-
-      if (window.apis.platform.ifFirefox) {
-        const autoConfigUrl = `data:application/x-ns-proxy-autoconfig,${escape(cookedData)}`;
-        return originalSet({
-          value: {
-            proxyType: 'autoConfig',
-            autoConfigUrl,
-          },
-        }, setCb);
-      }
-
-      details.value.pacScript.data = cookedData;
-      return originalSet({ value: details.value }, setCb);
-    });
+    }));
   };
-
-  pacKitchen.checkIncontinence();
-  chrome.proxy.settings.onChange.addListener(
-    timeouted(
-      pacKitchen.checkIncontinence.bind(pacKitchen)
-    )
-  );
 
 } // Private namespace ends.

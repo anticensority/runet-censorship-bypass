@@ -14,6 +14,7 @@
       "proxy"
     , "alarms"
     , "storage"
+    , "unlimitedStorage"
     , "<all_urls>"
     , "tabs"
     , "contextMenus"
@@ -30,6 +31,7 @@
       , "11-error-handlers-api.js"
       , "12-errors-lib.js"
       , "13-http-lib.js"
+      , "15-firefox-proxy-settings.js"
       ${scripts_2x}
       , "35-pac-kitchen-api.js"
       , "37-sync-pac-script-with-pac-provider-api.js"
