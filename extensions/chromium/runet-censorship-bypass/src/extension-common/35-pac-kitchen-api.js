@@ -626,16 +626,16 @@ ${
   chrome.proxy.settings.set = function(details, cb) {
     const pac = window.utils.getProp(details, 'value.pacScript');
     if (!(pac && pac.data)) {
-      return originalSet(details, cb);
+      return originalSet(details, window.utils.timeouted(cb));
     }
     const pacMods = getCurrentConfigs();
     pac.data = pacKitchen.cook( pac.data, pacMods );
     originalSet({value: details.value}, window.utils.chromified((err) => {
 
-      if (err) {
-        throw err;
+      if (!err) {
+        kitchenState(ifIncontinence, null);
       }
-      kitchenState(ifIncontinence, null);
+      window.utils.lastError = err;
       cb && cb();
 
     }));

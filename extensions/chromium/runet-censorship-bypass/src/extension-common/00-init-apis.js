@@ -41,15 +41,18 @@ console.log('Extension started.');
 
     },
 
+    lastError: undefined,
+
     checkChromeError() {
 
       // Chrome API calls your cb in a context different from the point of API
       // method invokation.
-      const err = chrome.runtime.lastError || chrome.extension.lastError;
+      const err = chrome.runtime.lastError || chrome.extension.lastError || self.lastError;
       if (!err) {
         return;
       }
       console.warn('API returned error:', err);
+      delete self.lastError;
       return new Error(err.message); // Add stack.
 
     },

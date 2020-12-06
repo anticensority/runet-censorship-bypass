@@ -380,12 +380,10 @@
         }
       }
 
-      chrome.storage.local.clear(
-        () => chrome.storage.local.set(
-          onlySettable,
-          chromified(cb),
-        )
-      );
+      chrome.storage.local.set(
+        onlySettable,
+        chromified(cb),
+      )
 
     },
 

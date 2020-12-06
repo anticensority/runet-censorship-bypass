@@ -5,11 +5,11 @@ if (window.apis.platform.ifFirefox) {
   const prefix = 'firefox-only';
 
   const ffxStorage = {
-    get(keys) {
+    get(key) {
       return new Promise((resolve) => (
         chrome.storage.local.get(
-          keys,
-          window.utils.getOrDie(resolve),
+          key,
+          window.utils.getOrDie((obj) => resolve(obj[key])),
         )
       ));
     },
@@ -41,9 +41,13 @@ if (window.apis.platform.ifFirefox) {
       },
     }, window.utils.chromified( async (err) => {
       if (err) {
-        throw err;
+        window.utils.lastError = err;
+        cb();
+        return;
       }
-      await ffxStorage.set({ [`${prefix}-pacData`]: pac.data });
+      window.pacData = pac.data;
+      window.ffxStorage = ffxStorage;
+      await ffxStorage.set({ [`${prefix}-pac-data`]: pac.data });
       cb();
     }));
   };
@@ -52,7 +56,9 @@ if (window.apis.platform.ifFirefox) {
   chrome.proxy.settings.get = function(details, cb) {
     originalGet(details, window.utils.chromified((err, originalDetails) => {
       if (err) {
-        throw err;
+        window.utils.lastError = err;
+        cb(originalDetails);
+        return;
       }
       const autoConfigUrl = window.utils.getProp(originalDetails, 'value.autoConfigUrl');
       if (!autoConfigUrl) {
@@ -60,7 +66,12 @@ if (window.apis.platform.ifFirefox) {
       }
       window.apis.httpLib.get(autoConfigUrl, async (err, pacData) => {
         if (err) {
-          pacData = await ffxStorage.get(`${prefix}-pacData`);
+          pacData = await ffxStorage.get(`${prefix}-pac-data`);
+          if (!pacData || !Object.keys(pacData).length) {
+            window.utils.lastError = err;
+            cb(originalDetails);
+            return;
+          }
         }
         cb(Object.assign(
           originalDetails,
@@ -79,7 +90,7 @@ if (window.apis.platform.ifFirefox) {
 
   const originalClear = chrome.proxy.settings.clear.bind( chrome.proxy.settings );
   chrome.proxy.settings.clear = async function(details, cb) {
-    await ffxStorage.remove(`${prefix}-pacData`);
+    await ffxStorage.remove(`${prefix}-pac-data`);
     originalClear(details, cb);
   };
 }
