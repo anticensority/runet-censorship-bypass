@@ -380,10 +380,13 @@
         }
       }
 
-      chrome.storage.local.set(
-        onlySettable,
-        chromified(cb),
-      )
+      chrome.storage.local.remove(
+        'antiCensorRu',
+        () => chrome.storage.local.set(
+          { antiCensorRu: onlySettable },
+          chromified(cb),
+        ),
+      );
 
     },
 
@@ -521,10 +524,18 @@
   };
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
-  chrome.storage.local.get(null, chromified( async (err, oldStorage) => {
+  (async () => {
+    let oldStorage = await window.utils.promisedLocalStorage.get('antiCensorRu') || {};
 
-    if (err) {
-      throw err;
+    if (!Object.keys(oldStorage).length) {
+      const storage = await window.utils.promisedLocalStorage.get(null);
+      if (storage.version && window.apis.version.isLeq(storage.version, '0.0.1.48')) {
+        const ffxPacData = storage['firefox-only-pac-data'];
+        delete storage['firefox-only-pac-data'];
+        await window.utils.promisedLocalStorage.clear();
+        await window.utils.promisedLocalStorage.set({ antiCensorRu: storage });
+        oldStorage = storage;
+      }
     }
 
     /*
@@ -560,7 +571,7 @@
     console.log('Keep cooked...');
     await new Promise((resolve) => window.apis.pacKitchen.keepCookedNowAsync(resolve));
 
-    console.log('Storage on init:', oldStorage);
+    //console.log('Storage on init:', oldStorage);
     antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
 
     if (antiCensorRu.ifFirstInstall) {
@@ -695,6 +706,6 @@
         * Add storage.lastPacUpdateStamp.
     **/
 
-  }));
+  })();
 
 }

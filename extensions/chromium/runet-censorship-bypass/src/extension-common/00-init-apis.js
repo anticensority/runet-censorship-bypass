@@ -158,6 +158,32 @@ console.log('Extension started.');
 
     },
 
+    promisedLocalStorage: {
+      get(key) {
+        return new Promise((resolve) => (
+          chrome.storage.local.get(
+            key,
+            window.utils.getOrDie((storage) => resolve(key ? storage[key] : storage)),
+          )
+        ));
+      },
+      set(items) {
+        return new Promise((resolve) => (
+          chrome.storage.local.set(items, resolve)
+        ));
+      },
+      remove(keys) {
+        return new Promise((resolve) => (
+          chrome.storage.local.remove(keys, resolve)
+        ));
+      },
+      clear() {
+        return new Promise((resolve) => (
+          chrome.storage.local.clear(resolve)
+        ));
+      },
+    },
+
     /*
     * Possible values for levelOfControl:
     *
