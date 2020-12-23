@@ -69,7 +69,7 @@
             );
           }
 
-          console.log('GETed with success:', url, Date.now() - start);
+          console.log('GETed with success:', url.substr(0, 100), Date.now() - start);
           textCb();
 
         },

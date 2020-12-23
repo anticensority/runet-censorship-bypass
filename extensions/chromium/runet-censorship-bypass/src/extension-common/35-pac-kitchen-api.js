@@ -562,7 +562,7 @@ ${
     checkIncontinence(details) {
 
       if ( kitchenState(ifIncontinence) ) {
-        this.setNowAsync(details, () => {/* Swallow. */});
+        this.setNowAsync(details, (err) => { if (err) { throw err; } }); // TODO: suppress?
       }
 
     },
@@ -624,27 +624,21 @@ ${
   const originalSet = chrome.proxy.settings.set.bind( chrome.proxy.settings );
 
   chrome.proxy.settings.set = function(details, cb) {
-
     const pac = window.utils.getProp(details, 'value.pacScript');
     if (!(pac && pac.data)) {
-      return originalSet(details, cb);
+      return originalSet(details, window.utils.timeouted(cb));
     }
     const pacMods = getCurrentConfigs();
     pac.data = pacKitchen.cook( pac.data, pacMods );
-    originalSet({value: details.value}, (/* No args. */) => {
+    originalSet({value: details.value}, window.utils.chromified((err) => {
 
-      kitchenState(ifIncontinence, null);
+      if (!err) {
+        kitchenState(ifIncontinence, null);
+      }
+      window.utils.lastError = err;
       cb && cb();
 
-    });
-
+    }));
   };
-
-  pacKitchen.checkIncontinence();
-  chrome.proxy.settings.onChange.addListener(
-    timeouted(
-      pacKitchen.checkIncontinence.bind(pacKitchen)
-    )
-  );
 
 } // Private namespace ends.

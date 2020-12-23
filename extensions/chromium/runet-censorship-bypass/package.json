@@ -8,7 +8,7 @@
     "test": "mocha --recursive ./src/**/test/*",
     "subpages": "cd ./src/extension-common/pages/options/ && npm run build && cd -",
     "subpages:dev": "cd ./src/extension-common/pages/options/ && npm run build:dev:nocomp && cd -",
-    "start": "npm run subpages:dev && npm run gulp buildAll",
+    "start": "npm run release",
     "release": "npm run subpages && npm run gulp buildAll"
   },
   "author": "Ilya Ig. Petrov",

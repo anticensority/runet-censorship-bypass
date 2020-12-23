@@ -136,5 +136,8 @@
   },
   "noOwnProxiesError": {
     "message": "Proxying of OWN sites is possible only via OWN proxies. No own proxies found that satisfy your requirements."
+  },
+  "AllowExtensionToRunInPrivateWindows": {
+    "message": "For the extension to work it is required to allow it to run in private windows, see <a href='https://rebrand.ly/ac-allow-private-windows'>a HOWTO</a>."
   }
 }

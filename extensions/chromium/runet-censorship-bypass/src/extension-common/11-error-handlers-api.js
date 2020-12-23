@@ -53,15 +53,6 @@
 
   };
 
-  const openAndFocus = function openAndFocus(url) {
-
-    chrome.tabs.create(
-      {url: url},
-      (tab) => chrome.windows.update(tab.windowId, {focused: true})
-    );
-
-  };
-
   const ifPrefix = 'if-on-';
   const extName = chrome.runtime.getManifest().name;
   const extVersion = window.apis.version.build;
@@ -75,8 +66,8 @@
       const errors = err ? {[type]: err} : this.idToError;
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
-      openAndFocus(
-        'http://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
+      window.utils.openAndFocus(
+        'https://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
           '&version=' + chrome.runtime.getManifest().version +
           '&useragent=' + encodeURIComponent(navigator.userAgent) +
@@ -242,7 +233,7 @@
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return openAndFocus(
+      return window.utils.openAndFocus(
         window.utils.messages.searchSettingsForUrl('proxy')
       );
     }
@@ -252,7 +243,7 @@
 
   handlers.installListenersOn(window, 'BG');
 
-  chrome.proxy.onProxyError.addListener( timeouted( (details) => {
+  (chrome.proxy.onProxyError || chrome.proxy.onError).addListener( timeouted( (details) => {
 
     if (!handlers.ifControlled) {
       return;
@@ -291,7 +282,7 @@
       handlers.mayNotify(
         noCon,
         chrome.i18n.getMessage('noControl'),
-        chrome.i18n.getMessage('which'),
+        chrome.i18n.getMessage('WhichQ'),
         {icon: 'no-control-128.png', ifSticky: false}
       );
     } else {
