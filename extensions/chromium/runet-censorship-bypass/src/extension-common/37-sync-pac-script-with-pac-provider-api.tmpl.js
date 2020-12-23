@@ -37,6 +37,7 @@
   const timeouted = window.utils.timeouted;
 
   const clarifyThen = window.apis.errorsLib.clarifyThen;
+  const clarify = window.apis.errorsLib.clarify;
   const Warning = window.apis.errorsLib.Warning;
 
   const httpLib = window.apis.httpLib;
@@ -59,6 +60,37 @@
 
   };
 
+  const doWithoutProxyAsync = (createPromise) => new Promise((resolve, reject) => {
+    chrome.proxy.settings.get({}, chromified((getErr, settings) => {
+      if (getErr) {
+        reject(getErr);
+        return;
+      }
+      const ifWeAreInControl = window.utils.areSettingsControlledFor(settings);
+      if (!ifWeAreInControl) {
+        resolve(createPromise());
+        return;
+      }
+      delete settings.levelOfControl;
+      const setProxyAsync = () => new Promise((setResolve, setReject) => {
+
+        console.log('Restoring chrome proxy settings...');
+        chrome.proxy.settings.set(
+          settings,
+          chromified((err) => err ? setReject(err) : setResolve()),
+        );
+      });
+      console.log('Clearing chrome proxy settings...');
+      chrome.proxy.settings.clear({}, chromified((clearErr) => {
+        if (clearErr) {
+          reject(clearErr);
+          return;
+        }
+        createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)), reject);
+      }));
+    }));
+  });
+
   const setPacAsync = function setPacAsync(
     pacData = mandatory(), cb = throwIfError,
   ) {
@@ -71,9 +103,17 @@
       },
     };
     console.log('Setting chrome proxy settings...');
-    chrome.proxy.settings.set( {value: config}, chromified((err) => {
+    chrome.proxy.settings.set( { value: config }, chromified((err) => {
 
       if (err) {
+        if (err.message === 'proxy.settings requires private browsing permission.') {
+          // window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
+          clarifyThen(
+            chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
+            cb,
+          )(err);
+          return;
+        }
         return cb(err);
       }
       handlers.updateControlState( () => {
@@ -86,13 +126,12 @@
           );
 
         }
-        console.log('Successfuly set PAC in proxy settings..');
+        console.log('Successfuly set PAC in proxy settings.');
         cb();
 
       });
 
     }));
-
   };
 
   const updatePacProxyIps = function updatePacProxyIps(
@@ -143,68 +182,40 @@
 
     }
 
-    httpLib.ifModifiedSince(pacUrl, lastModifiedStr, (err, newLastModifiedStr) => {
-
-      /*
-        TODO: Get rid of this dirty hack
-        IPFS used by AntiZapret always returns last-modified date as new Date(1000) which is 1 sec since unix epoch.
-        Last-modified isn't changed but target redireciton URL is and this URL should be compared to the last cached URL.
-        Hack here is to consider 5 seconds since epoch time the same way as the unix epoch start.
-        If you think etags are the solution then know that etags can't be read from the fetch API, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Expose-Headers.
-      */
-      /*
-      TODO: I turn off caching for now because I see no easy way out.
-
-      const ifWasEverModified = new Date(lastModifiedStr) - new Date(0) > 5000;
-      if (!newLastModifiedStr && ifWasEverModified) {
-        addWarning(
-          (ifRu
-            ? 'Ваш PAC-скрипт не нуждается в обновлении. Его дата: '
-            : 'Your PAC-script doesn\\'t need to be updated. It\\'s date: '
-          ) + lastModifiedStr,
-        );
-        const res = {lastModified: lastModifiedStr};
-        return cb(null, res);
-      }
-      */
-
+    console.log('Doing without proxy...');
+    const pacDataPromise = doWithoutProxyAsync(
       // Employ all urls, the latter are fallbacks for the former.
-      const pacDataPromise = provider.pacUrls.reduce(
-        (promise, url) => promise.catch(
-          () => new Promise(
-            (resolve, reject) => httpLib.get(
-              url,
-              (newErr, pacData) => newErr ? reject(newErr) : resolve(pacData),
+      () =>
+        provider.pacUrls.reduce(
+          (promise, url) => promise.catch(
+            () => new Promise(
+              (resolve, reject) => httpLib.get(
+                url,
+                (newErr, pacData) =>
+                  newErr ? reject(newErr) : resolve(pacData),
+              ),
             ),
           ),
-        ),
-        Promise.reject(),
-      );
-
-      pacDataPromise.then(
-
-        (pacData) => {
-
-          setPacAsync(
-            pacData,
-            (err, res) => cb(
+          Promise.reject(),
+        ).catch(
+          (err) => Promise.reject(clarify(
               err,
-              Object.assign(res || {}, {lastModified: newLastModifiedStr}),
-            ),
-          );
-
-        },
-
-        clarifyThen(
-          chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
-          + provider.pacUrls.join(' , ') + ' ].',
-          cb,
+              chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
+              + provider.pacUrls.join(' , ') + ' ].',
+          )),
         ),
-
-      );
-
-    });
-
+    ).then(
+      (pacData) => {
+        setPacAsync(
+          pacData,
+          (err, res) => cb(
+            err,
+            Object.assign(res || {}, {lastModified: lastModifiedStr}),
+          ),
+        );
+      },
+      cb,
+    );
   };
 
   window.apis.antiCensorRu = {
@@ -369,18 +380,18 @@
         }
       }
 
-      chrome.storage.local.clear(
+      chrome.storage.local.remove(
+        'antiCensorRu',
         () => chrome.storage.local.set(
-          onlySettable,
+          { antiCensorRu: onlySettable },
           chromified(cb),
-        )
+        ),
       );
 
     },
 
     syncWithPacProviderAsync(
       key = this.currentPacProvierKey, cb = throwIfError) {
-
       if( typeof(key) === 'function' ) {
         cb = key;
         key = this.getCurrentPacProviderKey();
@@ -513,10 +524,18 @@
   };
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
-  chrome.storage.local.get(null, chromified( async (err, oldStorage) => {
+  (async () => {
+    let oldStorage = await window.utils.promisedLocalStorage.get('antiCensorRu') || {};
 
-    if (err) {
-      throw err;
+    if (!Object.keys(oldStorage).length) {
+      const storage = await window.utils.promisedLocalStorage.get(null);
+      if (storage.version && window.apis.version.isLeq(storage.version, '0.0.1.48')) {
+        const ffxPacData = storage['firefox-only-pac-data'];
+        delete storage['firefox-only-pac-data'];
+        await window.utils.promisedLocalStorage.clear();
+        await window.utils.promisedLocalStorage.set({ antiCensorRu: storage });
+        oldStorage = storage;
+      }
     }
 
     /*
@@ -535,7 +554,7 @@
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU'),
           );
-          antiCensorRu.syncWithPacProviderAsync(() => {/* swallow */});
+          antiCensorRu.syncWithPacProviderAsync(() => { /* Swallow. */ });
         }
 
       })
@@ -552,14 +571,15 @@
     console.log('Keep cooked...');
     await new Promise((resolve) => window.apis.pacKitchen.keepCookedNowAsync(resolve));
 
-    console.log('Storage on init:', oldStorage);
+    //console.log('Storage on init:', oldStorage);
     antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
 
     if (antiCensorRu.ifFirstInstall) {
       // INSTALL
       console.log('Installing...');
       handlers.switch('on', 'ext-error');
-      return chrome.runtime.openOptionsPage();
+      chrome.runtime.openOptionsPage();
+      return;
     }
 
     // LAUNCH, RELOAD, UPDATE
@@ -686,6 +706,6 @@
         * Add storage.lastPacUpdateStamp.
     **/
 
-  }));
+  })();
 
 }

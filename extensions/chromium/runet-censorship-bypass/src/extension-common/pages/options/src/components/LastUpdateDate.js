@@ -7,8 +7,10 @@ export default function getLastUpdateDate(theState) {
 
     componentWillMount() {
 
-      this.onStorageChangedHandler = (changes) =>
-        changes.lastPacUpdateStamp.newValue && this.forceUpdate();
+      this.onStorageChangedHandler = (changes) => {
+        const ac = changes.antiCensorRu;
+        return ac && ac.newValue && ac.newValue.lastPacUpdateStamp && this.forceUpdate();
+      };
 
       chrome.storage.onChanged.addListener( this.onStorageChangedHandler );
 

@@ -1,5 +1,7 @@
 'use strict';
 
+console.log('Extension started.');
+
 {
 
   const IF_DEBUG = true;
@@ -39,15 +41,18 @@
 
     },
 
+    lastError: undefined,
+
     checkChromeError() {
 
       // Chrome API calls your cb in a context different from the point of API
       // method invokation.
-      const err = chrome.runtime.lastError || chrome.extension.lastError;
+      const err = chrome.runtime.lastError || chrome.extension.lastError || self.lastError;
       if (!err) {
         return;
       }
       console.warn('API returned error:', err);
+      delete self.lastError;
       return new Error(err.message); // Add stack.
 
     },
@@ -153,6 +158,32 @@
 
     },
 
+    promisedLocalStorage: {
+      get(key) {
+        return new Promise((resolve) => (
+          chrome.storage.local.get(
+            key,
+            window.utils.getOrDie((storage) => resolve(key ? storage[key] : storage)),
+          )
+        ));
+      },
+      set(items) {
+        return new Promise((resolve) => (
+          chrome.storage.local.set(items, resolve)
+        ));
+      },
+      remove(keys) {
+        return new Promise((resolve) => (
+          chrome.storage.local.remove(keys, resolve)
+        ));
+      },
+      clear() {
+        return new Promise((resolve) => (
+          chrome.storage.local.clear(resolve)
+        ));
+      },
+    },
+
     /*
     * Possible values for levelOfControl:
     *
@@ -230,6 +261,15 @@
 
     },
 
+    openAndFocus(url) {
+
+      chrome.tabs.create(
+        {url: url},
+        (tab) => chrome.windows.update(tab.windowId, {focused: true})
+      );
+
+    },
+
   };
 
   const max = 2**16;
@@ -251,44 +291,5 @@
       isLeq: (a, b) => compareVersions(a, b) <= 0,
     },
   };
-
-  // Shims for FireFox
-
-  if (!chrome.proxy.settings) {
-
-    const ffxStore = window.utils.createStorage('firefox-only');
-
-
-    chrome.proxy.settings = {
-      get: (_, cb) => {
-
-        let currentSettings = ffxStore('proxySettings') || {};
-        currentSettings.levelOfControl = 'controlled_by_this_extension'; // May be lie, but this field is required.
-        cb && cb(currentSettings);
-
-      },
-      onChange: {
-        addListener: () => {},
-      },
-      set: (details, cb) => {
-
-        browser.proxy.unregister();
-        browser.proxy.register('./default.pac.js');
-
-
-        // browser.proxy.onProxyError.addListener((...err) => { console.log('ERROR IN PAC:', ...err)  });
-
-        browser.runtime.sendMessage(details, {toProxyScript: true});
-        ffxStore('proxySettings', details);
-        cb && cb();
-
-      },
-    };
-    const proxySettings = ffxStore('proxySettings');
-    if (proxySettings) {
-      chrome.proxy.settings.set(proxySettings);
-    }
-
-  }
 
 }

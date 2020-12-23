@@ -136,5 +136,8 @@
   },
   "noOwnProxiesError": {
     "message": "Проксировать СВОИ сайты можно только при наличии СВОИХ прокси. Нет своих прокси, удовлетворяющих вашим требованиям."
+  },
+  "AllowExtensionToRunInPrivateWindows": {
+    "message": "Для работы расширения необходимо разрешить запуск в приватных окнах, см. <a href='https://rebrand.ly/ac-allow-private-windows'>инструкции</a>."
   }
 }
