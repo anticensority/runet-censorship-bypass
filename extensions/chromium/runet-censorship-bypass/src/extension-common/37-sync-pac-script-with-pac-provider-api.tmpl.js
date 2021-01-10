@@ -525,17 +525,33 @@
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
   (async () => {
-    let oldStorage = await window.utils.promisedLocalStorage.get('antiCensorRu') || {};
+    let oldAntiCensorRu = await window.utils.promisedLocalStorage.get('antiCensorRu') || {};
 
-    if (!Object.keys(oldStorage).length) {
+    const otherKeys = [
+      'pac-kitchen-if-incontinence',
+      'pac-kitchen-mods',
+      'ip-to-host',
+      'handlers-pac-error',
+      'handlers-ext-error',
+      'handlers-no-control',
+    ];
+
+    if (!Object.keys(oldAntiCensorRu).length) {
       const storage = await window.utils.promisedLocalStorage.get(null);
       if (storage.version && window.apis.version.isLeq(storage.version, '0.0.1.48')) {
         const ffxPacData = storage['firefox-only-pac-data'];
         delete storage['firefox-only-pac-data'];
         await window.utils.promisedLocalStorage.clear();
+        for(const key of otherKeys) {
+          await window.utils.promisedLocalStorage.set({ [key]: storage[key] });
+          delete storage[key];
+        }
         await window.utils.promisedLocalStorage.set({ antiCensorRu: storage });
-        oldStorage = storage;
+        oldAntiCensorRu = storage;
       }
+    }
+    if (oldAntiCensorRu.version && window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
+      // TODO:
     }
 
     /*
@@ -571,8 +587,8 @@
     console.log('Keep cooked...');
     await new Promise((resolve) => window.apis.pacKitchen.keepCookedNowAsync(resolve));
 
-    //console.log('Storage on init:', oldStorage);
-    antiCensorRu.ifFirstInstall = Object.keys(oldStorage).length === 0;
+    //console.log('Storage on init:', oldAntiCensorRu);
+    antiCensorRu.ifFirstInstall = Object.keys(oldAntiCensorRu).length === 0;
 
     if (antiCensorRu.ifFirstInstall) {
       // INSTALL
@@ -585,11 +601,11 @@
     // LAUNCH, RELOAD, UPDATE
     // Use old or migrate to default.
     antiCensorRu._currentPacProviderKey =
-      oldStorage._currentPacProviderKey || null;
+      oldAntiCensorRu._currentPacProviderKey || null;
     antiCensorRu.lastPacUpdateStamp =
-      oldStorage.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
+      oldAntiCensorRu.lastPacUpdateStamp || antiCensorRu.lastPacUpdateStamp;
     antiCensorRu._currentPacProviderLastModified =
-      oldStorage._currentPacProviderLastModified
+      oldAntiCensorRu._currentPacProviderLastModified
       || antiCensorRu._currentPacProviderLastModified;
     console.log(
       'Last PAC update was on',
@@ -607,11 +623,11 @@
 
     await new Promise(async (resolve) => {
 
-      const ifUpdating = antiCensorRu.version !== oldStorage.version;
+      const ifUpdating = antiCensorRu.version !== oldAntiCensorRu.version;
       if (!ifUpdating) {
 
         // LAUNCH, RELOAD, ENABLE
-        antiCensorRu.pacProviders = oldStorage.pacProviders;
+        antiCensorRu.pacProviders = oldAntiCensorRu.pacProviders;
         console.log('Extension launched, reloaded or enabled.');
         return resolve();
 
@@ -626,9 +642,9 @@
 
       });
 
-      console.log('Updating from', oldStorage.version, 'to', antiCensorRu.version);
+      console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.5')) {
+        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.5')) {
 
           // Change semicolons to semicolons followed by newlines in proxy string (raw).
           const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
@@ -641,7 +657,7 @@
           }
 
         }
-        if (window.apis.version.isLeq(oldStorage.version, '0.0.1.25')) {
+        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.25')) {
 
           console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
           const provKey = antiCensorRu.getCurrentPacProviderKey();
