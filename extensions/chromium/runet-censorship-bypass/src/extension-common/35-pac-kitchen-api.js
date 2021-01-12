@@ -388,7 +388,7 @@
         const ifManualExceptions = ifIncluded || ifExcluded;
         const finalExceptions = {};
         if (pacMods.ifProxyMoreDomains) {
-          pacMods.moreDomains.reduce((acc, tld) => {
+          finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
 
             acc[tld] = true;
             return acc;
