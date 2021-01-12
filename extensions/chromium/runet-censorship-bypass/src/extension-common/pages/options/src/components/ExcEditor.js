@@ -110,7 +110,7 @@ export default function getExcEditor(theState) {
 
     isHostValid(host) {
 
-      const ValidHostnameRegex = /^(?:\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+      const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
       if(!ValidHostnameRegex.test(host)) {
         this.props.funs.showErrors(new TypeError('Должно быть только доменное имя, без протокола, порта и пути. Попробуйте ещё раз.'));
         return false;
@@ -122,6 +122,8 @@ export default function getExcEditor(theState) {
     handleRadioClick(event) {
 
       let host = this.state.trimmedInputValueOrSpace;
+      const ifWild = host.startsWith('*.');
+      host = host.replace(/^\*\./g, '');
       (() => { // `return` === `preventDefault`.
 
         if(!this.isHostValid(host)) {
@@ -147,8 +149,7 @@ export default function getExcEditor(theState) {
               return false;
             }
 
-            const ifWild = host.startsWith('*.');
-            pacMods.exceptions[host.replace(/^\*\./g, '')] = { ifIncluded: ifYesClicked, ifWild };
+            pacMods.exceptions[host] = { ifProxy: ifYesClicked, ifWild };
             break;
 
           default:
@@ -293,7 +294,7 @@ export default function getExcEditor(theState) {
         if ( acc !== undefined ) {
           return acc;
         }
-        return this.state.trimmedInputValueOrSpace === excHost ? excState : undefined;
+        return this.state.trimmedInputValueOrSpace === excHost ? (excState || {}).ifProxy : undefined;
 
       }, undefined);
 
@@ -322,9 +323,10 @@ export default function getExcEditor(theState) {
 
                 // 1. Option's value may be changed to hide it from the tooltip.
                 // 2. Space is used in matching so even an empty input (replaced with space) has tooltip with prompts.
+                const ifProxy = (excState || {}).ifProxy;
                 return <option
                   value={ this.state.ifHostHiddenMap[excHost] ? '\n' : excHost + ' ' }
-                  label={ excState === true ? labelIfProxied : (excState === false ? labelIfNotProxied : labelIfAuto) }/>
+                  label={ ifProxy === true ? labelIfProxied : (ifProxy === false ? labelIfNotProxied : labelIfAuto) }/>
 
               })
             }
