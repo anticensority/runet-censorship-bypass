@@ -62,6 +62,9 @@ export default function getExcEditor(theState) {
   };
   */
 
+
+  const unWild = (inputExpr) => inputExpr.replace(/^\*\./g, '');
+
   return class ExcEditor extends Component {
 
     modsToOpts(pacMods) {
@@ -85,8 +88,9 @@ export default function getExcEditor(theState) {
       const pacMods = props.apis.pacKitchen.getPacMods();
       this.state = {
         trimmedInputValueOrSpace,
+        inputHostname: unWild(trimmedInputValueOrSpace),
         sortedListOfOptions: this.modsToOpts(pacMods),
-        ifHostHiddenMap: {}
+        hostToIfHidden: {},
       };
       this.handleRadioClick = this.handleRadioClick.bind(this);
       this.handleInputOrClick = this.handleInputOrClick.bind(this);
@@ -96,11 +100,11 @@ export default function getExcEditor(theState) {
     hideAllOptions() {
 
       this.setState({
-        ifHostHiddenMap: this.state.sortedListOfOptions.reduce(
-          (ifHostHiddenMap, [excHost]) => {
+        hostToIfHidden: this.state.sortedListOfOptions.reduce(
+          (hostToIfHidden, [excHost]) => {
 
-            ifHostHiddenMap[excHost] = true;
-            return ifHostHiddenMap;
+            hostToIfHidden[excHost] = true;
+            return hostToIfHidden;
 
           },
         {}),
@@ -121,9 +125,8 @@ export default function getExcEditor(theState) {
 
     handleRadioClick(event) {
 
-      let host = this.state.trimmedInputValueOrSpace;
-      const ifWild = host.startsWith('*.');
-      host = host.replace(/^\*\./g, '');
+      const ifWild  = this.state.trimmedInputValueOrSpace.startsWith('*.');
+      const host = this.state.inputHostname;
       (() => { // `return` === `preventDefault`.
 
         if(!this.isHostValid(host)) {
@@ -212,7 +215,10 @@ export default function getExcEditor(theState) {
       const ifInit = !event;
       const currentHost = ifTriangleClicked ? '' : (trimmedInput || (ifInit ? '' : ' '));
       setInputValue(currentHost);
-      this.setState({trimmedInputValueOrSpace: currentHost});
+      this.setState({
+        trimmedInputValueOrSpace: currentHost,
+        inputHostname: unWild(currentHost),
+      });
 
       // Episode 2.
 
@@ -281,7 +287,7 @@ export default function getExcEditor(theState) {
       })();
 
       this.setState({
-        ifHostHiddenMap: hidden,
+        hostToIfHidden: hidden,
         sortedListOfOptions: options,
       });
 
@@ -294,7 +300,7 @@ export default function getExcEditor(theState) {
         if ( acc !== undefined ) {
           return acc;
         }
-        return this.state.trimmedInputValueOrSpace === excHost ? (excState || {}).ifProxy : undefined;
+        return this.state.inputHostname === excHost ? (excState || {}).ifProxy : undefined;
 
       }, undefined);
 
@@ -325,7 +331,7 @@ export default function getExcEditor(theState) {
                 // 2. Space is used in matching so even an empty input (replaced with space) has tooltip with prompts.
                 const ifProxy = (excState || {}).ifProxy;
                 return <option
-                  value={ this.state.ifHostHiddenMap[excHost] ? '\n' : excHost + ' ' }
+                  value={ this.state.hostToIfHidden[excHost] ? '\n' : excHost + ' ' }
                   label={ ifProxy === true ? labelIfProxied : (ifProxy === false ? labelIfNotProxied : labelIfAuto) }/>
 
               })
