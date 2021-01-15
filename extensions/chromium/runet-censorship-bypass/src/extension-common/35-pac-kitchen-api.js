@@ -298,20 +298,19 @@
       self.included = [];
       self.excluded = [];
       for(const host of Object.keys(self.exceptions)) {
-        const ifProxy = self.exceptions[host]?.ifProxy || false;
-        const ifWild = self.exceptions[host]?.ifWild || false;
+        const ifProxy = self.exceptions[host] || false;
         if (ifProxy) {
-          self.included.push([host, ifWild]);
+          self.included.push(host);
         } else {
-          self.excluded.push([host, ifWild]);
+          self.excluded.push(host);
         }
       }
       ['included', 'excluded'].forEach((who) => {
 
         self[who] = self[who]
-          .map( ([domain, ifWild]) => [domain.split('').reverse(), ifWild] )
+          .map( (domain) => domain.split('').reverse() )
           .sort()
-          .map( ([rDomain, ifWild]) => [rDomain.reverse().join(''), ifWild] );
+          .map( (rDomain) => rDomain.reverse().join('') );
 
       });
       if (self.included.length && !self.filteredCustomsString) {
@@ -392,7 +391,7 @@
         if (pacMods.ifProxyMoreDomains) {
           finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
 
-            acc[tld] = { ifProxy: true, ifWild: true };
+            acc['*.' + tld] = true;
             return acc;
 
           }, finalExceptions);
@@ -408,7 +407,7 @@
 /******/    /* EXCEPTIONS START */
 /******/    const dotHost = '.' + host;
 /******/    const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
-/******/    const domainReducer = (maxWeight, [domain, { ifProxy, ifWild }]) => {
+/******/    const domainReducer = (maxWeight, [domain, ifProxy]) => {
 /******/
 /******/      if (!isHostInDomain(domain)) {
 /******/        return maxWeight;
