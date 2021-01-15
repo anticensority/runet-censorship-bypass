@@ -406,13 +406,26 @@
 /******/
 /******/    /* EXCEPTIONS START */
 /******/    const dotHost = '.' + host;
-/******/    const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
+            // TODO: handle wildcards.
+/******/    const isHostInDomain = (domain, ifWild) => {
+              if (ifWild) {
+                return dotHost.endsWith(domain.substr(1));
+              }
+              return domain === host;
+            }
 /******/    const domainReducer = (maxWeight, [domain, ifProxy]) => {
 /******/
-/******/      if (!isHostInDomain(domain)) {
+              const ifWild = domain.startsWith('*.');
+/******/      if (!isHostInDomain(domain, ifWild)) {
 /******/        return maxWeight;
 /******/      }
-/******/      const newWeightAbs = domain.length;
+              const len = domain.length;
+              if (ifWild) {
+                len = len === 0 ? len : (len - 2)*2 - 1;
+              } else {
+                len = len*2;
+              }
+/******/      const newWeightAbs = len;
 /******/      if (newWeightAbs < Math.abs(maxWeight)) {
 /******/        return maxWeight;
 /******/      }
