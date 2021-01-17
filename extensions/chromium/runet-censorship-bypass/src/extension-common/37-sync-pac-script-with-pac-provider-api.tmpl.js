@@ -551,7 +551,16 @@
       }
     }
     if (oldAntiCensorRu.version && window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
-      // TODO:
+      const modsMutated = window.apis.pacKitchen.getPacModsRaw();
+      if (modsMutated) {
+        modsMutated.exceptions = Object.entries(modsMutated.exceptions).reduce((acc, [host, ifProxy]) => {
+          acc[\`*.\${host}\`] = ifProxy;
+          return acc;
+        }, {});
+        await new Promise(
+          (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
+        );
+      }
     }
 
     /*
