@@ -387,7 +387,7 @@
         const ifIncluded = pacMods.included && pacMods.included.length;
         const ifExcluded = pacMods.excluded && pacMods.excluded.length;
         const ifManualExceptions = ifIncluded || ifExcluded;
-        const finalExceptions = {};
+        let finalExceptions = {};
         if (pacMods.ifProxyMoreDomains) {
           finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
 
@@ -419,7 +419,7 @@
 /******/      if (!isHostInDomain(domain, ifWild)) {
 /******/        return maxWeight;
 /******/      }
-              const len = domain.length;
+              let len = domain.length;
               if (ifWild) {
                 len = len === 0 ? len : (len - 2)*2 - 1;
               } else {
