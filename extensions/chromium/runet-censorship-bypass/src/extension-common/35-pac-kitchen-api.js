@@ -298,7 +298,8 @@
       self.included = [];
       self.excluded = [];
       for(const host of Object.keys(self.exceptions)) {
-        if (self.exceptions[host]) {
+        const ifProxy = self.exceptions[host] || false;
+        if (ifProxy) {
           self.included.push(host);
         } else {
           self.excluded.push(host);
@@ -307,9 +308,9 @@
       ['included', 'excluded'].forEach((who) => {
 
         self[who] = self[who]
-          .map( (s) => s.split('').reverse() )
+          .map( (domain) => domain.split('').reverse() )
           .sort()
-          .map( (a) => a.reverse().join('') );
+          .map( (rDomain) => rDomain.reverse().join('') );
 
       });
       if (self.included.length && !self.filteredCustomsString) {
@@ -386,11 +387,11 @@
         const ifIncluded = pacMods.included && pacMods.included.length;
         const ifExcluded = pacMods.excluded && pacMods.excluded.length;
         const ifManualExceptions = ifIncluded || ifExcluded;
-        const finalExceptions = {};
+        let finalExceptions = {};
         if (pacMods.ifProxyMoreDomains) {
-          pacMods.moreDomains.reduce((acc, tld) => {
+          finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
 
-            acc[tld] = true;
+            acc['*.' + tld] = true;
             return acc;
 
           }, finalExceptions);
@@ -405,17 +406,30 @@
 /******/
 /******/    /* EXCEPTIONS START */
 /******/    const dotHost = '.' + host;
-/******/    const isHostInDomain = (domain) => dotHost.endsWith('.' + domain);
-/******/    const domainReducer = (maxWeight, [domain, ifIncluded]) => {
+            // TODO: handle wildcards.
+/******/    const isHostInDomain = (domain, ifWild) => {
+              if (ifWild) {
+                return dotHost.endsWith(domain.substr(1));
+              }
+              return domain === host;
+            }
+/******/    const domainReducer = (maxWeight, [domain, ifProxy]) => {
 /******/
-/******/      if (!isHostInDomain(domain)) {
+              const ifWild = domain.startsWith('*.');
+/******/      if (!isHostInDomain(domain, ifWild)) {
 /******/        return maxWeight;
 /******/      }
-/******/      const newWeightAbs = domain.length;
+              let len = domain.length;
+              if (ifWild) {
+                len = len === 0 ? len : (len - 2)*2 - 1;
+              } else {
+                len = len*2;
+              }
+/******/      const newWeightAbs = len;
 /******/      if (newWeightAbs < Math.abs(maxWeight)) {
 /******/        return maxWeight;
 /******/      }
-/******/      return newWeightAbs*(ifIncluded ? 1 : -1);
+/******/      return newWeightAbs*(ifProxy ? 1 : -1);
 /******/
 /******/    };
 /******/

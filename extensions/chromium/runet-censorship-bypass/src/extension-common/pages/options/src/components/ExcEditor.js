@@ -79,14 +79,14 @@ export default function getExcEditor(theState) {
         props.currentTab &&
         props.currentTab.url &&
         !props.currentTab.url.startsWith('chrome')
-          ? new URL(props.currentTab.url).hostname.replace(/^www\./g, '')
+          ? '*.' + (new URL(props.currentTab.url).hostname.replace(/^www\./g, ''))
           : '';
 
       const pacMods = props.apis.pacKitchen.getPacMods();
       this.state = {
         trimmedInputValueOrSpace,
         sortedListOfOptions: this.modsToOpts(pacMods),
-        isHostHidden: {}
+        hostToIfHidden: {},
       };
       this.handleRadioClick = this.handleRadioClick.bind(this);
       this.handleInputOrClick = this.handleInputOrClick.bind(this);
@@ -96,11 +96,11 @@ export default function getExcEditor(theState) {
     hideAllOptions() {
 
       this.setState({
-        isHostHidden: this.state.sortedListOfOptions.reduce(
-          (isHostHidden, [excHost]) => {
+        hostToIfHidden: this.state.sortedListOfOptions.reduce(
+          (hostToIfHidden, [excHost]) => {
 
-            isHostHidden[excHost] = true;
-            return isHostHidden;
+            hostToIfHidden[excHost] = true;
+            return hostToIfHidden;
 
           },
         {}),
@@ -110,7 +110,7 @@ export default function getExcEditor(theState) {
 
     isHostValid(host) {
 
-      const ValidHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+      const ValidHostnameRegex = /^(?:\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
       if(!ValidHostnameRegex.test(host)) {
         this.props.funs.showErrors(new TypeError('Должно быть только доменное имя, без протокола, порта и пути. Попробуйте ещё раз.'));
         return false;
@@ -210,7 +210,9 @@ export default function getExcEditor(theState) {
       const ifInit = !event;
       const currentHost = ifTriangleClicked ? '' : (trimmedInput || (ifInit ? '' : ' '));
       setInputValue(currentHost);
-      this.setState({trimmedInputValueOrSpace: currentHost});
+      this.setState({
+        trimmedInputValueOrSpace: currentHost,
+      });
 
       // Episode 2.
 
@@ -279,7 +281,7 @@ export default function getExcEditor(theState) {
       })();
 
       this.setState({
-        isHostHidden: hidden,
+        hostToIfHidden: hidden,
         sortedListOfOptions: options,
       });
 
@@ -301,7 +303,7 @@ export default function getExcEditor(theState) {
           <div>{chrome.i18n.getMessage('ProxyTheDomainNameBelowQ')}</div>
           <div id="exc-address-container">
             <div id="exc-address" class={inputProxyingState !== undefined ? ( inputProxyingState === true ? scopedCss.ifYes : scopedCss.ifNo ) : ''}>
-              <span>*.</span><input placeholder="navalny.com" list="exc-list" id="exc-editor"
+              <input placeholder="*.navalny.com" list="exc-list" id="exc-editor"
                 value={this.state.trimmedInputValueOrSpace}
                 ref={(inputNode) => { this.rawInput = inputNode; }}
                 onKeyDown={this.handleKeyDown.bind(this)}
@@ -321,9 +323,10 @@ export default function getExcEditor(theState) {
 
                 // 1. Option's value may be changed to hide it from the tooltip.
                 // 2. Space is used in matching so even an empty input (replaced with space) has tooltip with prompts.
+                const ifProxy = excState;
                 return <option
-                  value={ this.state.isHostHidden[excHost] ? '\n' : excHost + ' ' }
-                  label={ excState === true ? labelIfProxied : (excState === false ? labelIfNotProxied : labelIfAuto) }/>
+                  value={ this.state.hostToIfHidden[excHost] ? '\n' : excHost + ' ' }
+                  label={ ifProxy === true ? labelIfProxied : (ifProxy === false ? labelIfNotProxied : labelIfAuto) }/>
 
               })
             }
