@@ -552,7 +552,7 @@
     }
     if (oldAntiCensorRu.version && window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
       const modsMutated = window.apis.pacKitchen.getPacModsRaw();
-      if (modsMutated) {
+      if (modsMutated && modsMutated.exceptions) {
         modsMutated.exceptions = Object.entries(modsMutated.exceptions).reduce((acc, [host, ifProxy]) => {
           acc[\`*.\${host}\`] = ifProxy;
           return acc;
