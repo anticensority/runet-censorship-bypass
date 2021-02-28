@@ -14,18 +14,18 @@
   "author": "Ilya Ig. Petrov",
   "license": "GPLv3",
   "devDependencies": {
-    "chai": "^3.5.0",
-    "eslint": "^3.19.0",
-    "eslint-config-google": "^0.7.1",
-    "gulp-changed": "^3.2.0",
-    "mocha": "^3.5.3",
-    "sinon-chrome": "^2.3.1",
+    "chai": "^4.3.0",
+    "eslint": "^7.19.0",
+    "eslint-config-google": "^0.14.0",
+    "gulp-changed": "^4.0.2",
+    "mocha": "^8.2.1",
+    "sinon-chrome": "^3.0.1",
     "symlink-to": "^0.0.4"
   },
   "dependencies": {
-    "del": "^3.0.0",
+    "del": "^6.0.0",
     "gulp": "^4.0.2",
     "plugin-error": "^1.0.1",
-    "through2": "^3.0.0"
+    "through2": "^4.0.2"
   }
 }
