@@ -105,8 +105,16 @@
       order: 5,
     },
     exceptions: {
-      category: 'exceptions',
       dflt: null,
+      category: 'exceptions',
+      order: 5.5,
+    },
+    whitelist: {
+      dflt: [],
+      category: 'exceptions',
+      label: 'белый список'
+      desc: 'Разрешить расширению работать только с адресами из белого списка',
+      order: 5.6,
     },
     ifMindExceptions: {
       dflt: true,
@@ -344,18 +352,38 @@
 /******/
 /******/  const originalFindProxyForURL = FindProxyForURL;
 /******/  let tmp = function(url, host) {
-/******/
+/******/    const dotHost = '.' + host;
     ${
       function() {
+        // TODO: STOPPED HERE
+        const wlstr =  JSON.stringify(pacMods.whitelist);
+        let generatedPac = `
+/******/    const ifWhitelisted =
+/******/             .some((whiteHost) => {
+/******/               const ifWild = whiteHost.startsWith('*');
+/******/               if (ifWild) {
+/******/                 return `dotHost.endsWith(whiteHost.substr(1));
+/******/               }
+/******/               return host === whiteHost;
+/******/         })
+/******/       if (ifWhiteListed) {
+/******/         return 'DIRECT';
+/******/       }
 
-        let res = pacMods.ifProhibitDns ? `
+/******/
+          if (!ifWhitelisted) {
+            return 'DIRECT';
+          }
+        )
+
+        generatedPac += pacMods.ifProhibitDns ? `
 /******/
 /******/    global.dnsResolve = function(host) { return null; };
 /******/
 /******/` : '';
         if (pacMods.ifProxyHttpsUrlsOnly) {
 
-          res += `
+          generatedPac += `
 /******/
 /******/    if (!url.startsWith("https")) {
 /******/      return "DIRECT";
@@ -365,7 +393,7 @@
         }
         if (pacMods.ifUseLocalTor) {
 
-          res += `
+          generatedPac += `
 /******/
 /******/    if (host.endsWith(".onion")) {
 /******/      return "${pacMods.torPoints.join('; ')}";
@@ -373,12 +401,12 @@
 /******/
 /******/  `;
         }
-        res += `
+        generatedPac += `
 /******/
 /******/    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"DIRECT"'};
 /******/`;
         if (pacMods.filteredCustomsString) {
-          res += `
+          generatedPac += `
 /******/
 /******/    const filteredCustomProxies = "${pacMods.filteredCustomsString}";
 /******/`;
@@ -402,10 +430,9 @@
         const ifExceptions = Object.keys(finalExceptions).length;
 
         if (ifExceptions) {
-          res += `
+          generatedPac += `
 /******/
 /******/    /* EXCEPTIONS START */
-/******/    const dotHost = '.' + host;
             // TODO: handle wildcards.
 /******/    const isHostInDomain = (domain, ifWild) => {
               if (ifWild) {
@@ -448,7 +475,7 @@ ${        pacMods.filteredCustomsString
 /******/    /* EXCEPTIONS END */
 `;
         }
-        res += `
+        generatedPac += `
 /******/    const pacScriptProxies = originalFindProxyForURL(url, host)${
 /******/          pacMods.ifProxyOrDie
                     ? '.replace(/DIRECT/g, "")'
@@ -459,12 +486,12 @@ ${        pacMods.filteredCustomsString
           !pacMods.filteredCustomsString &&
            pacMods.ifUsePacScriptProxies
         ) {
-          return res + `
+          return generatedPac + `
 /******/    return [pacScriptProxies, directIfAllowed]
               .filter((p) => p).join("; ") || "DIRECT";`;
         }
 
-        return res + `
+        return generatedPac + `
 /******/    let pacProxyArray = pacScriptProxies.split(/(?:\\s*;\\s*)+/g).filter( (p) => p );
 /******/    const ifNoProxies = pacProxyArray${pacMods.ifProxyOrDie ? '.length === 0' : '.every( (p) => /^DIRECT$/i.test(p) )'};
 /******/    if (ifNoProxies) {

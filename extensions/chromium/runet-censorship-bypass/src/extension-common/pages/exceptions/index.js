@@ -26,7 +26,16 @@ ${(mods.included || []).join('\n')}
 ===============================
 # НЕ ПРОКСИРОВАТЬ:
 
-${(mods.excluded || []).join('\n')}`;
+${(mods.excluded || []).join('\n')}
+
+
+===============================
+# БЕЛЫЙ СПИСОК
+# Разрешить расширению работать только с этими адресами:
+
+${(mods.whitelist || []).join('\n')}
+
+`.trim();
 
         status.innerText = 'Успешно загружено!';
 
@@ -35,7 +44,7 @@ ${(mods.excluded || []).join('\n')}`;
 
       saveBtn.onclick = function() {
 
-        let [proxyList, dontProxyList] = editor.value
+        let [proxyList, dontProxyList, whitelist] = editor.value
           .trim()
           .replace(/#.*/g, '')
           .split(/=+/g)
@@ -45,12 +54,14 @@ ${(mods.excluded || []).join('\n')}`;
             .filter((host) => host)
           )
         dontProxyList = dontProxyList || [];
+        whitelist = whitelist || [];
 
         const exceptions = {};
         proxyList.forEach((host) => (exceptions[host] = true));
         dontProxyList.forEach((host) => (exceptions[host] = false));
         const mods = backgroundPage.apis.pacKitchen.getPacMods();
         mods.exceptions = exceptions;
+        mods.whitelist = whitelist;
         backgroundPage.apis.pacKitchen.keepCookedNowAsync(mods, (err) => {
           if (!err) {
             status.innerText = 'Успешно сохранено!';
