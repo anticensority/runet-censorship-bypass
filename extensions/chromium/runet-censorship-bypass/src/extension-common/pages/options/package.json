@@ -12,6 +12,7 @@
     "concat-stream": "^1.6.2",
     "csjs-inject": "^1.0.1",
     "flow-bin": "^0.45.0",
+    "gulp": "^4.0.2",
     "inferno": "~3.2.0",
     "inferno-component": "^3.10.1",
     "inferno-create-element": "^3.10.1",

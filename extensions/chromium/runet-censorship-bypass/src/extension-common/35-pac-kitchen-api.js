@@ -101,20 +101,12 @@
       dflt: false,
       category: 'ownProxies',
       label: 'использовать СВОЙ локальный Tor',
-      desc: 'Установите <a href="https://rebrand.ly/ac-tor">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>',
+      desc: 'Установите <a href="https://rebrand.ly/ac-tor">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>.',
       order: 5,
     },
     exceptions: {
       dflt: null,
       category: 'exceptions',
-      order: 5.5,
-    },
-    whitelist: {
-      dflt: [],
-      category: 'exceptions',
-      label: 'белый список'
-      desc: 'Разрешить расширению работать только с адресами из белого списка',
-      order: 5.6,
     },
     ifMindExceptions: {
       dflt: true,
@@ -122,6 +114,17 @@
       label: 'учитывать исключения',
       desc: 'Учитывать сайты, добавленные вручную. Только для своих прокси-серверов! Без своих прокси работать не будет.',
       order: 6,
+    },
+    whitelist: {
+      dflt: [],
+      category: 'exceptions',
+    },
+    ifMindWhitelist: {
+      dflt: false,
+      category: 'exceptions',
+      label: 'Ограничиться только <a href="../exceptions/index.html">белым списком</a>',
+      desc: 'Разрешить расширению работать только с адресами из белого списка.',
+      order: 6.5,
     },
     customProxyStringRaw: {
       dflt: '',
@@ -165,7 +168,6 @@
       return acc;
 
     }, {});
-
   };
 
   const getCurrentConfigs = function getCurrentConfigs(ifRaw = false) {
@@ -228,7 +230,8 @@
       });
 
     const self = {};
-    Object.assign(self, getDefaults(), mods);
+    const gdft = getDefaults();
+    Object.assign(self, gdft, mods);
     self.ifNoMods = ifNoMods;
 
     let customProxyArray = [];
@@ -355,26 +358,20 @@
 /******/    const dotHost = '.' + host;
     ${
       function() {
-        // TODO: STOPPED HERE
-        const wlstr =  JSON.stringify(pacMods.whitelist);
         let generatedPac = `
+/******/  if (${pacMods.ifMindWhitelist && pacMods.whitelist.length}) {
 /******/    const ifWhitelisted =
-/******/             .some((whiteHost) => {
-/******/               const ifWild = whiteHost.startsWith('*');
-/******/               if (ifWild) {
-/******/                 return `dotHost.endsWith(whiteHost.substr(1));
-/******/               }
-/******/               return host === whiteHost;
-/******/         })
-/******/       if (ifWhiteListed) {
-/******/         return 'DIRECT';
-/******/       }
-
-/******/
-          if (!ifWhitelisted) {
-            return 'DIRECT';
-          }
-        )
+/******/      ${JSON.stringify(pacMods.whitelist)}.some((whiteHost) => {
+/******/        const ifWild = whiteHost.startsWith('*');
+/******/          if (ifWild) {
+/******/            return dotHost.endsWith(whiteHost.substr(1));
+/******/          }
+/******/          return host === whiteHost;
+/******/      })
+/******/    if (!ifWhitelisted) {
+/******/      return 'DIRECT';
+/******/    }
+/******/  }`;
 
         generatedPac += pacMods.ifProhibitDns ? `
 /******/
