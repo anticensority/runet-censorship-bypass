@@ -4,7 +4,7 @@ export default function append(document, { flags }) {
   document.querySelector('style').innerHTML = `
     /* GLOBAL VARIABLES */
 
-    :root {
+    body {
       --ribbon-color: #4169e1;
       --blue-bg: dodgerblue;
       --default-grey: #bfbfbf;
