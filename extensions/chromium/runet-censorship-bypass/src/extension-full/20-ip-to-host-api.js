@@ -112,7 +112,7 @@
     const promises = types.map(
       (type) => new Promise((resolve) =>
         httpLib.get(
-          `https://dns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
+          `https://AAAAAAAAAdns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
           (err, res) => {
 
             if (res) {
