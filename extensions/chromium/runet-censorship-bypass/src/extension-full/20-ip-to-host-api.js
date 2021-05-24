@@ -112,7 +112,7 @@
     const promises = types.map(
       (type) => new Promise((resolve) =>
         httpLib.get(
-          `https://AAAAAAAAAdns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
+          `https://dns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
           (err, res) => {
 
             if (res) {
@@ -255,7 +255,9 @@
 
     _updateAllAsync(cb = mandatory()) {
 
-      const hostArr = Object.keys(privates._strToHostObj);
+      const hostArr = Object.keys(privates._strToHostObj)
+        .filter((hostStr) => hostStr !== 'localhost');
+    
       console.log('Update all:', hostArr);
 
       const promises = hostArr.map(

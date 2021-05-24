@@ -229,7 +229,7 @@
           Promise.reject(),
         );
         return (ifUnattended
-            ? tryPromiseSeveralTimesAsync(tryAllUrlsAsync, [10, 20, 30])
+            ? tryPromiseSeveralTimesAsync(tryAllUrlsAsync, [20, 40, 60])
             : tryAllUrlsAsync()        
         ).catch(
           (err) => Promise.reject(clarify(
@@ -275,7 +275,7 @@
                     <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
                   \`,
         order: 0,
-        pacUrls: ['https://AAAAAAAAAantizapret.prostovpn.org/proxy.pac'],
+        pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
       },
       Антицензорити: {
         distinctKey: 'Anticensority',
@@ -441,8 +441,6 @@
 
       const pacProvider = this.getPacProvider(key);
 
-      ifUnattended = true; // TODO:
-
       const pacSetPromise = new Promise(
         (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
@@ -466,13 +464,19 @@
 
       const updateIpsAsync = () => new Promise(
         (resolve, reject) => updatePacProxyIps(
-          resolve,
+          (err, res, ...warns) => {
+            if (err) {
+              reject([err, ...warns]);
+              return;
+            }
+            resolve(err, res, ...warns);
+          },
         ),
       );
 
       const ipsErrorPromise = !ifUnattended
         ? updateIpsAsync()
-        : tryPromiseSeveralTimesAsync(updateIpsAsync, [10, 20, 30]);
+        : tryPromiseSeveralTimesAsync(updateIpsAsync, [20, 40, 60]);
 
       Promise.all([pacSetPromise, ipsErrorPromise]).then(
         ([[pacErr, pacRes, ...pacWarns], ipsErr]) => {
@@ -622,7 +626,7 @@
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU'),
           );
-          antiCensorRu.syncWithPacProviderAsync(() => { /* Swallow. */ });
+          antiCensorRu.syncWithPacProviderAsync({ ifUnattended: true }, () => { /* Swallow. */ });
         }
 
       })
