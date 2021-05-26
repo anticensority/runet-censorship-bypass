@@ -539,7 +539,7 @@
         throw new Error('Key must be defined.');
       }
       if (this.currentProviderKey !== key) {
-        return this.syncWithPacProviderAsync(key, cb);
+        return this.syncWithPacProviderAsync({ key }, cb);
       }
       console.log(key + ' already installed.');
       cb();
