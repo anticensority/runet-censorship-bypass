@@ -255,7 +255,9 @@
 
     _updateAllAsync(cb = mandatory()) {
 
-      const hostArr = Object.keys(privates._strToHostObj);
+      const hostArr = Object.keys(privates._strToHostObj)
+        .filter((hostStr) => hostStr !== 'localhost');
+    
       console.log('Update all:', hostArr);
 
       const promises = hostArr.map(

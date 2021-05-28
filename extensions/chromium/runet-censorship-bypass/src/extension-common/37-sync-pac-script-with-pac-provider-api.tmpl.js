@@ -60,7 +60,38 @@
 
   };
 
+  const tryPromiseSeveralTimesAsync = (createPromise, timeoutsInSec) =>
+    createPromise().then(
+      (res) => Promise.resolve(res),
+      (err) => {
+        console.log('Promise failed, are there any retries?');
+        const outSec = timeoutsInSec.shift();
+        if (outSec === undefined) {
+          console.log('No retries left.');
+          return Promise.reject(err);
+        }
+        console.log('Retrying in', outSec, 'sec');
+        /*
+        const alarmName = 'try-promise=several-times-async';
+        const res = new Promise((resolve) => {
+          chrome.alarms.onAlarm.addListener((alarmInfo) => {
+            if (alarmInfo.name === alarmName) {
+              console.log('Time to retry.');
+              resolve(tryPromiseSeveralTimesAsync(createPromise, timeoutsInSec));
+            }
+          });
+        });
+        chrome.alarms.create(alarmName, { delayInMinutes: outSec/60 });
+        return res;
+        */
+        return new Promise((resolve) =>
+          window.setTimeout(() => resolve(tryPromiseSeveralTimesAsync(createPromise, timeoutsInSec)), outSec*1000),
+        );
+      },
+  );
+
   const doWithoutProxyAsync = (createPromise) => new Promise((resolve, reject) => {
+    console.log('Doing without proxy...');
     chrome.proxy.settings.get({}, chromified((getErr, settings) => {
       if (getErr) {
         reject(getErr);
@@ -147,7 +178,7 @@
   };
 
   const setPacScriptFromProviderAsync = function setPacScriptFromProviderAsync(
-    provider, lastModifiedStr = mandatory(), cb = throwIfError,
+    provider, lastModifiedStr, ifUnattended = mandatory(), cb = throwIfError,
   ) {
 
     const pacUrl = provider.pacUrls[0];
@@ -182,11 +213,10 @@
 
     }
 
-    console.log('Doing without proxy...');
-    const pacDataPromise = doWithoutProxyAsync(
+    doWithoutProxyAsync(
       // Employ all urls, the latter are fallbacks for the former.
-      () =>
-        provider.pacUrls.reduce(
+      () => {
+        const tryAllUrlsAsync = () => provider.pacUrls.reduce(
           (promise, url) => promise.catch(
             () => new Promise(
               (resolve, reject) => httpLib.get(
@@ -197,13 +227,18 @@
             ),
           ),
           Promise.reject(),
+        );
+        return (ifUnattended
+            ? tryPromiseSeveralTimesAsync(tryAllUrlsAsync, [20, 40, 60])
+            : tryAllUrlsAsync()        
         ).catch(
           (err) => Promise.reject(clarify(
               err,
               chrome.i18n.getMessage('FailedToDownloadPacScriptFromAddresses') + ': [ '
               + provider.pacUrls.join(' , ') + ' ].',
           )),
-        ),
+        );
+      },
     ).then(
       (pacData) => {
         setPacAsync(
@@ -390,12 +425,13 @@
 
     },
 
-    syncWithPacProviderAsync(
-      key = this.currentPacProvierKey, cb = throwIfError) {
-      if( typeof(key) === 'function' ) {
-        cb = key;
-        key = this.getCurrentPacProviderKey();
+    syncWithPacProviderAsync(opts = {}, cb = throwIfError) {
+      const optsDefaults = Object.freeze({ key: this.getCurrentPacProviderKey(), ifUnattended: false });
+      if( typeof(opts) === 'function' ) {
+        cb = opts;
+        opts = {};
       }
+      let { key, ifUnattended } = { ...optsDefaults, ...opts };
       cb = asyncLogGroup('Syncing with PAC provider ' + key + '...', cb);
 
       if (key === null) {
@@ -409,6 +445,7 @@
         (resolve, reject) => setPacScriptFromProviderAsync(
           pacProvider,
           this.getLastModifiedForKey(key),
+          ifUnattended,
           (err, res, ...warns) => {
 
             if (!err) {
@@ -425,11 +462,21 @@
         )
       );
 
-      const ipsErrorPromise = new Promise(
+      const updateIpsAsync = () => new Promise(
         (resolve, reject) => updatePacProxyIps(
-          resolve,
+          (err, res, ...warns) => {
+            if (err) {
+              reject([err, ...warns]);
+              return;
+            }
+            resolve(err, res, ...warns);
+          },
         ),
       );
+
+      const ipsErrorPromise = !ifUnattended
+        ? updateIpsAsync()
+        : tryPromiseSeveralTimesAsync(updateIpsAsync, [20, 40, 60]);
 
       Promise.all([pacSetPromise, ipsErrorPromise]).then(
         ([[pacErr, pacRes, ...pacWarns], ipsErr]) => {
@@ -492,7 +539,7 @@
         throw new Error('Key must be defined.');
       }
       if (this.currentProviderKey !== key) {
-        return this.syncWithPacProviderAsync(key, cb);
+        return this.syncWithPacProviderAsync({ key }, cb);
       }
       console.log(key + ' already installed.');
       cb();
@@ -579,7 +626,7 @@
             'Periodic PAC update triggered:',
             new Date().toLocaleString('ru-RU'),
           );
-          antiCensorRu.syncWithPacProviderAsync(() => { /* Swallow. */ });
+          antiCensorRu.syncWithPacProviderAsync({ ifUnattended: true }, () => { /* Swallow. */ });
         }
 
       })
