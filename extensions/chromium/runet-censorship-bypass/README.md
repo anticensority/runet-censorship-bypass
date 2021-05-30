@@ -2,8 +2,8 @@
 
 Tested on:
 
-NodeJS: v14.13.1.
-NPM: 6.14.8.
+NodeJS: v16.1.0.
+NPM: 7.11.2.
 OS: Linux Mint 20 Xfce Edition.
 
 ```
