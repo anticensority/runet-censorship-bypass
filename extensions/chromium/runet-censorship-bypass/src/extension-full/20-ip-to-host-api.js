@@ -80,7 +80,9 @@
       localhost: { host: 'localhost' },
     });
 
-    privates._ipToHostObj = {};
+    privates._ipToHostObj = {
+      '127.0.0.1': { host: 'localhost' },
+    };
 
     // Persisted.
     const ipToHost = _state(ip2host);
@@ -257,7 +259,7 @@
 
       const hostArr = Object.keys(privates._strToHostObj)
         .filter((hostStr) => hostStr !== 'localhost');
-    
+
       console.log('Update all:', hostArr);
 
       const promises = hostArr.map(
