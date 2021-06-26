@@ -82,6 +82,7 @@
 
     privates._ipToHostObj = {
       '127.0.0.1': { host: 'localhost' },
+      '0.0.0.0': { host: 'localhost' },
     };
 
     // Persisted.
@@ -108,7 +109,7 @@
   const getIpsFor = function getIpsFor(host, cb = mandatory()) {
 
     if (host.trim() === 'localhost') {
-      return cb(null, ['127.0.0.1', '::1']);
+      return cb(null, ['127.0.0.1', '0.0.0.0', '::1']);
     }
     const types = [1, 28];
     const promises = types.map(
