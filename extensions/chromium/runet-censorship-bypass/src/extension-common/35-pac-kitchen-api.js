@@ -104,6 +104,13 @@
       desc: 'Установите <a href="https://rebrand.ly/ac-tor">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>.',
       order: 5,
     },
+    ifUseLocalWarp: {
+      dflt: false,
+      category: 'ownProxies',
+      label: 'использовать WARP как прокси',
+      desc: 'Использовать СВОЙ локальный CloudFlare WARP (<a href="https://one.one.one.one">https://one.one.one.one</a>) в качестве прокси.',
+      order: 5.5,
+    },
     exceptions: {
       dflt: null,
       category: 'exceptions',
@@ -244,6 +251,10 @@
       if (self.ifUseSecureProxiesOnly) {
         customProxyArray = customProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) );
       }
+    }
+    if (self.ifUseLocalWarp) {
+      self.warpPoints = ['HTTPS localhost:40000', 'SOCKS5 localhost:40000'];
+      customProxyArray.push(...self.warpPoints);
     }
     if (self.ifUseLocalTor) {
       self.torPoints = ['SOCKS5 localhost:9150', 'SOCKS5 localhost:9050'];
