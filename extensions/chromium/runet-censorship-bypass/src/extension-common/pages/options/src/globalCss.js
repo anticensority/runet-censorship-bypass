@@ -12,18 +12,13 @@ export default function append(document, { flags }) {
       --cr-icon-selected: #d7d7d7;
       --cr-popup-border: #bababa;
       --cr-grey-panel: #f2f2f2;
-      ${ flags.ifInsideOptionsPage
-          // Without this prop on the next line
-          // options page width may be jerking
-          // in size when scrolling is showed.
-          ? 'width: 20em'
-          : 'max-width: 25em;' }
     }
 
     /* BASE ELEMENTS */
 
     body {
       margin: 0;
+      max-width: 25em;
     }
     a, a:visited {
       color: var(--ribbon-color);
