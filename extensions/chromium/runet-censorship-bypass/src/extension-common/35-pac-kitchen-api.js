@@ -253,7 +253,7 @@
       }
     }
     if (self.ifUseLocalWarp) {
-      self.warpPoints = ['HTTPS localhost:40000', 'SOCKS5 localhost:40000'];
+      self.warpPoints = ['SOCKS5 localhost:40000', 'HTTPS localhost:40000'];
       customProxyArray.push(...self.warpPoints);
     }
     if (self.ifUseLocalTor) {
