@@ -365,11 +365,56 @@
 /******/  "use strict";
 /******/
 /******/  const originalFindProxyForURL = FindProxyForURL;
-/******/  let tmp = function(url, host) {
-/******/    const dotHost = '.' + host;
-    ${
-      function() {
-        let generatedPac = `
+/******/  let newFindProxyForURL = function(url, host) {
+${
+  function() {
+
+    let generatedPac = pacMods.ifProhibitDns ? `
+/******/
+/******/  global.dnsResolve = function(host) { return null; };
+/******/
+/******/` : '';
+
+    generatedPac += `
+/******/  const ip = dnsResolve(host); // TODO:
+/******/  const dotHost = '.' + host;
+`;
+    generatedPac += `
+//Return DIRECT for all local addresses.
+/******/  if (ip) {
+/******/    const ipInt = convert_addr(ip);
+/******/    if([
+/******/        /* Reserved networks: https://en.wikipedia.org/wiki/Reserved_IP_addresses#IPv4 */
+/******/        [-16777216,  0          ], // ['0.0.0.0'    , '255.0.0.0'  ],
+/******/        [-16777216,  167772160  ], // ['10.0.0.0'   , '255.0.0.0'  ],
+/******/        [-4194304,   1681915904 ], // ['100.64.0.0' , '255.192.0.0'],
+/******/        [-16777216,  2130706432 ], // ['127.0.0.0'  , '255.0.0.0'  ],
+/******/        [-65536,     -1442971648], // ['169.254.0.0', '255.255.0.0'],
+/******/        [-1048576,   -1408237568], // ['172.16.0.0', '255.240.0.0'],
+/******/        [-256,       -1073741824], // ['192.0.0.0'  , '255.255.255.0'],
+/******/        [-256,       -1073741312], // ['192.0.2.0'  , '255.255.255.0'],
+/******/        [-256,       -1067949312], // ['192.88.99.0'  , '255.255.255.0'],
+/******/        [-65536,     -1062731776], // ['192.168.0.0', '255.255.0.0'],
+/******/        [-131072,    -971898880 ], // ['198.18.0.0', '255.254.0.0'],
+/******/        [-256,       -969710592 ], // ['198.51.100.0', '255.255.255.0'],
+/******/        [-256,       -889163520 ], // ['203.0.113.0', '255.255.255.0'],
+/******/        [-268435456, -536870912 ], // ['224.0.0.0', '240.0.0.0'],
+/******/        [-268435456, -268435456 ], // ['240.0.0.0', '240.0.0.0'],
+/******/        [-1,         -1         ], // ['255.255.255.255' , '255.255.255.255'],
+/******/      ].some(([netMask, maskedNet]) => (ipInt & netMask) === maskedNet)
+/******/    ) {
+/******/      return "DIRECT";
+/******/    }
+/******/  }`;
+
+    let newDirect = pacMods.replaceDirectWith || 'DIRECT';
+
+    generatedPac += `
+/******/
+/******/  const newDirectIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : newDirect};
+/******/`;
+
+    generatedPac += `
 /******/  if (${pacMods.ifMindWhitelist && pacMods.whitelist.length}) {
 /******/    const ifWhitelisted =
 /******/      ${JSON.stringify(pacMods.whitelist)}.some((whiteHost) => {
@@ -380,65 +425,52 @@
 /******/          return host === whiteHost;
 /******/      })
 /******/    if (!ifWhitelisted) {
-/******/      return 'DIRECT';
+/******/      return "${newDirect}";
 /******/    }
 /******/  }`;
 
-        generatedPac += pacMods.ifProhibitDns ? `
-/******/
-/******/    global.dnsResolve = function(host) { return null; };
-/******/
-/******/` : '';
-        if (pacMods.ifProxyHttpsUrlsOnly) {
+    if (pacMods.ifProxyHttpsUrlsOnly) {
 
-          generatedPac += `
+      generatedPac += `
 /******/
-/******/    if (!url.startsWith("https")) {
-/******/      return "DIRECT";
-/******/    }
-/******/
+/******/  if (!url.startsWith("https")) {
+/******/    return "${newDirect}";
+/******/  }
 /******/  `;
-        }
-        if (pacMods.ifUseLocalTor) {
-
-          generatedPac += `
+    }
+    if (pacMods.ifUseLocalTor) {
+      generatedPac += `
 /******/
-/******/    if (host.endsWith(".onion")) {
-/******/      return "${pacMods.torPoints.join('; ')}";
-/******/    }
-/******/
+/******/  if (host.endsWith(".onion")) {
+/******/    return "${pacMods.torPoints.join('; ')}";
+/******/  }
 /******/  `;
-        }
-        generatedPac += `
+    }
+    if (pacMods.filteredCustomsString) {
+      generatedPac += `
 /******/
-/******/    const directIfAllowed = ${pacMods.ifProxyOrDie ? '""/* Not allowed. */' : '"DIRECT"'};
+/******/  const filteredCustomProxies = "${pacMods.filteredCustomsString}";
 /******/`;
-        if (pacMods.filteredCustomsString) {
-          generatedPac += `
-/******/
-/******/    const filteredCustomProxies = "${pacMods.filteredCustomsString}";
-/******/`;
-        }
+    }
+    const ifIncluded = pacMods.included && pacMods.included.length;
+    const ifExcluded = pacMods.excluded && pacMods.excluded.length;
+    const ifManualExceptions = ifIncluded || ifExcluded;
+    let finalExceptions = {};
+    if (pacMods.ifProxyMoreDomains) {
+      finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
 
-        const ifIncluded = pacMods.included && pacMods.included.length;
-        const ifExcluded = pacMods.excluded && pacMods.excluded.length;
-        const ifManualExceptions = ifIncluded || ifExcluded;
-        let finalExceptions = {};
-        if (pacMods.ifProxyMoreDomains) {
-          finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
+        acc['*.' + tld] = true;
+        return acc;
 
-            acc['*.' + tld] = true;
-            return acc;
+      }, finalExceptions);
+    }
+    if (pacMods.ifMindExceptions) {
+      Object.assign(finalExceptions, (pacMods.exceptions || {}));
+    }
+    const ifExceptions = Object.keys(finalExceptions).length;
 
-          }, finalExceptions);
-        }
-        if (pacMods.ifMindExceptions) {
-          Object.assign(finalExceptions, (pacMods.exceptions || {}));
-        }
-        const ifExceptions = Object.keys(finalExceptions).length;
-
-        if (ifExceptions) {
-          generatedPac += `
+    if (ifExceptions) {
+      generatedPac += `
 /******/
 /******/    /* EXCEPTIONS START */
             // TODO: handle wildcards.
@@ -476,7 +508,7 @@
 /******/      }
 /******/      // Always proxy it!
 ${        pacMods.filteredCustomsString
-            ? `/******/      return filteredCustomProxies + "; " + directIfAllowed;`
+            ? `/******/      return filteredCustomProxies + "; " + newDirectIfAllowed;`
             : '/******/      /* No custom proxies -- continue. */'
 }
 /******/    }
@@ -484,10 +516,8 @@ ${        pacMods.filteredCustomsString
 `;
         }
         generatedPac += `
-/******/    const pacScriptProxies = originalFindProxyForURL(url, host)${
-/******/          pacMods.ifProxyOrDie
-                    ? '.replace(/DIRECT/g, "")'
-                    : ' + "; " + directIfAllowed'
+/******/    const pacScriptProxies = originalFindProxyForURL(url, host)
+              .replace(/DIRECT/g, newDirectIfAllowed);
         };`;
         if(
           !pacMods.ifUseSecureProxiesOnly &&
@@ -495,7 +525,7 @@ ${        pacMods.filteredCustomsString
            pacMods.ifUsePacScriptProxies
         ) {
           return generatedPac + `
-/******/    return [pacScriptProxies, directIfAllowed]
+/******/    return [pacScriptProxies, newDirectIfAllowed]
               .filter((p) => p).join("; ") || "DIRECT";`;
         }
 
@@ -523,52 +553,16 @@ ${        pacMods.filteredCustomsString
           }
           return filteredPacExp + ' + "; " + ';
 
-        }() + 'directIfAllowed;'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
+        }() + 'newDirectIfAllowed;'; // Without DIRECT you will get 'PROXY CONN FAILED' pac-error.
 
       }()
     }
-
+    
 /******/  };
-${
-      !pacMods.replaceDirectWith
-        ? ''
-        : `
-/******/  const oldTmp = tmp;
-/******/  tmp = function(url, host) {
-/******/    const ip = dnsResolve(host);
-/******/    if (ip) {
-/******/      const ipInt = convert_addr(ip);
-/******/      if([
-/******/          /* Reserved networks: https://en.wikipedia.org/wiki/Reserved_IP_addresses#IPv4 */
-/******/          [-16777216,  0          ], // ['0.0.0.0'    , '255.0.0.0'  ],
-/******/          [-16777216,  167772160  ], // ['10.0.0.0'   , '255.0.0.0'  ],
-/******/          [-4194304,   1681915904 ], // ['100.64.0.0' , '255.192.0.0'],
-/******/          [-16777216,  2130706432 ], // ['127.0.0.0'  , '255.0.0.0'  ],
-/******/          [-65536,     -1442971648], // ['169.254.0.0', '255.255.0.0'],
-/******/          [-1048576,   -1408237568], // ['172.16.0.0', '255.240.0.0'],
-/******/          [-256,       -1073741824], // ['192.0.0.0'  , '255.255.255.0'],
-/******/          [-256,       -1073741312], // ['192.0.2.0'  , '255.255.255.0'],
-/******/          [-256,       -1067949312], // ['192.88.99.0'  , '255.255.255.0'],
-/******/          [-65536,     -1062731776], // ['192.168.0.0', '255.255.0.0'],
-/******/          [-131072,    -971898880 ], // ['198.18.0.0', '255.254.0.0'],
-/******/          [-256,       -969710592 ], // ['198.51.100.0', '255.255.255.0'],
-/******/          [-256,       -889163520 ], // ['203.0.113.0', '255.255.255.0'],
-/******/          [-268435456, -536870912 ], // ['224.0.0.0', '240.0.0.0'],
-/******/          [-268435456, -268435456 ], // ['240.0.0.0', '240.0.0.0'],
-/******/          [-1,         -1         ], // ['255.255.255.255' , '255.255.255.255'],
-/******/        ].some(([netMask, maskedNet]) => (ipInt & netMask) === maskedNet)
-/******/      ) {
-/******/        return "DIRECT";
-/******/      }
-/******/    }
-/******/    return oldTmp.call(this, url, host).replace(/(;|^)\\s*DIRECT\\s*(?=;|$)/g, "$1${pacMods.replaceDirectWith}");
-/******/  };
-          `
-}
 /******/  if (global) {
-/******/    global.FindProxyForURL = tmp;
+/******/    global.FindProxyForURL = newFindProxyForURL;
 /******/  } else {
-/******/    FindProxyForURL = tmp;
+/******/    FindProxyForURL = newFindProxyForURL;
 /******/  }
 
 /*****/})(this);`;
