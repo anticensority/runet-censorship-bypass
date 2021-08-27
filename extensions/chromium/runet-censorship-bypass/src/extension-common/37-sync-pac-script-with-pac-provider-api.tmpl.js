@@ -469,24 +469,24 @@
               reject([err, ...warns]);
               return;
             }
-            resolve(err, res, ...warns);
+            resolve([err, res, ...warns]);
           },
         ),
       );
 
-      const ipsErrorPromise = !ifUnattended
+      const ipsPromise = !ifUnattended
         ? updateIpsAsync()
         : tryPromiseSeveralTimesAsync(updateIpsAsync, [20, 40, 60]);
 
-      Promise.all([pacSetPromise, ipsErrorPromise]).then(
-        ([[pacErr, pacRes, ...pacWarns], ipsErr]) => {
+      Promise.all([pacSetPromise, ipsPromise]).then(
+        ([[pacErr, pacRes, ...pacWarns], [ipsErr, ipsRes, ...ipsWarns]]) => {
 
-          if (pacErr && ipsErr) {
+          if (pacErr) {
             return cb(pacErr, pacRes);
           }
           const warns = pacWarns;
-          if (ipsErr) {
-            warns.push(ipsErr);
+          if (ipsErr || ipsWarns.length) {
+            warns.push(...[ipsErr], ...ipsWarns);
           }
           this.pushToStorageAsync(
             (pushErr) => cb(pacErr || pushErr, null, ...warns),

@@ -115,7 +115,7 @@
     const promises = types.map(
       (type) => new Promise((resolve) =>
         httpLib.get(
-          `https://dnsssssss.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
+          `https://dns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
           (err, res) => {
 
             if (res) {
@@ -282,7 +282,6 @@
             ' блокировок может не отображаться.'
           );
         }
-        console.log('IP ERRORS:', ipErrors); // TODO:
         cb(null, null, ipErrors);
       });
     },
