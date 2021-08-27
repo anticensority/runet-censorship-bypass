@@ -115,7 +115,7 @@
     const promises = types.map(
       (type) => new Promise((resolve) =>
         httpLib.get(
-          `https://dns.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
+          `https://dnsssssss.google.com/resolve?type=${type}&name=${host}&random_padding=${generateRandomHexString(30,500)}`,
           (err, res) => {
 
             if (res) {
@@ -273,29 +273,18 @@
       );
       Promise.all( promises ).then( (cbsRes) => {
 
-        const errors = cbsRes.map( ([err]) => err ).filter( (err) => err );
-        let newError;
-        const ifAllErrors = cbsRes.length === errors.length;
-        if (errors.length) {
-          if (ifAllErrors) {
-            newError = errors.shift();
-          } else {
-            newError = errors;
-          }
-          newError = clarify(
-            newError,
+        let ipErrors = cbsRes.map( ([err]) => err ).filter( (err) => err );
+        if (ipErrors.length) {
+          ipErrors = clarify(
+            ipErrors,
             'Не удалось получить один или несколько IP адресов для' +
             ' прокси-серверов. Иконка для уведомления об обходе' +
             ' блокировок может не отображаться.'
           );
-          if (ifAllErrors) {
-            return cb(newError);
-          }
         }
-        cb(null, null, newError);
-
+        console.log('IP ERRORS:', ipErrors); // TODO:
+        cb(null, null, ipErrors);
       });
-
     },
 
     _replaceAllAsync(hostArr = mandatory(), cb) {
