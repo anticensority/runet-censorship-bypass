@@ -231,12 +231,11 @@
         getIpsFor(hostStr, (err, ips, ...warns) => {
 
           console.log('Got IPs + err?:', ips, err);
-          if (!err) {
-            resolveIps(ips);
-          } else {
+          if (err) {
             reject([err, null, ...warns]);
+            return;
           }
-
+          resolveIps(ips);
         });
 
       }).then(

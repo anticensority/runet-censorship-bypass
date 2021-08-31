@@ -275,7 +275,10 @@
                     <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
                   \`,
         order: 0,
-        pacUrls: ['https://antizapret.prostovpn.org/proxy.pac'],
+        pacUrls: [
+          'https://antizapret.prostovpn.org/proxy.pac',
+          'https://rebrand.ly/ac-antizapret-pac',
+        ],
       },
       Антицензорити: {
         distinctKey: 'Anticensority',
