@@ -151,6 +151,7 @@
       ([[v4err, v4res], [v6err, v6res]]) => {
 
         if(v4err) {
+          console.log('V4RES:', v4res); // TODO:
           return cb(v4err, v4res);
         }
         const ips = v4res;
@@ -160,6 +161,7 @@
         } else {
           warns = [v6err];
         }
+        console.log('ALL WARNS FOR IPS:', warns); // TODO:
         cb(null, ips, ...warns);
 
       }

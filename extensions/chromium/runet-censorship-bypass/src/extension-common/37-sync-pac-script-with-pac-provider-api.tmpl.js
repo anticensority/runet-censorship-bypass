@@ -488,8 +488,12 @@
             return cb(pacErr, pacRes);
           }
           const warns = pacWarns;
-          if (ipsErr || ipsWarns.length) {
-            warns.push(...[ipsErr], ...ipsWarns);
+          if (ipsErr) {
+            warns.push(ipsErr);
+          }
+          if (ipsWarns.length) {
+            console.log('PUSHING W:', ipsWarns); // TODO:
+            warns.push(...ipsWarns);
           }
           this.pushToStorageAsync(
             (pushErr) => cb(pacErr || pushErr, null, ...warns),
