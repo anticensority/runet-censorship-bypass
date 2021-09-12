@@ -43,7 +43,7 @@ chrome.runtime.getBackgroundPage( (bgWindow) =>
       // winChrome.runtime.sendMessage({ currentTab, eventName: 'POPUP_OPENED' });
 
       theState.flags.ifInsideOptionsPage = !(currentTab && currentTab.url) || /.*:\/\/extensions\/\?options=/g.test(currentTab.url) || currentTab.url.startsWith('about:addons');
-      theState.flags.ifInsideEdgeOptionsPage = theState.flags.ifInsideOptionsPage && currentTab &&  currentTab.url.startsWith('edge://');
+      theState.flags.ifInsideEdgeOptionsPage = theState.flags.ifInsideOptionsPage && currentTab && currentTab.url && currentTab.url.startsWith('edge://');
 
       theState.currentTab = currentTab;
 
