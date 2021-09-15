@@ -87,7 +87,7 @@
     "message": "Error"
   },
   "Non_critical_error": {
-    "message": "Non-critical error"
+    "message": "Non-critical error. Don't worry: it works"
   },
   "Donate": {
     "message": "Donate"

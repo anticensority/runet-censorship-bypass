@@ -231,12 +231,11 @@
         getIpsFor(hostStr, (err, ips, ...warns) => {
 
           console.log('Got IPs + err?:', ips, err);
-          if (!err) {
-            resolveIps(ips);
-          } else {
+          if (err) {
             reject([err, null, ...warns]);
+            return;
           }
-
+          resolveIps(ips);
         });
 
       }).then(
@@ -273,29 +272,18 @@
       );
       Promise.all( promises ).then( (cbsRes) => {
 
-        const errors = cbsRes.map( ([err]) => err ).filter( (err) => err );
-        let newError;
-        const ifAllErrors = cbsRes.length === errors.length;
-        if (errors.length) {
-          if (ifAllErrors) {
-            newError = errors.shift();
-          } else {
-            newError = errors;
-          }
-          newError = clarify(
-            newError,
+        let ipErrors = cbsRes.map( ([err]) => err ).filter( (err) => err );
+        let warns = [];
+        if (ipErrors.length) {
+          warns = [clarify(
+            ipErrors,
             'Не удалось получить один или несколько IP адресов для' +
             ' прокси-серверов. Иконка для уведомления об обходе' +
             ' блокировок может не отображаться.'
-          );
-          if (ifAllErrors) {
-            return cb(newError);
-          }
-        }
-        cb(null, null, newError);
-
+          )];
+        } else {}
+        cb(null, null, ...warns);
       });
-
     },
 
     _replaceAllAsync(hostArr = mandatory(), cb) {

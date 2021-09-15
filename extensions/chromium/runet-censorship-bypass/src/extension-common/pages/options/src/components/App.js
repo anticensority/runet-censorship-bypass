@@ -266,7 +266,6 @@ export default function getApp(theState) {
       this.setStatusTo(beforeStatus);
       this.switchInputs('off');
       operation((err, res, ...warns) => {
-
         warns = warns.filter( (w) => w );
         if (err || warns.length) {
           this.showErrors(err, ...warns);
