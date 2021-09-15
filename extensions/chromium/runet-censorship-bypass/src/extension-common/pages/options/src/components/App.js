@@ -215,7 +215,6 @@ export default function getApp(theState) {
 
       let messageHtml = err ? errToHtmlMessage(err) : '';
 
-      console.log('WARNS:', warns); // TODO:
       const warningHtml = warns
         .filter((w) => w)
         .map(
@@ -267,15 +266,8 @@ export default function getApp(theState) {
       this.setStatusTo(beforeStatus);
       this.switchInputs('off');
       operation((err, res, ...warns) => {
-
-        if (warns.length && warns[0].length === 0) {
-          throw new Error('WWWWARNS'); // TODO:
-        }
-        console.log('W BEFORE:', warns); // TODO:
         warns = warns.filter( (w) => w );
-        console.log('W AFTER:', warns); // TODO:
         if (err || warns.length) {
-          console.log('APP ERR, WARNS:', err, warns); // TODO:
           this.showErrors(err, ...warns);
         } else {
           this.setStatusTo(afterStatus);

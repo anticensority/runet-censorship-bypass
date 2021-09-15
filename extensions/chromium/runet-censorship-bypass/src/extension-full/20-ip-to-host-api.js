@@ -151,7 +151,6 @@
       ([[v4err, v4res], [v6err, v6res]]) => {
 
         if(v4err) {
-          console.log('V4RES:', v4res); // TODO:
           return cb(v4err, v4res);
         }
         const ips = v4res;
@@ -161,7 +160,6 @@
         } else {
           warns = [v6err];
         }
-        console.log('ALL WARNS FOR IPS:', warns); // TODO:
         cb(null, ips, ...warns);
 
       }
@@ -275,15 +273,16 @@
       Promise.all( promises ).then( (cbsRes) => {
 
         let ipErrors = cbsRes.map( ([err]) => err ).filter( (err) => err );
+        let warns = [];
         if (ipErrors.length) {
-          ipErrors = clarify(
+          warns = [clarify(
             ipErrors,
             'Не удалось получить один или несколько IP адресов для' +
             ' прокси-серверов. Иконка для уведомления об обходе' +
             ' блокировок может не отображаться.'
-          );
-        }
-        cb(null, null, ipErrors);
+          )];
+        } else {}
+        cb(null, null, ...warns);
       });
     },
 

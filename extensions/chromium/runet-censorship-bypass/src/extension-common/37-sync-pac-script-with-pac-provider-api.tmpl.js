@@ -492,7 +492,6 @@
             warns.push(ipsErr);
           }
           if (ipsWarns.length) {
-            console.log('PUSHING W:', ipsWarns); // TODO:
             warns.push(...ipsWarns);
           }
           this.pushToStorageAsync(
