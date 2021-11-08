@@ -68,7 +68,7 @@
       )
     );
 
-    const popupPrefix = chrome.runtime.getURL(`/pages/options/index.html?status=<span style="color: red">🔥 Прокси-сервер отказался обслуживать запрос к `);
+    const popupPrefix = chrome.runtime.getURL(`/pages/options/index.html?status=<span style="color: red">🔥 Прокси-сервер отказался обслуживать запрос к%20`);
     if (decodeURIComponent(oldPopup).startsWith(popupPrefix)) {
       return true;
     }
