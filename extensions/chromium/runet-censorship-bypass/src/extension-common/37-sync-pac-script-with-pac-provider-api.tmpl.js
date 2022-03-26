@@ -230,7 +230,7 @@
         );
         return (ifUnattended
             ? tryPromiseSeveralTimesAsync(tryAllUrlsAsync, [20, 40, 60])
-            : tryAllUrlsAsync()        
+            : tryAllUrlsAsync()
         ).catch(
           (err) => Promise.reject(clarify(
               err,
