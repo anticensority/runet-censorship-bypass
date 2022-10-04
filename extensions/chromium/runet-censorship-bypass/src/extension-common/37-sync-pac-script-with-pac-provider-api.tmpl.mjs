@@ -1,5 +1,3 @@
-'use strict';
-
 /*
   Task 1. Gets IPs for proxies of antizapret/anticenz via dns over https.
           These IPs are used in block-informer to inform user when proxy is ON.
@@ -9,8 +7,8 @@
 */
 
 /*
-  In background scripts use window.apis.antiCensorRu public variables.
-  In pages window.apis.antiCensorRu is not accessible,
+  In background scripts use globalThis.apis.antiCensorRu public variables.
+  In pages globalThis.apis.antiCensorRu is not accessible,
     use chrome.runtime.getBackgroundPage(..),
     extension.getBackgroundPage is deprecated
 
@@ -31,17 +29,17 @@
 
   const ifRu = chrome.i18n.getMessage('@@ui_locale').startsWith('ru');
   console.log('Russian?', ifRu);
-  const mandatory = window.utils.mandatory;
-  const throwIfError = window.utils.throwIfError;
-  const chromified = window.utils.chromified;
-  const timeouted = window.utils.timeouted;
+  const mandatory = globalThis.utils.mandatory;
+  const throwIfError = globalThis.utils.throwIfError;
+  const chromified = globalThis.utils.chromified;
+  const timeouted = globalThis.utils.timeouted;
 
-  const clarifyThen = window.apis.errorsLib.clarifyThen;
-  const clarify = window.apis.errorsLib.clarify;
-  const Warning = window.apis.errorsLib.Warning;
+  const clarifyThen = globalThis.apis.errorsLib.clarifyThen;
+  const clarify = globalThis.apis.errorsLib.clarify;
+  const Warning = globalThis.apis.errorsLib.Warning;
 
-  const httpLib = window.apis.httpLib;
-  const handlers = window.apis.errorHandlers;
+  const httpLib = globalThis.apis.httpLib;
+  const handlers = globalThis.apis.errorHandlers;
 
   const asyncLogGroup = function asyncLogGroup(...args) {
 
@@ -85,7 +83,7 @@
         return res;
         */
         return new Promise((resolve) =>
-          window.setTimeout(() => resolve(tryPromiseSeveralTimesAsync(createPromise, timeoutsInSec)), outSec*1000),
+          globalThis.setTimeout(() => resolve(tryPromiseSeveralTimesAsync(createPromise, timeoutsInSec)), outSec*1000),
         );
       },
   );
@@ -97,7 +95,7 @@
         reject(getErr);
         return;
       }
-      const ifWeAreInControl = window.utils.areSettingsControlledFor(settings);
+      const ifWeAreInControl = globalThis.utils.areSettingsControlledFor(settings);
       if (!ifWeAreInControl) {
         resolve(createPromise());
         return;
@@ -138,9 +136,9 @@
 
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
-          // window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
+          // globalThis.utils.openAndFocus('https://rebrand.ly/ac-allow-private-globalThiss');
           clarifyThen(
-            chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
+            chrome.i18n.getMessage('AllowExtensionToRunInPrivateglobalThiss'),
             cb,
           )(err);
           return;
@@ -153,7 +151,7 @@
 
           console.warn('Failed, other extension is in control.');
           return cb(
-            new Error( window.utils.messages.whichExtensionHtml() ),
+            new Error( globalThis.utils.messages.whichExtensionHtml() ),
           );
 
         }
@@ -173,7 +171,7 @@
       'Getting IPs for PAC hosts...',
       cb,
     );
-    window.utils.fireRequest('ip-to-host-update-all', cb);
+    globalThis.utils.fireRequest('ip-to-host-update-all', cb);
 
   };
 
@@ -194,7 +192,7 @@
 
     if (provider.distinctKey === 'Anticensority') {
 
-      const pacMods = window.apis.pacKitchen.getPacMods();
+      const pacMods = globalThis.apis.pacKitchen.getPacMods();
       if (!pacMods.filteredCustomsString) {
         addWarning(
           ifRu
@@ -253,7 +251,7 @@
     );
   };
 
-  window.apis.antiCensorRu = {
+  globalThis.apis.antiCensorRu = {
 
     version: chrome.runtime.getManifest().version,
 
@@ -299,7 +297,7 @@
         order: 1,
 
         /*
-          Don't use in system configs! Because Windows does poor caching.
+          Don't use in system configs! Because globalThiss does poor caching.
           Some urls are encoded to counter abuse.
           Version: 0.17
         */
@@ -343,7 +341,7 @@
       const upDate = new Date(this.lastPacUpdateStamp).toLocaleString('ru-RU')
         .replace(/:\\d+$/, '').replace(/\\.\\d{4}/, '');
       chrome.browserAction.setTitle({
-        title: \`\${chrome.i18n.getMessage('Updated')} \${upDate} | \${chrome.i18n.getMessage('Version')} \${window.apis.version.build}\`,
+        title: \`\${chrome.i18n.getMessage('Updated')} \${upDate} | \${chrome.i18n.getMessage('Version')} \${globalThis.apis.version.build}\`,
       });
 
     },
@@ -578,7 +576,7 @@
 
   // ON EACH LAUNCH, STARTUP, RELOAD, UPDATE, ENABLE
   (async () => {
-    let oldAntiCensorRu = await window.utils.promisedLocalStorage.get('antiCensorRu') || {};
+    let oldAntiCensorRu = await globalThis.utils.promisedLocalStorage.get('antiCensorRu') || {};
 
     const otherKeys = [
       'pac-kitchen-if-incontinence',
@@ -590,28 +588,28 @@
     ];
 
     if (!Object.keys(oldAntiCensorRu).length) {
-      const storage = await window.utils.promisedLocalStorage.get(null);
-      if (storage.version && window.apis.version.isLeq(storage.version, '0.0.1.48')) {
+      const storage = await globalThis.utils.promisedLocalStorage.get(null);
+      if (storage.version && globalThis.apis.version.isLeq(storage.version, '0.0.1.48')) {
         const ffxPacData = storage['firefox-only-pac-data'];
         delete storage['firefox-only-pac-data'];
-        await window.utils.promisedLocalStorage.clear();
+        await globalThis.utils.promisedLocalStorage.clear();
         for(const key of otherKeys) {
-          await window.utils.promisedLocalStorage.set({ [key]: storage[key] });
+          await globalThis.utils.promisedLocalStorage.set({ [key]: storage[key] });
           delete storage[key];
         }
-        await window.utils.promisedLocalStorage.set({ antiCensorRu: storage });
+        await globalThis.utils.promisedLocalStorage.set({ antiCensorRu: storage });
         oldAntiCensorRu = storage;
       }
     }
-    if (oldAntiCensorRu.version && window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
-      const modsMutated = window.apis.pacKitchen.getPacModsRaw();
+    if (oldAntiCensorRu.version && globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
+      const modsMutated = globalThis.apis.pacKitchen.getPacModsRaw();
       if (modsMutated && modsMutated.exceptions) {
         modsMutated.exceptions = Object.entries(modsMutated.exceptions).reduce((acc, [host, ifProxy]) => {
           acc[\`*.\${host}\`] = ifProxy;
           return acc;
         }, {});
         await new Promise(
-          (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
+          (resolve) => globalThis.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
         );
       }
     }
@@ -619,10 +617,10 @@
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
-       E.g. install window may fail to open or be closed by user accidentally.
+       E.g. install globalThis may fail to open or be closed by user accidentally.
        In such case extension _should_ try to work on default parameters.
     */
-    const antiCensorRu = window.apis.antiCensorRu;
+    const antiCensorRu = globalThis.apis.antiCensorRu;
 
     chrome.alarms.onAlarm.addListener(
       timeouted( (alarm) => {
@@ -639,7 +637,7 @@
     );
     console.log('Alarm listener installed. We won\\'t miss any PAC update.');
 
-    window.addEventListener('online', () => {
+    globalThis.addEventListener('online', () => {
 
       console.log('We are online, checking periodic updates...');
       antiCensorRu.setAlarms();
@@ -647,7 +645,7 @@
     });
 
     console.log('Keep cooked...');
-    await new Promise((resolve) => window.apis.pacKitchen.keepCookedNowAsync(resolve));
+    await new Promise((resolve) => globalThis.apis.pacKitchen.keepCookedNowAsync(resolve));
 
     //console.log('Storage on init:', oldAntiCensorRu);
     antiCensorRu.ifFirstInstall = Object.keys(oldAntiCensorRu).length === 0;
@@ -706,20 +704,20 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.5')) {
+        if (globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.5')) {
 
           // Change semicolons to semicolons followed by newlines in proxy string (raw).
           const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
-          const modsMutated = window.apis.pacKitchen.getPacModsRaw();
+          const modsMutated = globalThis.apis.pacKitchen.getPacModsRaw();
           if (modsMutated) {
             modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
             await new Promise(
-              (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
+              (resolve) => globalThis.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
             );
           }
 
         }
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.25')) {
+        if (globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.25')) {
 
           console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
           const provKey = antiCensorRu.getCurrentPacProviderKey();
@@ -727,7 +725,7 @@
             console.log('Current provider', provKey, '!== Anticensority or Antizapret');
             return; // Not Anticensority.
           }
-          const pacMods = window.apis.pacKitchen.getPacMods();
+          const pacMods = globalThis.apis.pacKitchen.getPacMods();
           if (pacMods.filteredCustomsString) {
             console.log('Proxies found:', pacMods.filteredCustomsString);
             return; // Own proxies or Tor are used.

@@ -1,19 +1,17 @@
-'use strict';
-
 { // Private namespace starts.
 
-  const mandatory = window.utils.mandatory;
-  const throwIfError = window.utils.throwIfError;
-  const chromified = window.utils.chromified;
-  const timeouted = window.utils.timeouted;
+  const mandatory = globalThis.utils.mandatory;
+  const throwIfError = globalThis.utils.throwIfError;
+  const chromified = globalThis.utils.chromified;
+  const timeouted = globalThis.utils.timeouted;
 
   const kitchenStartsMark = '\n\n//%#@@@@@@ PAC_KITCHEN_STARTS @@@@@@#%';
-  const kitchenState = window.utils.createStorage('pac-kitchen-');
+  const kitchenState = globalThis.utils.createStorage('pac-kitchen-');
   const ifIncontinence = 'if-incontinence';
   const modsKey = 'mods';
 
   let proxyHostToCredsList = {};
-  const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !window.apis.version.ifMini;
+  const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !globalThis.apis.version.ifMini;
   if (ifAuthSupported) {
 
     const requestIdToTries = {};
@@ -267,7 +265,7 @@
 
       if (proxyScheme.includes('@')) {
 
-        const proxy = window.utils.parseProxyScheme(proxyScheme);
+        const proxy = globalThis.utils.parseProxyScheme(proxyScheme);
         protectedProxies.push(proxy);
         return `${proxy.type} ${proxy.hostname}:${proxy.port}`;
 
@@ -345,7 +343,7 @@
 
   };
 
-  window.apis.pacKitchen = {
+  globalThis.apis.pacKitchen = {
 
     getPacMods: getCurrentConfigs,
     getPacModsRaw: () => getCurrentConfigs(true),
@@ -593,7 +591,7 @@ ${
         if (
           details && details.levelOfControl === 'controlled_by_this_extension'
         ) {
-          const pac = window.utils.getProp(details, 'value.pacScript');
+          const pac = globalThis.utils.getProp(details, 'value.pacScript');
           if (pac && pac.data) {
             return chrome.proxy.settings.set(details, chromified(cb));
           }
@@ -646,7 +644,7 @@ ${
             return cb(null, res, ...accWarns);
           }
           const newHosts = (pacMods.customProxyArray || []).map( (ps) => ps.split(/\s+/)[1] );
-          window.utils.fireRequest(
+          globalThis.utils.fireRequest(
             'ip-to-host-replace-all',
             newHosts,
             (err, res, ...moreWarns) =>
@@ -668,23 +666,23 @@ ${
 
   };
 
-  const pacKitchen = window.apis.pacKitchen;
+  const pacKitchen = globalThis.apis.pacKitchen;
 
   const originalSet = chrome.proxy.settings.set.bind( chrome.proxy.settings );
 
   chrome.proxy.settings.set = function(details, cb) {
-    const pac = window.utils.getProp(details, 'value.pacScript');
+    const pac = globalThis.utils.getProp(details, 'value.pacScript');
     if (!(pac && pac.data)) {
-      return originalSet(details, window.utils.timeouted(cb));
+      return originalSet(details, globalThis.utils.timeouted(cb));
     }
     const pacMods = getCurrentConfigs();
     pac.data = pacKitchen.cook( pac.data, pacMods );
-    originalSet({value: details.value}, window.utils.chromified((err) => {
+    originalSet({value: details.value}, globalThis.utils.chromified((err) => {
 
       if (!err) {
         kitchenState(ifIncontinence, null);
       }
-      window.utils.lastError = err;
+      globalThis.utils.lastError = err;
       cb && cb();
 
     }));

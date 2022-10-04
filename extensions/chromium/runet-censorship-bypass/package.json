@@ -15,8 +15,9 @@
   "license": "GPLv3",
   "devDependencies": {
     "chai": "^4.3.0",
-    "eslint": "^7.19.0",
+    "eslint": "^8.24.0",
     "eslint-config-google": "^0.14.0",
+    "esm": "^3.2.25",
     "gulp-changed": "^4.0.2",
     "mocha": "^8.2.1",
     "sinon-chrome": "^3.0.1",

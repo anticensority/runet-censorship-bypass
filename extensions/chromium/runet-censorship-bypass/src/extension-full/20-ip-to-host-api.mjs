@@ -2,9 +2,9 @@
 
 {
 
-  const mandatory = window.utils.mandatory;
-  const httpLib = window.apis.httpLib;
-  const clarify = window.apis.errorsLib.clarify;
+  const mandatory = globalThis.utils.mandatory;
+  const httpLib = globalThis.apis.httpLib;
+  const clarify = globalThis.apis.errorsLib.clarify;
 
   // IP REGEX starts.
 
@@ -50,7 +50,7 @@
 
   // IP REGEX ends.
 
-  const _state = window.utils.createStorage('ip-to-host');
+  const _state = globalThis.utils.createStorage('ip-to-host');
   const ip2host = '';
 
   const privates = {};
@@ -100,7 +100,7 @@
 
   const generateRandomHexString = function generateRandomHexString(minLen, maxLen) {
 
-    return Array.from(window.crypto.getRandomValues(new Uint8Array(maxLen)))
+    return Array.from(globalThis.crypto.getRandomValues(new Uint8Array(maxLen)))
       .slice(minLen + Math.floor(Math.random()*(maxLen - minLen)))
       .map((i) => i.toString(16)).join('');
 
@@ -188,7 +188,7 @@
 
   };
 
-  const self = window.apis.ipToHost = {
+  const self = globalThis.apis.ipToHost = {
 
     persistData() {
 
@@ -346,13 +346,13 @@
 
   };
 
-  window.utils.addRequestResponder(
+  globalThis.utils.addRequestResponder(
     'ip-to-host-update-all', (...args) => self.updateAllAsync(...args)
   );
-  window.utils.addRequestResponder(
+  globalThis.utils.addRequestResponder(
     'ip-to-host-replace-all', (...args) => self.replaceAllAsync(...args)
   );
-  window.utils.addRequestResponder(
+  globalThis.utils.addRequestResponder(
     'ip-to-host-reset-to-defaults', (cb) => {
       self.resetToDefaults();
       cb();

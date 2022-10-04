@@ -1,7 +1,7 @@
 'use strict';
 
 {
-  const chromified = window.utils.chromified;
+  const chromified = globalThis.utils.chromified;
 
   const lastErrors = [];
   const lastErrorsLength = 20;
@@ -9,10 +9,10 @@
   const IF_COLL_KEY = 'err-to-exc-if-coll';
 
   const privates = {
-    ifCollecting: window.localStorage[IF_COLL_KEY] || false,
+    ifCollecting: globalThis.localStorage[IF_COLL_KEY] || false,
   };
 
-  const that = window.apis.lastNetErrors = {
+  const that = globalThis.apis.lastNetErrors = {
     get ifCollecting() {
 
       return privates.ifCollecting;
@@ -21,7 +21,7 @@
 
     set ifCollecting(newValue) {
 
-      privates.ifCollecting = window.localStorage[IF_COLL_KEY] = newValue;
+      privates.ifCollecting = globalThis.localStorage[IF_COLL_KEY] = newValue;
 
     },
     get: () => lastErrors,

@@ -1,19 +1,18 @@
 module.exports = {
   extends: ['eslint:recommended', 'google'],
     env: {
+      node: true,
       browser: true,
+      worker: true,
       webextensions: true,
-      es6: true
+      es2022: true,
     },
     globals: {
-      chrome: true
+      chrome: true,
     },
     parserOptions: {
-      sourceType: 'script',
-      ecmaVersion: 2017,
-      ecmaFeatures: {
-        impliedStrict: false
-      }
+      sourceType: 'module',
+      ecmaVersion: 2022,
     },
     rules: {
       strict: ['error', 'global'],

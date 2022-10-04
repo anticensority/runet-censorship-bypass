@@ -2,7 +2,7 @@
 
 {
 
-  window.apis.menus = {
+  globalThis.apis.menus = {
 
     getItemsAsObject: () => ({
 

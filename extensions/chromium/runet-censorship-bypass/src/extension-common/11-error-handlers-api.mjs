@@ -1,15 +1,13 @@
-'use strict';
-
 { // Private namespace
 
-  const timeouted = window.utils.timeouted;
-  const throwIfError = window.utils.throwIfError;
+  const timeouted = globalThis.utils.timeouted;
+  const throwIfError = globalThis.utils.throwIfError;
 
   const errorJsonReplacer = function errorJsonReplacer(key, value) {
 
-    // fooWindow.ErrorEvent !== barWindow.ErrorEvent
-    if (value === window) {
-      return; // STUPID, because other window object may be passed.
+    // fooglobalThis.ErrorEvent !== barglobalThis.ErrorEvent
+    if (value === globalThis) {
+      return; // STUPID, because other globalThis object may be passed.
     }
     if (!( value && value.constructor
       && ['Error', 'Event'].some(
@@ -55,18 +53,18 @@
 
   const ifPrefix = 'if-on-';
   const extName = chrome.runtime.getManifest().name;
-  const extVersion = window.apis.version.build;
+  const extVersion = globalThis.apis.version.build;
 
-  window.apis.errorHandlers = {
+  globalThis.apis.errorHandlers = {
 
-    state: window.utils.createStorage('handlers-'),
+    state: globalThis.utils.createStorage('handlers-'),
 
-    viewError(type = window.utils.mandatory(), err) {
+    viewError(type = globalThis.utils.mandatory(), err) {
 
       const errors = err ? {[type]: err} : this.idToError;
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
-      window.utils.openAndFocus(
+      globalThis.utils.openAndFocus(
         'https://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
           '&version=' + chrome.runtime.getManifest().version +
@@ -111,10 +109,10 @@
     isControllable(details) {
 
       if (details) {
-        this.ifControllable = window.utils.areSettingsControllableFor(details);
+        this.ifControllable = globalThis.utils.areSettingsControllableFor(details);
 
         if (this.ifControllable) {
-          this.ifControlled = window.utils.areSettingsControlledFor(details);
+          this.ifControlled = globalThis.utils.areSettingsControlledFor(details);
         } else {
           this.ifControlled = false;
         }
@@ -185,7 +183,7 @@
           iconUrl: './icons/' + icon,
           appIconMaskUrl: './icons/default-mask-128.png',
           isClickable: true,
-        }, window.apis.platform.ifFirefox ? {} : { requireInteraction: ifSticky }),
+        }, globalThis.apis.platform.ifFirefox ? {} : { requireInteraction: ifSticky }),
       );
 
     },
@@ -219,7 +217,7 @@
 
   };
 
-  const handlers = window.apis.errorHandlers;
+  const handlers = globalThis.apis.errorHandlers;
 
   // Initialization
   // ==============
@@ -233,15 +231,15 @@
 
     chrome.notifications.clear(notId);
     if(notId === 'no-control') {
-      return window.utils.openAndFocus(
-        window.utils.messages.searchSettingsForUrl('proxy')
+      return globalThis.utils.openAndFocus(
+        globalThis.utils.messages.searchSettingsForUrl('proxy')
       );
     }
     handlers.viewError(notId);
 
   }));
 
-  handlers.installListenersOn(window, 'BG');
+  handlers.installListenersOn(globalThis, 'BG');
 
   (chrome.proxy.onProxyError || chrome.proxy.onError).addListener( timeouted( (details) => {
 

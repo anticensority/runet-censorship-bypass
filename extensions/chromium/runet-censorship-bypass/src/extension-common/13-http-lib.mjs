@@ -1,13 +1,11 @@
-'use strict';
-
 {
 
-  const mandatory = window.utils.mandatory;
-  const errorsLib = window.apis.errorsLib;
+  const mandatory = globalThis.utils.mandatory;
+  const errorsLib = globalThis.apis.errorsLib;
 
   const checkCon = 'Что-то не так с сетью, проверьте соединение.';
 
-  window.apis.httpLib = {
+  globalThis.apis.httpLib = {
 
     ifModifiedSince(
       url,

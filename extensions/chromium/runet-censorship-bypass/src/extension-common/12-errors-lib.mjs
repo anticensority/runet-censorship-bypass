@@ -1,4 +1,3 @@
-'use strict';
 /*
  *  Error Library
  *  PURPOSE 1:
@@ -17,9 +16,9 @@
 **/
 {
 
-  const mandatory = window.utils.mandatory;
+  const mandatory = globalThis.utils.mandatory;
 
-  const self = window.apis.errorsLib = {
+  const self = globalThis.apis.errorsLib = {
 
     // I don't use Error class, because we don't need stack here.
     Warning: class {

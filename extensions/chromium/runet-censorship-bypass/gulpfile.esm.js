@@ -1,16 +1,15 @@
-'use strict';
+import gulp from 'gulp';
+import del from 'del';
+import through from 'through2';
+import PluginError from 'plugin-error';
 
-const gulp = require('gulp');
-const del = require('del');
-const through = require('through2');
-const PluginError = require('plugin-error');
-const changed = require('gulp-changed');
+import {contexts} from './src/templates-data';
 
 const PluginName = 'Template literals';
 
 const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
 
-  const suffixes = ['.tmpl.json', 'tmpl.js'];
+  const suffixes = ['.tmpl.json', 'tmpl.js', 'tmpl.mjs', 'tmpl.html'];
   if ( suffixes.some( (suff) => file.path.endsWith(suff) ) ) {
 
     const originalPath = file.path;
@@ -27,12 +26,12 @@ const templatePlugin = (context) => through.obj(function(file, encoding, cb) {
         acc.values.push(value);
         return acc;
 
-      }, { keys: [], values: [] });
+      }, {keys: [], values: []});
       try {
         file.contents = Buffer.from(
-          (new Function(...keys, 'return `' + String(file.contents) + '`;'))(...values)
+            (new Function(...keys, 'return `' + String(file.contents) + '`;'))(...values),
         );
-      } catch(e) {
+      } catch (e) {
         e.message += '\nIN FILE: ' + originalPath;
         return cb(new PluginError(PluginName, e));
       }
@@ -51,57 +50,37 @@ const clean = function(cb) {
 
 };
 
-const contexts = require('./src/templates-data').contexts;
-
 const excFolder = (name) => [`!./src/**/${name}`, `!./src/**/${name}/**/*`];
-const excluded = [ ...excFolder('test') , ...excFolder('node_modules'), ...excFolder('src') ];
+const excluded = [...excFolder('test'), ...excFolder('node_modules'), ...excFolder('src')];
 
 const miniDst = './build/extension-mini';
 const fullDst = './build/extension-full';
-const betaDst = './build/extension-beta';
-const firefoxDst = './build/extension-firefox';
 
-const commonSrc = './src/extension-common/**/*';;
+const commonSrc = './src/extension-common/**/*';
 const miniSrc = './src/extension-mini/**/*';
 const fullSrc = './src/extension-full/**/*';
-const firefoxSrc = './src/extension-firefox/**/*';
 
 const joinSrc = (...args) => [...args, ...excluded];
 
 const copyMini = function(cb) {
 
   gulp.src(joinSrc(commonSrc, miniSrc))
-    //.pipe(changed(miniDst))
-    .pipe(templatePlugin(contexts.mini))
-    .pipe(gulp.dest(miniDst))
-    .on('end', cb);
+      .pipe(templatePlugin(contexts.mini))
+      .pipe(gulp.dest(miniDst))
+      .on('end', cb);
 };
 
 const copyFull = function(cb) {
 
   gulp.src(joinSrc(commonSrc, fullSrc))
-    //.pipe(changed(fullDst))
-    .pipe(templatePlugin(contexts.full))
-    .pipe(gulp.dest(fullDst))
-    .on('end', cb);
+      .pipe(templatePlugin(contexts.full))
+      .pipe(gulp.dest(fullDst))
+      .on('end', cb);
 
 };
 
-const copyBeta = function(cb) {
-
-    gulp.src(joinSrc(commonSrc, fullSrc))
-    //.pipe(changed(fullDst))
-    .pipe(templatePlugin(contexts.beta))
-    .pipe(gulp.dest(betaDst))
-    .on('end', cb);
-
-};
-
-const buildAll = gulp.series(clean, gulp.parallel(copyMini, copyFull, copyBeta));
-const buildBeta = copyBeta;
-
-module.exports = {
-  default: buildAll,
+const buildAll = gulp.series(clean, gulp.parallel(copyMini, copyFull));
+export {
+  buildAll as default,
   buildAll,
-  buildBeta,
 };

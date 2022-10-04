@@ -19,7 +19,7 @@
     , "tabs"
     , "contextMenus"
     , "notifications"
-    ${extra_permissions}
+    ${extraPermissions}
   ],
   "minimum_chrome_version": "55.0.0.0",
   "browser_specific_settings": {
@@ -38,21 +38,7 @@
 
   "background": {
     ${persistent}
-    "scripts": [
-        "00-init-apis.js"
-      ${scripts_0x}
-      , "11-error-handlers-api.js"
-      , "12-errors-lib.js"
-      , "13-http-lib.js"
-      , "15-firefox-proxy-settings.js"
-      ${scripts_2x}
-      , "35-pac-kitchen-api.js"
-      , "37-sync-pac-script-with-pac-provider-api.js"
-      , "70-menu-items.js"
-      , "75-context-menus.js"
-      , "76-hotkeys.js",
-      ${scripts_8x}
-    ]
+    "page": "./bg.html"
   },
 
   "browser_action": {

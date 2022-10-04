@@ -1,5 +1,3 @@
-'use strict';
-
 console.log('Extension started.');
 
 {
@@ -11,8 +9,8 @@ console.log('Extension started.');
     // I also don't remove logs for sake of client-side troubleshooting
     // (though no one sent me logs so far).
     ['log', 'warn', 'error'].forEach( (meth) => {
-      const _meth = window.console[meth].bind(console);
-      window.console[meth] = function(...args) {
+      const _meth = globalThis.console[meth].bind(console);
+      globalThis.console[meth] = function(...args) {
 
         _meth(...args.map((a) => '' + a));
 
@@ -24,7 +22,7 @@ console.log('Extension started.');
     requestToResponder: {},
   };
 
-  const self = window.utils = {
+  const self = globalThis.utils = {
 
     mandatory() {
 
@@ -143,16 +141,16 @@ console.log('Extension started.');
 
         key = prefix + key;
         if (value === null) {
-          return window.localStorage.removeItem(key);
+          return globalThis.localStorage.removeItem(key);
         }
         if (value === undefined) {
-          const item = window.localStorage.getItem(key);
+          const item = globalThis.localStorage.getItem(key);
           return item && JSON.parse(item);
         }
         if (value instanceof Date) {
           throw new TypeError('Converting Date format to JSON is not supported.');
         }
-        window.localStorage.setItem(key, JSON.stringify(value));
+        globalThis.localStorage.setItem(key, JSON.stringify(value));
 
       };
 
@@ -163,7 +161,7 @@ console.log('Extension started.');
         return new Promise((resolve) => (
           chrome.storage.local.get(
             key,
-            window.utils.getOrDie((storage) => resolve(key ? storage[key] : storage)),
+            globalThis.utils.getOrDie((storage) => resolve(key ? storage[key] : storage)),
           )
         ));
       },
@@ -265,7 +263,7 @@ console.log('Extension started.');
 
       chrome.tabs.create(
         {url: url},
-        (tab) => chrome.windows.update(tab.windowId, {focused: true})
+        (tab) => chrome.globalThiss.update(tab.globalThisId, {focused: true})
       );
 
     },
@@ -280,7 +278,7 @@ console.log('Extension started.');
 
   const compareVersions = (a, b) => versionToInt(a) - versionToInt(b);
 
-  window.apis = {
+  globalThis.apis = {
     platform: {
       ifFirefox: navigator.userAgent.toLowerCase().includes('firefox'),
     },

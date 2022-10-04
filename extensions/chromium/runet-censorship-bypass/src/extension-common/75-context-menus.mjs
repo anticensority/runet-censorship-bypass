@@ -2,7 +2,7 @@
 
 {
 
-  const chromified = window.utils.chromified;
+  const chromified = globalThis.utils.chromified;
 
   let seqId = 0;
 
@@ -33,7 +33,7 @@
 
   };
 
-  window.apis.menus.getItemsAsArray().forEach((item) => {
+  globalThis.apis.menus.getItemsAsArray().forEach((item) => {
 
     createMenuLinkEntry(
       item.title,

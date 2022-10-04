@@ -14,7 +14,7 @@
 
 {
 
-  const chromified = window.utils.chromified;
+  const chromified = globalThis.utils.chromified;
 
   const _tabCallbacks = {};
 
@@ -136,7 +136,7 @@
 
   const tryProxyAndInform = function tryProxyAndInform(requestDetails) {
 
-    const host = window.apis.ipToHost.get( requestDetails.ip );
+    const host = globalThis.apis.ipToHost.get( requestDetails.ip );
     if (!host) {
       return;
     }

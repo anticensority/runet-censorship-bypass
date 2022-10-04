@@ -2,7 +2,7 @@
 
 {
 
-  const timeouted = window.utils.timeouted;
+  const timeouted = globalThis.utils.timeouted;
 
   const isProxied = (requestDetails) => false;
   const isProxySideError = (details) =>
