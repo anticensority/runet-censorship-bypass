@@ -1,3 +1,4 @@
+import './00---mv3-shim.mjs';
 import './00-init-apis.mjs';
 ${scripts_0x}
 import './11-error-handlers-api.mjs';

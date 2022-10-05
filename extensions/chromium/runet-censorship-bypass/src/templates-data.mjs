@@ -19,11 +19,21 @@ const contexts = {};
 const extraPermissions = ', "webRequest", "webRequestBlocking", "webNavigation"';
 
 contexts.full = Object.assign({}, commonContext, {
+  manifestVersion: '3',
   versionSuffix: '',
   nameSuffixEn: '',
   nameSuffixRu: '',
+  hostPermissions: `"host_permissions": [
+    "*://*/*"
+  ],`,
   extraPermissions,
-  persistent: '',
+  action: 'action',
+  background: `
+    "background": {
+      "service_worker": "./index.mjs",
+      "type": "module"
+    }
+  `,
   scripts_0x: '',
   scripts_2x: "import './20-ip-to-host-api.mjs';",
   scripts_8x: `
@@ -34,11 +44,19 @@ contexts.full = Object.assign({}, commonContext, {
 });
 
 contexts.mini = Object.assign({}, commonContext, {
+  manifestVersion: '2',
   versionSuffix: '-mini',
   nameSuffixEn: ' MINI',
   nameSuffixRu: ' МИНИ',
   extraPermissions: '',
-  persistent: '"persistent": false,',
+  hostPermissions: '',
+  action: 'browser_action',
+  background: `
+    "background": {
+      "persistent": false,
+      "page": "./bg.html"
+    }
+  `,
   scripts_0x: '',
   scripts_2x: "import '20-for-mini-only.mjs';",
   scripts_8x: '',

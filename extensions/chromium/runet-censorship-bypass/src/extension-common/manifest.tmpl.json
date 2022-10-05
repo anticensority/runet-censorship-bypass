@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": ${manifestVersion},
 
   "name": "__MSG_extName__",
   "default_locale": "ru",
@@ -21,6 +21,9 @@
     , "notifications"
     ${extraPermissions}
   ],
+
+  ${hostPermissions}
+
   "minimum_chrome_version": "55.0.0.0",
   "browser_specific_settings": {
     "gecko": {
@@ -36,18 +39,14 @@
     }
   },
 
-  "background": {
-    ${persistent}
-    "page": "./bg.html"
-  },
+  ${background},
 
-  "browser_action": {
+  "${action}": {
     "default_title": "Этот сайт благословлён | Версия ${version + versionSuffix}",
     "default_popup": "/pages/options/index.html"
   },
   "options_ui": {
-     "page": "/pages/options/index.html",
-     "chrome_style": false
-   }
+     "page": "/pages/options/index.html"
+  }
 
 }

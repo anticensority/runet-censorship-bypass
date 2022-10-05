@@ -33,7 +33,7 @@ console.log('Extension started.');
 
     throwIfError(err) {
 
-      if(err) {
+      if (err) {
         throw err;
       }
 
@@ -94,7 +94,7 @@ console.log('Extension started.');
         throw new TypeError('Property must be supplied.');
       }
       const lastProp = props.pop();
-      for( const prop of props ) {
+      for ( const prop of props ) {
         if (!(prop in obj)) {
           return undefined;
         }
@@ -106,7 +106,7 @@ console.log('Extension started.');
 
     assert(value) {
 
-      if(!value) {
+      if (!value) {
         console.assert(value);
         throw new Error('Assert failed for:' + value);
       }
@@ -115,7 +115,7 @@ console.log('Extension started.');
 
     addRequestResponder(requestType, responder) {
 
-      if( privates.requestToResponder[requestType] ) {
+      if ( privates.requestToResponder[requestType] ) {
         throw new TypeError(`Request ${requestType} already has responder!`);
       }
       privates.requestToResponder[requestType] = responder;
@@ -127,7 +127,7 @@ console.log('Extension started.');
       const cb = args.slice(-1)[0];
       self.assert(typeof(cb) === 'function');
       const responder = privates.requestToResponder[requestType];
-      if(responder) {
+      if (responder) {
         responder(...args);
       } else {
         cb();
@@ -137,20 +137,21 @@ console.log('Extension started.');
 
     createStorage(prefix) {
 
-      return function state(key, value) {
+      return async function state(key, value) {
 
+        const storage = chrome.storage.local;
         key = prefix + key;
         if (value === null) {
-          return globalThis.localStorage.removeItem(key);
+          return storage.remove(key);
         }
         if (value === undefined) {
-          const item = globalThis.localStorage.getItem(key);
+          const item = await storage.get(key);
           return item && JSON.parse(item);
         }
         if (value instanceof Date) {
           throw new TypeError('Converting Date format to JSON is not supported.');
         }
-        globalThis.localStorage.setItem(key, JSON.stringify(value));
+        storage.set({[key]: JSON.stringify(value)});
 
       };
 
@@ -160,8 +161,8 @@ console.log('Extension started.');
       get(key) {
         return new Promise((resolve) => (
           chrome.storage.local.get(
-            key,
-            globalThis.utils.getOrDie((storage) => resolve(key ? storage[key] : storage)),
+              key,
+              globalThis.utils.getOrDie((storage) => resolve(key ? storage[key] : storage)),
           )
         ));
       },
@@ -240,11 +241,11 @@ console.log('Extension started.');
 
       let parts;
       parts = crededAddr.split('@');
-      let [creds, addr] = [parts.slice(0, -1).join('@'), parts[parts.length - 1]];
+      const [creds, addr] = [parts.slice(0, -1).join('@'), parts[parts.length - 1]];
 
       const [hostname, port] = addr.split(':');
 
-      parts = creds.split(':')
+      parts = creds.split(':');
       const username = parts[0];
       const password = parts.slice(1).join(':');
 
@@ -255,15 +256,15 @@ console.log('Extension started.');
         hostname,
         port,
         creds,
-      }
+      };
 
     },
 
     openAndFocus(url) {
 
       chrome.tabs.create(
-        {url: url},
-        (tab) => chrome.globalThiss.update(tab.globalThisId, {focused: true})
+          {url: url},
+          (tab) => chrome.globalThiss.update(tab.globalThisId, {focused: true}),
       );
 
     },
@@ -271,10 +272,10 @@ console.log('Extension started.');
   };
 
   const max = 2**16;
-  const versionToArray = (v) => [ ...v.split('.'), 0, 0, 0].slice(0,4);
+  const versionToArray = (v) => [...v.split('.'), 0, 0, 0].slice(0, 4);
   const versionToInt = (v) => versionToArray(v)
-    .reverse()
-    .reduce((acc, vv, i) => acc + parseInt(vv)*(max**i), 0);
+      .reverse()
+      .reduce((acc, vv, i) => acc + parseInt(vv)*(max**i), 0);
 
   const compareVersions = (a, b) => versionToInt(a) - versionToInt(b);
 
