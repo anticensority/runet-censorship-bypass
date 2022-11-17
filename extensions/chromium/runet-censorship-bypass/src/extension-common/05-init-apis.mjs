@@ -264,7 +264,7 @@ console.log('Extension started.');
 
       chrome.tabs.create(
           {url: url},
-          (tab) => chrome.globalThiss.update(tab.globalThisId, {focused: true}),
+          (tab) => chrome.globalThis.update(tab.globalThisId, {focused: true}),
       );
 
     },
