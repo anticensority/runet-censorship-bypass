@@ -58,7 +58,7 @@ contexts.mini = Object.assign({}, commonContext, {
     }
   `,
   scripts_0x: '',
-  scripts_2x: "import '20-for-mini-only.mjs';",
+  scripts_2x: "import './20-for-mini-only.mjs';",
   scripts_8x: '',
 });
 

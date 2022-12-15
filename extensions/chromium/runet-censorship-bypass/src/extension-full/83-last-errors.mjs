@@ -28,7 +28,7 @@ const that = globalThis.apis.lastNetErrors = {
   get: () => lastErrors,
 };
 
-chrome.webRequest.onErrorOccurred.addListener(chromified((err/*Ignored*/, details) => {
+chrome.webRequest.onErrorOccurred.addListener(chromified((err/* Ignored */, details) => {
 
   if (!that.ifCollecting || [
     'net::ERR_BLOCKED_BY_CLIENT',
