@@ -27,14 +27,6 @@
       "strict_min_version": "91.1.0"
     }
   },
-  "commands": {
-    "toggle-pac-script": {
-      "suggested_key": {
-        "default": "Alt+P"
-      },
-      "description": "Turn on/off current PAC-script"
-    }
-  },
 
   "background": {
     ${persistent}
@@ -48,10 +40,9 @@
       ${scripts_2x}
       , "35-pac-kitchen-api.js"
       , "37-sync-pac-script-with-pac-provider-api.js"
+      ${scripts_8x}
       , "70-menu-items.js"
       , "75-context-menus.js"
-      , "76-hotkeys.js",
-      ${scripts_8x}
     ]
   },
 

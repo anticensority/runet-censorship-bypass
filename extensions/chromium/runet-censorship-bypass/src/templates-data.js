@@ -28,7 +28,7 @@ exports.contexts.full = Object.assign({}, commonContext, {
   persistent: '',
   scripts_0x: '',
   scripts_2x: ', "20-ip-to-host-api.js"',
-  scripts_8x: '"80-error-menu.js", "83-last-errors.js", "85-block-informer.js"',
+  scripts_8x: ', "80-error-menu.js", "83-last-errors.js", "85-block-informer.js"',
 });
 
 exports.contexts.mini = Object.assign({}, commonContext, {
