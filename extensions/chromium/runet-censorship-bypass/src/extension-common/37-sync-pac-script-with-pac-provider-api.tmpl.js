@@ -138,7 +138,6 @@
 
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
-          // window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
           clarifyThen(
             chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
             cb,
@@ -277,6 +276,8 @@
         order: 0,
         pacUrls: [
           'https://antizapret.prostovpn.org:8443/proxy.pac',
+          'https://antizapret.prostovpn.org:18443/proxy.pac',
+          'https://antizapret.prostovpn.org/proxy.pac',
           'https://rebrand.ly/ac-antizapret-pac',
         ],
       },
@@ -678,9 +679,13 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.56')) {
-          window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls[0] = 'https://antizapret.prostovpn.org:8443/proxy.pac';
-          console.log('Successfully updated to 0.0.1.57.');
+        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57')) {
+          const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
+          const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
+          const urls = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls;
+          urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
+          urls.unshift(azWithPort, azWithPortAlt);
+          console.log('Successfully updated to 0.0.1.58.');
         }
       } catch (e) {
         // Log update error.
