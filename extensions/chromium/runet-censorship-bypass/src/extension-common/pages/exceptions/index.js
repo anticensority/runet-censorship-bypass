@@ -54,6 +54,7 @@ ${(mods.whitelist || []).join('\n')}
             .trim()
             .split(/(?:\s*\r?\n\s*)+/g)
             .filter((host) => host)
+            .map((host) => host.endsWith('.') ? host : `${host}.`)
           )
         dontProxyList = dontProxyList || [];
         whitelist = whitelist || [];

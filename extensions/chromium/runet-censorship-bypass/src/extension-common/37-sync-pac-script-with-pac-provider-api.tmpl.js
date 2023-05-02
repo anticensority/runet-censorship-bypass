@@ -138,7 +138,6 @@
 
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
-          // window.utils.openAndFocus('https://rebrand.ly/ac-allow-private-windows');
           clarifyThen(
             chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
             cb,
@@ -230,7 +229,7 @@
         );
         return (ifUnattended
             ? tryPromiseSeveralTimesAsync(tryAllUrlsAsync, [20, 40, 60])
-            : tryAllUrlsAsync()        
+            : tryAllUrlsAsync()
         ).catch(
           (err) => Promise.reject(clarify(
               err,
@@ -276,6 +275,8 @@
                   \`,
         order: 0,
         pacUrls: [
+          'https://antizapret.prostovpn.org:8443/proxy.pac',
+          'https://antizapret.prostovpn.org:18443/proxy.pac',
           'https://antizapret.prostovpn.org/proxy.pac',
           'https://rebrand.ly/ac-antizapret-pac',
         ],
@@ -588,34 +589,6 @@
       'handlers-ext-error',
       'handlers-no-control',
     ];
-
-    if (!Object.keys(oldAntiCensorRu).length) {
-      const storage = await window.utils.promisedLocalStorage.get(null);
-      if (storage.version && window.apis.version.isLeq(storage.version, '0.0.1.48')) {
-        const ffxPacData = storage['firefox-only-pac-data'];
-        delete storage['firefox-only-pac-data'];
-        await window.utils.promisedLocalStorage.clear();
-        for(const key of otherKeys) {
-          await window.utils.promisedLocalStorage.set({ [key]: storage[key] });
-          delete storage[key];
-        }
-        await window.utils.promisedLocalStorage.set({ antiCensorRu: storage });
-        oldAntiCensorRu = storage;
-      }
-    }
-    if (oldAntiCensorRu.version && window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
-      const modsMutated = window.apis.pacKitchen.getPacModsRaw();
-      if (modsMutated && modsMutated.exceptions) {
-        modsMutated.exceptions = Object.entries(modsMutated.exceptions).reduce((acc, [host, ifProxy]) => {
-          acc[\`*.\${host}\`] = ifProxy;
-          return acc;
-        }, {});
-        await new Promise(
-          (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
-        );
-      }
-    }
-
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
@@ -706,54 +679,29 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.5')) {
-
-          // Change semicolons to semicolons followed by newlines in proxy string (raw).
-          const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
-          const modsMutated = window.apis.pacKitchen.getPacModsRaw();
-          if (modsMutated) {
-            modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
-            await new Promise(
-              (resolve) => window.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
+        switch(true) {
+          case window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57'): {
+            const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
+            const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
+            const urls = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls;
+            urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
+            urls.unshift(azWithPort, azWithPortAlt);
+            console.log('Successfully updated to 0.0.1.58.');
+          }; // Fallthrough.
+          case window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.59'): {
+            const mods = backgroundPage.apis.pacKitchen.getCurrentConfigs(true);
+            for(const host of Object.keys(mods.exceptions)) {
+              if (!host.endsWith('.')) {
+                const ifProxy = self.exceptions[host] || false;
+                delete self.exceptions[host];
+                self.exceptions[\`\${host}.\`] = ifProxy;
+              }
+            }
+            await new Promise((resolve, reject) => keepCookedNowAsync(mods,
+              (err) => err ? reject(err) : resolve()),
             );
-          }
-
-        }
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.25')) {
-
-          console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
-          const provKey = antiCensorRu.getCurrentPacProviderKey();
-          if (provKey !== 'Антицензорити' && provKey !== 'Антизапрет') {
-            console.log('Current provider', provKey, '!== Anticensority or Antizapret');
-            return; // Not Anticensority.
-          }
-          const pacMods = window.apis.pacKitchen.getPacMods();
-          if (pacMods.filteredCustomsString) {
-            console.log('Proxies found:', pacMods.filteredCustomsString);
-            return; // Own proxies or Tor are used.
-          }
-          antiCensorRu.setCurrentPacProviderKey('Антизапрет');
-          antiCensorRu.setLastModified(0);
-          await new Promise((resolveSwitch) =>
-
-            antiCensorRu.syncWithPacProviderAsync((err, res, warns) => {
-
-              if (warns) {
-                console.log(warns);
-              }
-              if (err) {
-                console.log(
-                  'Ungraceful update from 1.25: couldn\\'t fetch Antizapret:',
-                );
-                console.error(err);
-              } else {
-                console.log('Update from 1.25 applied successfully.');
-              }
-              resolveSwitch();
-
-            }),
-          );
-
+            console.log('Successfully updated to 0.0.1.60.');
+          }; // Fallthrough.
         }
       } catch (e) {
         // Log update error.

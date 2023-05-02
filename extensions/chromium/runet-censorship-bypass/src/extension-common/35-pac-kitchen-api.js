@@ -308,12 +308,12 @@
     if (self.ifProxyMoreDomains) {
       self.moreDomains = [
         /* Networks */
-        'onion', 'i2p',
+        'onion.', 'i2p.',
         /* OpenNIC */
-        'bbs', 'chan', 'dyn', 'free', 'geek', 'gopher', 'indy',
-        'libre', 'neo', 'null', 'o', 'oss', 'oz', 'parody', 'pirate',
+        'bbs.', 'chan.', 'dyn.', 'free.', 'geek.', 'gopher.', 'indy.',
+        'libre.', 'neo.', 'null.', 'o.', 'oss.', 'oz.', 'parody.', 'pirate.',
         /* OpenNIC Alternatives */
-        'bazar', 'bit', 'coin', 'emc', 'fur', 'ku', 'lib', 'te', 'ti', 'uu'
+        'bazar.', 'bit.', 'coin.', 'emc.', 'fur.', 'ku.', 'lib.', 'te.', 'ti.', 'uu.',
       ];
     }
     if (self.ifMindExceptions && self.exceptions) {
@@ -366,7 +366,7 @@
 /******/
 /******/  const originalFindProxyForURL = FindProxyForURL;
 /******/  let tmp = function(url, host) {
-/******/    const dotHost = '.' + host;
+/******/    const dotHostDot = '.' + host + (host.endsWith('.') ? '' : '.');
     ${
       function() {
         let generatedPac = `
@@ -375,7 +375,7 @@
 /******/      ${JSON.stringify(pacMods.whitelist)}.some((whiteHost) => {
 /******/        const ifWild = whiteHost.startsWith('*');
 /******/          if (ifWild) {
-/******/            return dotHost.endsWith(whiteHost.substr(1));
+/******/            return dotHostDot.endsWith(whiteHost.substr(1));
 /******/          }
 /******/          return host === whiteHost;
 /******/      })
@@ -420,9 +420,6 @@
 /******/`;
         }
 
-        const ifIncluded = pacMods.included && pacMods.included.length;
-        const ifExcluded = pacMods.excluded && pacMods.excluded.length;
-        const ifManualExceptions = ifIncluded || ifExcluded;
         let finalExceptions = {};
         if (pacMods.ifProxyMoreDomains) {
           finalExceptions = pacMods.moreDomains.reduce((acc, tld) => {
@@ -442,19 +439,19 @@
 /******/
 /******/    /* EXCEPTIONS START */
             // TODO: handle wildcards.
-/******/    const isHostInDomain = (domain, ifWild) => {
+/******/    const isHostInDomain = (suffix, ifWild) => {
               if (ifWild) {
-                return dotHost.endsWith(domain.substr(1));
+                return dotHostDot.endsWith(suffix.substr(1));
               }
-              return domain === host;
+              return suffix === host;
             }
-/******/    const domainReducer = (maxWeight, [domain, ifProxy]) => {
+/******/    const domainReducer = (maxWeight, [suffix, ifProxy]) => {
 /******/
-              const ifWild = domain.startsWith('*.');
-/******/      if (!isHostInDomain(domain, ifWild)) {
+              const ifWild = suffix.startsWith('*.');
+/******/      if (!isHostInDomain(suffix, ifWild)) {
 /******/        return maxWeight;
 /******/      }
-              let len = domain.length;
+              let len = suffix.length;
               if (ifWild) {
                 len = len === 0 ? len : (len - 2)*2 - 1;
               } else {

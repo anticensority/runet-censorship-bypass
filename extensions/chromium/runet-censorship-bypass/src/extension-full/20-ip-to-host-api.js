@@ -75,6 +75,7 @@
       'proxy.antizapret.prostovpn.org',
       'proxy-ssl.antizapret.prostovpn.org',
       'proxy-nossl.antizapret.prostovpn.org',
+      'proxy-fbtw-ssl.antizapret.prostovpn.org',
     ].reduce((acc, hostname) => Object.assign(acc, { [hostname]: { host: hostname }}), {
       // Defaults:
       localhost: { host: 'localhost' },
