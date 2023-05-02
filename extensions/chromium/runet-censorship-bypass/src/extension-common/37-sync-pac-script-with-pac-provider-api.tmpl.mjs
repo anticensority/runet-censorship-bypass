@@ -136,7 +136,10 @@
 
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
+<<<<<<< HEAD:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.mjs
           // globalThis.utils.openAndFocus('https://rebrand.ly/ac-allow-private-globalThiss');
+=======
+>>>>>>> development:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.js
           clarifyThen(
             chrome.i18n.getMessage('AllowExtensionToRunInPrivateglobalThiss'),
             cb,
@@ -228,7 +231,7 @@
         );
         return (ifUnattended
             ? tryPromiseSeveralTimesAsync(tryAllUrlsAsync, [20, 40, 60])
-            : tryAllUrlsAsync()        
+            : tryAllUrlsAsync()
         ).catch(
           (err) => Promise.reject(clarify(
               err,
@@ -274,6 +277,8 @@
                   \`,
         order: 0,
         pacUrls: [
+          'https://antizapret.prostovpn.org:8443/proxy.pac',
+          'https://antizapret.prostovpn.org:18443/proxy.pac',
           'https://antizapret.prostovpn.org/proxy.pac',
           'https://rebrand.ly/ac-antizapret-pac',
         ],
@@ -586,6 +591,7 @@
       'handlers-ext-error',
       'handlers-no-control',
     ];
+<<<<<<< HEAD:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.mjs
 
     if (!Object.keys(oldAntiCensorRu).length) {
       const storage = await globalThis.utils.promisedLocalStorage.get(null);
@@ -614,6 +620,8 @@
       }
     }
 
+=======
+>>>>>>> development:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.js
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
@@ -704,6 +712,7 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
+<<<<<<< HEAD:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.mjs
         if (globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.5')) {
 
           // Change semicolons to semicolons followed by newlines in proxy string (raw).
@@ -752,6 +761,15 @@
             }),
           );
 
+=======
+        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57')) {
+          const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
+          const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
+          const urls = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls;
+          urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
+          urls.unshift(azWithPort, azWithPortAlt);
+          console.log('Successfully updated to 0.0.1.58.');
+>>>>>>> development:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.js
         }
       } catch (e) {
         // Log update error.

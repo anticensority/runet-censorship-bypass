@@ -27,7 +27,7 @@
 
       otherUnblock: {
         title: 'Разблокировать по-другому',
-        getUrl: (blockedUrl) => ('https://rebrand.ly/ac-unblock#' + blockedUrl),
+        getUrl: (blockedUrl) => ('https://anticensority.github.io/unblock#' + blockedUrl),
         order: 3,
       },
 
@@ -39,7 +39,7 @@
 
       support: {
         title: 'Документация / Помощь / Поддержка',
-        getUrl: (blockedUrl) => 'https://git.io/ac-wiki',
+        getUrl: (blockedUrl) => 'https://github.com/anticensority/runet-censorship-bypass/wiki',
         order: 99,
       },
 
