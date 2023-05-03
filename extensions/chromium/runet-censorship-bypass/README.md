@@ -1,4 +1,4 @@
-# Install
+## Install
 
 Tested on:
 
@@ -6,26 +6,23 @@ NodeJS: v16.1.0.
 NPM: 7.11.2.
 OS: Linux Mint 20 Xfce Edition.
 
-```
+```sh-session
 npm install
 cd src/extension-common/pages/options/
 npm install
 cd -
 
-# For debugging:
-npm start
-# Use your build/extension-beta
-
 # For production:
+
 npm start
 # Use your build/extension-full or build/extension-mini
 ```
 
-# For Reviewers
+## For Reviewers
 
 See ./src/extension-common/FOR_REVIEWERS.md.
 
-# Release Instructions
+## Release Instructions
 
 1. `npm run release`
 2. `vim src/templates-data.js` and bump version.

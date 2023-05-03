@@ -1,11 +1,11 @@
-If you __unstar__, please, [leave us a note](https://github.com/anticensority/runet-censorship-bypass/issues) why you do so. 
+If you __unstar__, please, [leave us a note](https://github.com/anticensority/runet-censorship-bypass/issues) why you do so.
 
 [d1]: https://img.shields.io/badge/Поддержать-❤-green.svg
 [d2]: https://rebrand.ly/ac-donate
 
 [![Поддержать][d1]][d2]
 [![Backers on Open Collective](https://opencollective.com/anticensority/backers/badge.svg)](#backers)
- [![Sponsors on Open Collective](https://opencollective.com/anticensority/sponsors/badge.svg)](#sponsors) 
+ [![Sponsors on Open Collective](https://opencollective.com/anticensority/sponsors/badge.svg)](#sponsors)
 
 # Russian Anticensorship on PAC-Scripts
 
@@ -47,13 +47,11 @@ I decided to write an anticensorship extension for Chromium before they strike m
 This project exists thanks to all the people who contribute.
 <a href="https://github.com/anticensority/runet-censorship-bypass/graphs/contributors"><img src="https://opencollective.com/anticensority/contributors.svg?width=890&button=false?force" /></a>
 
-
 ## Backers
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/anticensority#backer)]
 
 <a href="https://opencollective.com/anticensority#backers" target="_blank"><img src="https://opencollective.com/anticensority/backers.svg?width=890"></a>
-
 
 ## Sponsors
 
