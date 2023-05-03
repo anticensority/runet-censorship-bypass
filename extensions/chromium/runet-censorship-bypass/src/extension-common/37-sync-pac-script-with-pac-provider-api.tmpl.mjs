@@ -586,7 +586,7 @@
       'handlers-pac-error',
       'handlers-ext-error',
       'handlers-no-control',
-      ];
+    ];
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
@@ -677,13 +677,29 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57')) {
-          const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
-          const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
-          const urls = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls;
-          urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
-          urls.unshift(azWithPort, azWithPortAlt);
-          console.log('Successfully updated to 0.0.1.58.');
+        switch(true) {
+          case window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57'): {
+            const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
+            const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
+            const urls = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls;
+            urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
+            urls.unshift(azWithPort, azWithPortAlt);
+            console.log('Successfully updated to 0.0.1.58.');
+          }; // Fallthrough.
+          case window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.59'): {
+            const mods = backgroundPage.apis.pacKitchen.getCurrentConfigs(true);
+            for(const host of Object.keys(mods.exceptions)) {
+              if (!host.endsWith('.')) {
+                const ifProxy = self.exceptions[host] || false;
+                delete self.exceptions[host];
+                self.exceptions[\`\${host}.\`] = ifProxy;
+              }
+            }
+            await new Promise((resolve, reject) => keepCookedNowAsync(mods,
+              (err) => err ? reject(err) : resolve()),
+            );
+            console.log('Successfully updated to 0.0.1.60.');
+          }; // Fallthrough.
         }
       } catch (e) {
         // Log update error.
