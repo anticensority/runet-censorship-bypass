@@ -136,12 +136,8 @@
 
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
-<<<<<<< HEAD:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.mjs
-          // globalThis.utils.openAndFocus('https://rebrand.ly/ac-allow-private-globalThiss');
-=======
->>>>>>> development:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.js
           clarifyThen(
-            chrome.i18n.getMessage('AllowExtensionToRunInPrivateglobalThiss'),
+            chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
             cb,
           )(err);
           return;
@@ -302,7 +298,7 @@
         order: 1,
 
         /*
-          Don't use in system configs! Because globalThiss does poor caching.
+          Don't use in system configs! Because globalThis does poor caching.
           Some urls are encoded to counter abuse.
           Version: 0.17
         */
@@ -590,38 +586,7 @@
       'handlers-pac-error',
       'handlers-ext-error',
       'handlers-no-control',
-    ];
-<<<<<<< HEAD:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.mjs
-
-    if (!Object.keys(oldAntiCensorRu).length) {
-      const storage = await globalThis.utils.promisedLocalStorage.get(null);
-      if (storage.version && globalThis.apis.version.isLeq(storage.version, '0.0.1.48')) {
-        const ffxPacData = storage['firefox-only-pac-data'];
-        delete storage['firefox-only-pac-data'];
-        await globalThis.utils.promisedLocalStorage.clear();
-        for(const key of otherKeys) {
-          await globalThis.utils.promisedLocalStorage.set({ [key]: storage[key] });
-          delete storage[key];
-        }
-        await globalThis.utils.promisedLocalStorage.set({ antiCensorRu: storage });
-        oldAntiCensorRu = storage;
-      }
-    }
-    if (oldAntiCensorRu.version && globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.49')) {
-      const modsMutated = globalThis.apis.pacKitchen.getPacModsRaw();
-      if (modsMutated && modsMutated.exceptions) {
-        modsMutated.exceptions = Object.entries(modsMutated.exceptions).reduce((acc, [host, ifProxy]) => {
-          acc[\`*.\${host}\`] = ifProxy;
-          return acc;
-        }, {});
-        await new Promise(
-          (resolve) => globalThis.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
-        );
-      }
-    }
-
-=======
->>>>>>> development:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.js
+      ];
     /*
        Event handlers that ALWAYS work (even if installation is not done
        or failed).
@@ -712,56 +677,6 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-<<<<<<< HEAD:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.mjs
-        if (globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.5')) {
-
-          // Change semicolons to semicolons followed by newlines in proxy string (raw).
-          const migrateProxies = (oldStr) => oldStr.replace(/;\\r?\\n?/g, ';\\n');
-          const modsMutated = globalThis.apis.pacKitchen.getPacModsRaw();
-          if (modsMutated) {
-            modsMutated['customProxyStringRaw'] = migrateProxies(modsMutated['customProxyStringRaw']);
-            await new Promise(
-              (resolve) => globalThis.apis.pacKitchen.keepCookedNowAsync(modsMutated, resolve),
-            );
-          }
-
-        }
-        if (globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.25')) {
-
-          console.log('Switch to Antizapret automatically, only from Anitcensority without own proxies.');
-          const provKey = antiCensorRu.getCurrentPacProviderKey();
-          if (provKey !== 'Антицензорити' && provKey !== 'Антизапрет') {
-            console.log('Current provider', provKey, '!== Anticensority or Antizapret');
-            return; // Not Anticensority.
-          }
-          const pacMods = globalThis.apis.pacKitchen.getPacMods();
-          if (pacMods.filteredCustomsString) {
-            console.log('Proxies found:', pacMods.filteredCustomsString);
-            return; // Own proxies or Tor are used.
-          }
-          antiCensorRu.setCurrentPacProviderKey('Антизапрет');
-          antiCensorRu.setLastModified(0);
-          await new Promise((resolveSwitch) =>
-
-            antiCensorRu.syncWithPacProviderAsync((err, res, warns) => {
-
-              if (warns) {
-                console.log(warns);
-              }
-              if (err) {
-                console.log(
-                  'Ungraceful update from 1.25: couldn\\'t fetch Antizapret:',
-                );
-                console.error(err);
-              } else {
-                console.log('Update from 1.25 applied successfully.');
-              }
-              resolveSwitch();
-
-            }),
-          );
-
-=======
         if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57')) {
           const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
           const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
@@ -769,7 +684,6 @@
           urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
           urls.unshift(azWithPort, azWithPortAlt);
           console.log('Successfully updated to 0.0.1.58.');
->>>>>>> development:extensions/chromium/runet-censorship-bypass/src/extension-common/37-sync-pac-script-with-pac-provider-api.tmpl.js
         }
       } catch (e) {
         // Log update error.

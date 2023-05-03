@@ -31,27 +31,7 @@
     }
   },
 
-<<<<<<< HEAD
   ${background},
-=======
-  "background": {
-    ${persistent}
-    "scripts": [
-        "00-init-apis.js"
-      ${scripts_0x}
-      , "11-error-handlers-api.js"
-      , "12-errors-lib.js"
-      , "13-http-lib.js"
-      , "15-firefox-proxy-settings.js"
-      ${scripts_2x}
-      , "35-pac-kitchen-api.js"
-      , "37-sync-pac-script-with-pac-provider-api.js"
-      ${scripts_8x}
-      , "70-menu-items.js"
-      , "75-context-menus.js"
-    ]
-  },
->>>>>>> development
 
   "${action}": {
     "default_title": "Этот сайт благословлён | Версия ${version + versionSuffix}",
