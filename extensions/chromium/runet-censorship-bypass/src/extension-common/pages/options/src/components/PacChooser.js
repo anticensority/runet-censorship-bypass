@@ -145,9 +145,9 @@ export default function getPacChooser(theState) {
             <div class={scopedCss.fullLineHeight}>
               {
                 props.flags.ifMini
-                  ? (<a class={scopedCss.otherVersion + ' emoji'} href="https://rebrand.ly/ac-versions"
+                  ? (<a class={scopedCss.otherVersion + ' emoji'} href="https://github.com/anticensority/runet-censorship-bypass/wiki/Различные-версии-расширения"
                       title={chrome.i18n.getMessage("FullVersion")}>🏋</a>)
-                  : (<a class={scopedCss.otherVersion + ' emoji'} href="https://rebrand.ly/ac-versions"
+                  : (<a class={scopedCss.otherVersion + ' emoji'} href="https://github.com/anticensority/runet-censorship-bypass/wiki/Различные-версии-расширения"
                       title={chrome.i18n.getMessage("VersionForSlowMachines")}>🐌</a>)
               }
             </div>

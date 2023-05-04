@@ -266,12 +266,12 @@
                 ? \`Основной PAC-скрипт от автора проекта «Антизапрет».
                     Охватывет меньше сайтов.
                     Блокировка определяется по доменному имени и при необходимости по IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Сравнение PAC-скриптов</a>.
                   \`
                 : \`The main PAC-script from the author of project "Antizapret"\.
                     Covers fewer sites.
                     Block is detected based on a domain name and, if necessary, on an IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Comparison of PAC-scripts (ru)</a>.
                   \`,
         order: 0,
         pacUrls: [
@@ -289,13 +289,13 @@
                     Охватывает больше сайтов.
                     Блокировка определятся по доменному имени или IP адресу.
                     Подходит для провайдеров, блокирующих все сайты на одном IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Сравнение PAC-скриптов</a>.
                   \`
                 : \`Alternative PAC-script from the author of this extension.
                     Covers more sites.
                     Block is detected based on a domain name and on an IP address.
                     Better fits providers that block all sites on one IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Comparison of PAC-scripts (ru)</a>.
                   \`,
         order: 1,
 

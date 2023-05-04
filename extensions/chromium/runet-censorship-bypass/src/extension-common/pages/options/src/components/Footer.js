@@ -27,7 +27,7 @@ export default function getFooter(theState) {
 
       <footer class={scopedCss.controlRow + ' horFlex nowrap'}>
         <input type="button" value={chrome.i18n.getMessage('Finish')} disabled={props.ifInputsDisabled} style={{ display: theState.flags.ifInsideEdgeOptionsPage ? 'none' : 'initial' }} onClick={() => window.close()} />
-        <a href="https://rebrand.ly/ac-donate">{chrome.i18n.getMessage('Donate')}</a>
+        <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать">{chrome.i18n.getMessage('Donate')}</a>
         <a data-in-bg="false" href="../troubleshoot/index.html">
           {chrome.i18n.getMessage('ProblemsQ')}
         </a>

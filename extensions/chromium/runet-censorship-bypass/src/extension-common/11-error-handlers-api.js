@@ -67,7 +67,7 @@
       const json = JSON.stringify(errors, errorJsonReplacer, 0);
 
       window.utils.openAndFocus(
-        'https://rebrand.ly/ac-error/?json=' + encodeURIComponent(json) +
+        'https://anticensority.github.io/error/?json=' + encodeURIComponent(json) +
           (type ? '&type=' + encodeURIComponent(type) : '') +
           '&version=' + chrome.runtime.getManifest().version +
           '&useragent=' + encodeURIComponent(navigator.userAgent) +

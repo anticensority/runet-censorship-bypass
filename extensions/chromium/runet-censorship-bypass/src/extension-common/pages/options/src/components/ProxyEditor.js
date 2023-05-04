@@ -363,7 +363,7 @@ export default function getProxyEditor(theState) {
               }
             </tbody>
           </table>
-          <a href="https://rebrand.ly/ac-protected-proxy">Запароленные прокси?</a>
+          <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/Прокси-и-пароль">Запароленные прокси?</a>
         </form>
       );
     }
