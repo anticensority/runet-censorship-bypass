@@ -8,7 +8,7 @@ import getApp from './components/App';
 
 chrome.runtime.getBackgroundPage( (bgWindow) =>
   bgWindow.apis.errorHandlers.installListenersOn(
-    window, 'PUP', async() => {
+    window, 'PUP', async () => {
       /*
         `Extension context invalidated` error is thrown if `window.closed` is true and call to
         `window.chrome.i18n` or other `window.chrome` api happens. Use bgWindow.chrome instead.

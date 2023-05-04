@@ -11,36 +11,38 @@
   const modsKey = 'mods';
 
   let proxyHostToCredsList = {};
-  const ifAuthSupported = chrome.webRequest && chrome.webRequest.onAuthRequired && !globalThis.apis.version.ifMini;
+  const ifAuthSupported = chrome.webRequest &&
+    chrome.webRequest.onAuthRequired &&
+    !globalThis.apis.version.ifMini;
   if (ifAuthSupported) {
 
     const requestIdToTries = {};
 
     chrome.webRequest.onAuthRequired.addListener(
-      (details) => {
+        (details) => {
 
-        if (!details.isProxy) {
-          return {};
-        }
+          if (!details.isProxy) {
+            return {};
+          }
 
-        const proxyHost = `${details.challenger.host}:${details.challenger.port}`;
-        const credsList = proxyHostToCredsList[proxyHost];
-        if (!credsList) {
-          return {}; // No creds found for this proxy.
-        }
-        const requestId = details.requestId;
-        const tries = requestIdToTries[requestId] || 0;
-        if (tries > credsList.length) {
-          return {}; // All creds for this proxy were tried already.
-        }
-        requestIdToTries[requestId] = tries + 1;
-        return {
-          authCredentials: credsList[tries],
-        };
+          const proxyHost = `${details.challenger.host}:${details.challenger.port}`;
+          const credsList = proxyHostToCredsList[proxyHost];
+          if (!credsList) {
+            return {}; // No creds found for this proxy.
+          }
+          const requestId = details.requestId;
+          const tries = requestIdToTries[requestId] || 0;
+          if (tries > credsList.length) {
+            return {}; // All creds for this proxy were tried already.
+          }
+          requestIdToTries[requestId] = tries + 1;
+          return {
+            authCredentials: credsList[tries],
+          };
 
-      },
-      {urls: ['<all_urls>']},
-      ['blocking'],
+        },
+        {urls: ['<all_urls>']},
+        ['blocking'],
     );
 
     const forgetRequestId = (details) => {
@@ -50,13 +52,13 @@
     };
 
     chrome.webRequest.onCompleted.addListener(
-      forgetRequestId,
-      {urls: ['<all_urls>']},
+        forgetRequestId,
+        {urls: ['<all_urls>']},
     );
 
     chrome.webRequest.onErrorOccurred.addListener(
-      forgetRequestId,
-      {urls: ['<all_urls>']},
+        forgetRequestId,
+        {urls: ['<all_urls>']},
     );
 
   }
@@ -198,21 +200,21 @@
     const pacMods = getCurrentConfigs();
     const configs = getDefaultConfigs();
     return Object.keys(configs)
-      .sort((keyA, keyB) => configs[keyA].order - configs[keyB].order)
-      .reduce((arr, key) => {
+        .sort((keyA, keyB) => configs[keyA].order - configs[keyB].order)
+        .reduce((arr, key) => {
 
-        const conf = configs[key];
-        if(typeof(conf.order) === 'number') {
-          if(!category || category === (conf.category || 'general')) {
-            conf.value = pacMods[key];
-            conf.key = key;
-            conf.category = category || 'general';
-            arr.push(conf);
-         }
-        }
-        return arr;
+          const conf = configs[key];
+          if (typeof(conf.order) === 'number') {
+            if (!category || category === (conf.category || 'general')) {
+              conf.value = pacMods[key];
+              conf.key = key;
+              conf.category = category || 'general';
+              arr.push(conf);
+            }
+          }
+          return arr;
 
-      }, []);
+        }, []);
 
   };
 
@@ -221,18 +223,19 @@
     mods = mods || {}; // null?
     const configs = getDefaultConfigs();
     const ifNoMods = Object.keys(configs)
-      .every((dProp) => {
+        .every((dProp) => {
 
-        const ifDflt = (
-          !(
-            dProp in mods &&
-            Boolean(configs[dProp].dflt) !== Boolean(mods[dProp])
-          )
-        );
-        const ifMods = configs[dProp].ifDfltMods; // If default value implies PAC-script modification.
-        return ifDflt ? !ifMods : ifMods;
+          const ifDflt = (
+            !(
+              dProp in mods &&
+              Boolean(configs[dProp].dflt) !== Boolean(mods[dProp])
+            )
+          );
+          const ifMods = configs[dProp].ifDfltMods;
+          // If default value implies PAC-script modification.
+          return ifDflt ? !ifMods : ifMods;
 
-      });
+        });
 
     const self = {};
     const gdft = getDefaults();
@@ -242,10 +245,10 @@
     let customProxyArray = [];
     if (self.customProxyStringRaw) {
       customProxyArray = self.customProxyStringRaw
-        .replace(/#.*$/mg, '') // Strip comments.
-        .split( /(?:\s*(?:;\r?\n)+\s*)+/g )
-        .map( (p) => p.trim() )
-        .filter( (p) => p && /\s+/g.test(p) ); // At least one space is required.
+          .replace(/#.*$/mg, '') // Strip comments.
+          .split( /(?:\s*(?:;\r?\n)+\s*)+/g )
+          .map( (p) => p.trim() )
+          .filter( (p) => p && /\s+/g.test(p) ); // At least one space is required.
       if (self.ifUseSecureProxiesOnly) {
         customProxyArray = customProxyArray.filter( (pStr) => /^HTTPS\s/.test(pStr) );
       }
@@ -279,7 +282,7 @@
     }
 
     proxyHostToCredsList = {};
-    protectedProxies.forEach(({ hostname, port, username, password }) => {
+    protectedProxies.forEach(({hostname, port, username, password}) => {
 
       proxyHostToCredsList[`${hostname}:${port}`] =
         proxyHostToCredsList[`${hostname}:${port}`] || [];
@@ -317,7 +320,7 @@
     if (self.ifMindExceptions && self.exceptions) {
       self.included = [];
       self.excluded = [];
-      for(const host of Object.keys(self.exceptions)) {
+      for (const host of Object.keys(self.exceptions)) {
         const ifProxy = self.exceptions[host] || false;
         if (ifProxy) {
           self.included.push(host);
@@ -328,14 +331,14 @@
       ['included', 'excluded'].forEach((who) => {
 
         self[who] = self[who]
-          .map( (domain) => domain.split('').reverse() )
-          .sort()
-          .map( (rDomain) => rDomain.reverse().join('') );
+            .map( (domain) => domain.split('').reverse() )
+            .sort()
+            .map( (rDomain) => rDomain.reverse().join('') );
 
       });
       if (self.included.length && !self.filteredCustomsString) {
         return [null, self, new TypeError(
-          'Имеются сайты, добавленные вручную. Они проксироваться не будут, т.к. нет СВОИХ проски, удовлетворяющих вашим требованиям! Если прокси всё же имеются, то проверьте требования (модификаторы).'
+            'Имеются сайты, добавленные вручную. Они проксироваться не будут, т.к. нет СВОИХ проски, удовлетворяющих вашим требованиям! Если прокси всё же имеются, то проверьте требования (модификаторы).',
         )];
       }
     }
@@ -352,8 +355,8 @@
     cook(pacData, pacMods = mandatory()) {
 
       pacData = pacData.replace(
-        new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
-        ''
+          new RegExp(kitchenStartsMark + '[\\s\\S]*$', 'g'),
+          '',
       );
       /a/.test('a'); // GC RegExp.input and friends.
 
@@ -470,9 +473,9 @@
 /******/        return "DIRECT";
 /******/      }
 /******/      // Always proxy it!
-${        pacMods.filteredCustomsString
-            ? `/******/      return filteredCustomProxies + "; " + directIfAllowed;`
-            : '/******/      /* No custom proxies -- continue. */'
+${        pacMods.filteredCustomsString ?
+            `/******/      return filteredCustomProxies + "; " + directIfAllowed;` :
+            '/******/      /* No custom proxies -- continue. */'
 }
 /******/    }
 /******/    /* EXCEPTIONS END */
@@ -484,7 +487,7 @@ ${        pacMods.filteredCustomsString
                     ? '.replace(/DIRECT/g, "")'
                     : ' + "; " + directIfAllowed'
         };`;
-        if(
+        if (
           !pacMods.ifUseSecureProxiesOnly &&
           !pacMods.filteredCustomsString &&
            pacMods.ifUsePacScriptProxies
@@ -502,9 +505,9 @@ ${        pacMods.filteredCustomsString
 /******/      return "DIRECT";
 /******/    }
 /******/    return ` +
-        ((pacMods.filteredCustomsString && !pacMods.ifUseOwnProxiesOnlyForOwnSites)
-          ? 'filteredCustomProxies + "; " + '
-          : ''
+        ((pacMods.filteredCustomsString && !pacMods.ifUseOwnProxiesOnlyForOwnSites) ?
+          'filteredCustomProxies + "; " + ' :
+          ''
         ) +
         function() {
 
@@ -525,9 +528,9 @@ ${        pacMods.filteredCustomsString
 
 /******/  };
 ${
-      !pacMods.replaceDirectWith
-        ? ''
-        : `
+      !pacMods.replaceDirectWith ?
+        '' :
+        `
 /******/  const oldTmp = tmp;
 /******/  tmp = function(url, host) {
 /******/    const ip = dnsResolve(host);
@@ -579,9 +582,9 @@ ${
 
       new Promise((resolve) =>
 
-        details
-          ? resolve(details)
-          : chrome.proxy.settings.get({}, timeouted(resolve) ),
+        details ?
+          resolve(details) :
+          chrome.proxy.settings.get({}, timeouted(resolve) ),
 
       ).then((details) => {
 
@@ -596,7 +599,7 @@ ${
 
         kitchenState(ifIncontinence, true);
         cb(null, null, new TypeError(
-          'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
+            'Не найдено активного PAC-скрипта! Изменения будут применены при возвращении контроля настроек прокси или установке нового PAC-скрипта.'
         ));
 
       });
@@ -606,7 +609,11 @@ ${
     checkIncontinence(details) {
 
       if ( kitchenState(ifIncontinence) ) {
-        this.setNowAsync(details, (err) => { if (err) { throw err; } }); // TODO: suppress?
+        this.setNowAsync(details, (err) => {
+          if (err) {
+            throw err;
+          }
+        }); // TODO: suppress?
       }
 
     },
@@ -630,25 +637,25 @@ ${
         kitchenState(modsKey, pacMods);
       }
       this.setNowAsync(
-        (err, res, ...setWarns) => {
+          (err, res, ...setWarns) => {
 
-          const accWarns = modsWarns.concat(setWarns); // Acc = accumulated.
-          if (err) {
-            return cb(err, res, ...accWarns);
-          }
+            const accWarns = modsWarns.concat(setWarns); // Acc = accumulated.
+            if (err) {
+              return cb(err, res, ...accWarns);
+            }
 
-          if (!ifProxiesChanged) {
-            return cb(null, res, ...accWarns);
-          }
-          const newHosts = (pacMods.customProxyArray || []).map( (ps) => ps.split(/\s+/)[1] );
-          globalThis.utils.fireRequest(
-            'ip-to-host-replace-all',
-            newHosts,
-            (err, res, ...moreWarns) =>
-              cb(err, res, ...accWarns, ...moreWarns),
-          );
+            if (!ifProxiesChanged) {
+              return cb(null, res, ...accWarns);
+            }
+            const newHosts = (pacMods.customProxyArray || []).map( (ps) => ps.split(/\s+/)[1] );
+            globalThis.utils.fireRequest(
+                'ip-to-host-replace-all',
+                newHosts,
+                (err, res, ...moreWarns) =>
+                  cb(err, res, ...accWarns, ...moreWarns),
+            );
 
-        },
+          },
       );
 
     },
