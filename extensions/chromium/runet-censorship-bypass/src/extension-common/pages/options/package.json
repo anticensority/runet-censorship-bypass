@@ -16,11 +16,12 @@
     "inferno": "~3.2.0",
     "inferno-component": "^3.10.1",
     "inferno-create-element": "^3.10.1",
-    "webpack": "^2.5.1"
+    "webpack": "^5.82.0",
+    "webpack-cli": "^5.0.2"
   },
   "scripts": {
     "check": "flow status",
-    "build:prod": "webpack --define process.env.NODE_ENV=\"'production'\" --env=prod",
+    "build:prod": "webpack --node-env=\"'production'\" --env=prod",
     "build:dev:nocomp": "NODE_ENV=development webpack --define process.env.NODE_ENV=\"'development'\" --env=dev",
     "build:dev": "NODE_ENV=development webpack --debug --define process.env.NODE_ENV=\"'development'\" --output-pathinfo --env=dev",
     "gulp": "cd .. && npm run gulp",

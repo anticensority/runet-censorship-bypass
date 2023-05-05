@@ -101,7 +101,7 @@
       dflt: false,
       category: 'ownProxies',
       label: 'использовать СВОЙ локальный Tor',
-      desc: 'Установите <a href="https://rebrand.ly/ac-tor">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://rebrand.ly/ac-tor">ВАЖНО</a>.',
+      desc: 'Установите <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/Расширение-и-TOR">Tor</a> на свой компьютер и используйте его как прокси-сервер. <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/Расширение-и-TOR#важно">ВАЖНО</a>.',
       order: 5,
     },
     ifUseLocalWarp: {
@@ -137,7 +137,7 @@
       dflt: '',
       category: 'ownProxies',
       label: 'использовать СВОИ прокси',
-      url: 'https://rebrand.ly/ac-own-proxy',
+      url: 'https://github.com/anticensority/runet-censorship-bypass/wiki/Свои-прокси-в-расширении',
       order: 7,
     },
     ifUseOwnProxiesOnlyForOwnSites: {
@@ -160,7 +160,7 @@
       dflt: false,
       category: 'ownProxies',
       label: 'подменять DIRECT на',
-      desc: 'Использовать в PAC-скрипте указанную строку для запросов напрямую (вместо директивы DIRECT). Данная строка не проверяется на требования к шифрованию связи до прокси! Строка должна соответствовать формату возвращаемого значения PAC-скрипта, который подобен <a href="https://rebrand.ly/ac-own-proxies#user-content-Формат">формату своих прокси</a>.',
+      desc: 'Использовать в PAC-скрипте указанную строку для запросов напрямую (вместо директивы DIRECT). Данная строка не проверяется на требования к шифрованию связи до прокси! Строка должна соответствовать формату возвращаемого значения PAC-скрипта, который подобен <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/Свои-прокси-в-расширении#формат">формату своих прокси</a>.',
       order: 9,
     },
 

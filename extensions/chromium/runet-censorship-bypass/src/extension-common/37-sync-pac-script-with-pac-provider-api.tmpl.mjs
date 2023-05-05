@@ -264,12 +264,12 @@
                 ? \`Основной PAC-скрипт от автора проекта «Антизапрет».
                     Охватывет меньше сайтов.
                     Блокировка определяется по доменному имени и при необходимости по IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Сравнение PAC-скриптов</a>.
                   \`
                 : \`The main PAC-script from the author of project "Antizapret"\.
                     Covers fewer sites.
                     Block is detected based on a domain name and, if necessary, on an IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Comparison of PAC-scripts (ru)</a>.
                   \`,
         order: 0,
         pacUrls: [
@@ -287,13 +287,13 @@
                     Охватывает больше сайтов.
                     Блокировка определятся по доменному имени или IP адресу.
                     Подходит для провайдеров, блокирующих все сайты на одном IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Сравнение PAC-скриптов</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Сравнение PAC-скриптов</a>.
                   \`
                 : \`Alternative PAC-script from the author of this extension.
                     Covers more sites.
                     Block is detected based on a domain name and on an IP address.
                     Better fits providers that block all sites on one IP.
-                    <br/> <a href="https://rebrand.ly/ac-pacs">Comparison of PAC-scripts (ru)</a>.
+                    <br/> <a href="https://github.com/anticensority/runet-censorship-bypass/wiki/PAC-скрипты:-различия">Comparison of PAC-scripts (ru)</a>.
                   \`,
         order: 1,
 
@@ -677,29 +677,14 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        switch(true) {
-          case window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.57'): {
-            const azWithPort = 'https://antizapret.prostovpn.org:8443/proxy.pac';
-            const azWithPortAlt = 'https://antizapret.prostovpn.org:18443/proxy.pac';
-            const urls = window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls;
-            urls[0] = 'https://antizapret.prostovpn.org/proxy.pac';
-            urls.unshift(azWithPort, azWithPortAlt);
-            console.log('Successfully updated to 0.0.1.58.');
-          }; // Fallthrough.
-          case window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.59'): {
-            const mods = backgroundPage.apis.pacKitchen.getCurrentConfigs(true);
-            for(const host of Object.keys(mods.exceptions)) {
-              if (!host.endsWith('.')) {
-                const ifProxy = self.exceptions[host] || false;
-                delete self.exceptions[host];
-                self.exceptions[\`\${host}.\`] = ifProxy;
-              }
-            }
-            await new Promise((resolve, reject) => keepCookedNowAsync(mods,
-              (err) => err ? reject(err) : resolve()),
-            );
-            console.log('Successfully updated to 0.0.1.60.');
-          }; // Fallthrough.
+        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.59')) {
+          window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls = [
+            'https://antizapret.prostovpn.org:8443/proxy.pac',
+            'https://antizapret.prostovpn.org:18443/proxy.pac',
+            'https://antizapret.prostovpn.org/proxy.pac',
+            'https://rebrand.ly/ac-antizapret-pac',
+          ];
+          console.log('Successfully updated to 0.0.1.60.');
         }
       } catch (e) {
         // Log update error.
