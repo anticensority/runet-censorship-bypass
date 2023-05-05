@@ -137,7 +137,7 @@
       if (err) {
         if (err.message === 'proxy.settings requires private browsing permission.') {
           clarifyThen(
-            chrome.i18n.getMessage('AllowExtensionToRunInPrivateWindows'),
+            chrome.i18n.getMessage('AllowExtensionToRunInPrivateglobalThiss'),
             cb,
           )(err);
           return;
@@ -677,8 +677,8 @@
 
       console.log('Updating from', oldAntiCensorRu.version, 'to', antiCensorRu.version);
       try {
-        if (window.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.59')) {
-          window.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls = [
+        if (globalThis.apis.version.isLeq(oldAntiCensorRu.version, '0.0.1.59')) {
+          globalThis.apis.antiCensorRu.pacProviders['Антизапрет'].pacUrls = [
             'https://antizapret.prostovpn.org:8443/proxy.pac',
             'https://antizapret.prostovpn.org:18443/proxy.pac',
             'https://antizapret.prostovpn.org/proxy.pac',

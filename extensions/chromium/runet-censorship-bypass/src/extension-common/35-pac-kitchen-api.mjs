@@ -42,7 +42,6 @@
 
         },
         {urls: ['<all_urls>']},
-        ['blocking'],
     );
 
     const forgetRequestId = (details) => {

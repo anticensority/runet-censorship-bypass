@@ -16,7 +16,7 @@ const commonContext = {
 
 const contexts = {};
 
-const extraPermissions = ', "webRequest", "webRequestBlocking", "webNavigation"';
+const extraPermissions = ', "webRequest", "webNavigation"';
 
 contexts.full = Object.assign({}, commonContext, {
   manifestVersion: '3',

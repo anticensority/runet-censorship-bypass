@@ -15,7 +15,6 @@
     , "alarms"
     , "storage"
     , "unlimitedStorage"
-    , "<all_urls>"
     , "tabs"
     , "contextMenus"
     , "notifications"

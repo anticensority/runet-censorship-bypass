@@ -146,7 +146,8 @@ console.log('Extension started.');
         }
         if (value === undefined) {
           const item = await storage.get(key);
-          return item && JSON.parse(item);
+          console.log('ITEM:', item);
+          return item;
         }
         if (value instanceof Date) {
           throw new TypeError('Converting Date format to JSON is not supported.');
