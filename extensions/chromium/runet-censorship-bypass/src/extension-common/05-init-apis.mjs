@@ -146,7 +146,6 @@ console.log('Extension started.');
         }
         if (value === undefined) {
           const item = await storage.get(key);
-          console.log('ITEM:', item);
           return item;
         }
         if (value instanceof Date) {
