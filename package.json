@@ -1,6 +1,6 @@
 {
   "name": "runet-censorship-bypass",
-  "version": "2.0.0",
+  "version": "2.0.0-rc0",
   "description": "",
   "homepage": "https://github.com/ilyaigpetrov/copy-unicode-urls#readme",
   "main": "index.js",

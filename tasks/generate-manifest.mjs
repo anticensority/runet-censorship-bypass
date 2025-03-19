@@ -34,7 +34,7 @@ const ifAllArgsProvided = requiredFlags.reduce(
 
   const semver = process.env.npm_package_version;
   const context = {
-    version: semver,
+    version: semver.replaceAll('-rc', '.'), // Release candidate becomes the fourth integer.
     edition: args.edition,
   };
 
