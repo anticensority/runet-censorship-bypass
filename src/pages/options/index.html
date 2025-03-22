@@ -33,6 +33,8 @@
       /* Reset ends */
 
       :root {
+        border-color: black;
+        border-radius: 0;
         /*
           The initial theme is light but it's quickly inverted to dark.
           Dark theme should be the first theme user sees by default.
@@ -81,6 +83,7 @@
         vertical-align: text-bottom;
       }
       input[type="url"] {
+        border: 1px solid black;
         /*border-width: 0 0 1px 0;
         border-color: crimson;*/
         flex-grow: 1;
@@ -90,29 +93,19 @@
       input[type="radio"], label {
         cursor: pointer;
       }
-      #disabled:checked + label {
+      #disabledRadio:checked + label {
         color: red;
       }
-
-      div.nowrap {
-        /* Don't break sentences on spaces. */
-        white-space: nowrap;
-      }
-      /*
-      #own:checked + label:after {
-        content: ":";
-      }
-      */
-      #own ~ div {
+      #ownInputs {
         display: flex;
       }
       /*
-      input#own ~ div:has(> input#customPacUrl):after {
+      input#ownRadio ~ div:has(> input#customPacUrl):after {
         border: 5px solid lime;
         background-color: navy;
         content: "";
       }
-      input#own ~ div:after:not(:empty) {
+      input#ownRadio ~ div:after:not(:empty) {
         border: 5px solid pink;
       }
       */
@@ -154,6 +147,32 @@
       #customPacUrl:disabled {
         /*background-color: grey;*/ 
       }
+      #ownInputs button {
+        font-family: emoji, monospace;
+        width: 2em;
+        width: 2ch;
+        border-width: 1px 1px 1px 0px;
+      }
+      #ownInputs > input {
+        border-radius: 0;
+      }
+      #ownInputs > div {
+        display: flex;
+      }
+      #customPacUrl:disabled ~ .editPanel {
+        display: none;
+      }
+      #customPacUrl:not(:disabled) ~ .unlockPanel {
+        display: none;
+      }
+      #boxes {
+        padding: 1em 0;
+        padding: 1ch 0;
+      }
+      #boxes > div {
+        /* Don't break sentences on spaces. */
+        white-space: nowrap;
+      }
     </style>
   </head>
   <body class="use-preferred-color-scheme">
@@ -163,35 +182,50 @@
     </header>
     <nav>
       <form id="pacChooserForm">
-        <ul>
+        <ul id="radios">
           <li>
             <input type="radio" value="antizapret" name="pacScript" id="antizapret">
             <label for="antizapret">Антизапрет</label>
           </li>
           <li>
-            <input type="radio" value="anticensority" name="pacScript" id="anticensority">
-            <label for="anticensority">Антицензорити</label>
+            <input type="radio" value="anticensority" name="pacScript" id="anticensorityRadio">
+            <label for="anticensorityRadio">Антицензорити</label>
+            <a href title="обновить">[обновить]</a>
+            <a href title="приостановить">[⏸]</a>
+            <a href title="информация" style="float: right">[ℹ]</a>
           </li>
           <li>
-            <input type="radio" value="own" name="pacScript" id="own" disabled>
-            <label for="own">Свой:</label>
-            <div>
+            <input type="radio" value="own" name="pacScript" id="ownRadio" disabled>
+            <label for="ownRadio">Свой:</label>
+            <div id="ownInputs">
               <input id="customPacUrl" type="url" placeholder="https://example.com/proxy.pac"
                 size="27"
                 spellcheck="false" autocorrect="off" autocapitalize="off"
-                disabled required
+                required
               >
-              <button id="editPacUrlButton" title="Редактировать">🖉</button>
+              <div class="unlockPanel">
+                <button id="editPacUrlButton" title="Редактировать">🖉</button>
+              </div>
+              <div class="editPanel">
+                <button id="savePacUrlButton" title="Сохранить">🗸</button>
+                <button id="cancelPacUrlButton" title="Отмена">🗙</button>
+              </div>
             </div>
           </li>
           <li>
-            <input type="radio" value="disabled" name="pacScript" id="disabled" checked>
-            <label for="disabled">Отключить / сброс</label>
+            <input type="radio" value="disabled" name="pacScript" id="disabledRadio" checked>
+            <label for="disabledRadio">Отключить / Сброс</label>
           </li>
         </ul>
-        <div class="nowrap">
-          <input type="checkbox" name="reset" id="reset" checked>
-          <label for="reset">Сбрасывать перед переключением</label>
+        <div id="boxes">
+          <div>
+            <input type="checkbox" name="resetBox" id="resetBox" checked>
+            <label for="resetBox">Отключать прокси перед скачиванием</label>
+          </div>
+          <div>
+            <input type="checkbox" name="updateBox" id="updateBox" checked>
+            <label for="updateBox">Обновлять каждые 12ч</label>
+          </div>
         </div>
       </form>
     </nav>

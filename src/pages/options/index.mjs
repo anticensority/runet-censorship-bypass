@@ -1,6 +1,6 @@
 console.log('Options page is opening...');
 
-pacChooserForm.addEventListener('change', function (event) {
+customPacUrl.addEventListener('change', function (event) {
   console.log('ON CHANGE:', event);
   pacChooserForm.reportValidity();
 });
@@ -11,34 +11,43 @@ pacChooserForm.addEventListener('formdata', (event) => {
   return false; // Prevent default action.
 });
 */
-editPacUrlButton.onclick = function (event) {
-  event.preventDefault();
-  const lockUrl = () => { customPacUrl.disabled = true; };
-  const unlockUrl = () => { customPacUrl.disabled = false; };  
-  const ifUrlLocked = customPacUrl.disabled;
-  if (ifUrlLocked) {
-    unlockUrl();
-    return false;
-  }
+
+let LAST_LOCKED_URL = '';
+const lockUrl = () => {
   const ifUrlValid = customPacUrl.checkValidity();
   if (ifUrlValid) {
-    lockUrl();
-    own.disabled = false;
+    LAST_LOCKED_URL = customPacUrl.value;
+    customPacUrl.disabled = true;
+    ownRadio.disabled = false;
     // TODO: Save to storage.
-    return false;
+  } else {
+    pacChooserForm.reportValidity();
+    ownRadio.disabled = true; // `ownRadio.checked` doesn't matter here.
   }
-  // Empty or incorrect url.
-  own.disabled = true; // `own.checked` doesn't matter here.
-  const ifUrlEmpty = !customPacUrl.value;
-  if (ifUrlEmpty) {
-    lockUrl();
-    if (own.checked) {
-      disabled.checked = true;
-    }
-    return false;
-  }
-  return false;
 };
+const unlockUrl = () => {
+  customPacUrl.disabled = false;
+  customPacUrl.focus();
+  ownRadio.disabled = true;
+};  
+
+const suppressDefaultHandler = (f) =>
+  (event) => {
+    event.preventDefault();
+    f(event);
+    return false;
+  };
+
+savePacUrlButton.onclick = suppressDefaultHandler(lockUrl);
+
+cancelPacUrlButton.onclick = suppressDefaultHandler(
+  () => {
+    customPacUrl.value = LAST_LOCKED_URL;
+    lockUrl();
+  },
+);
+
+editPacUrlButton.onclick = suppressDefaultHandler(unlockUrl);
 /*
 import { storage } from '../../lib/common-apis.mjs';
 
