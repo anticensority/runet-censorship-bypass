@@ -60,11 +60,11 @@
       body {
         --ribbon-color: #0075ff; /* #4169e1;*/
         font-family: Ubuntu, Arial, sans-serif;
-        font-size: 75%;
+        font-size: 80%;
         padding: 10px;
       }
 
-      ul {
+      menu {
         list-style: none;
         padding: 0;
       }
@@ -182,18 +182,43 @@
     </header>
     <nav>
       <form id="pacChooserForm">
-        <ul id="radios">
+        <menu id="radios">
+          <template id="pacRecordTemplate">
+            <div>
+              <span id="attributes" hidden>
+                <slot name="id">ID</slot>
+                <slot name="value"><span slot="id"></span></slot>
+                <slot name="for">FOR</slot>
+              </span>
+              <input type="radio" name="pacScript" data-attrs="id value">
+              <label data-attrs="for">
+                <slot name="label">LABEL</slot>
+              </label>
+              <a href title="Обновить">[обновить]</a>
+              <a href title="Приостановить">[⏸]</a>
+              <a href title="Информация о PAC-скрипте" style="float: right">[ℹ]</a>
+            </div>
+          </template>
           <li>
-            <input type="radio" value="antizapret" name="pacScript" id="antizapret">
-            <label for="antizapret">Антизапрет</label>
+            <pac-record>
+              <span slot="label">Антизапрет</span>
+              <span slot="id">antizapret</span>
+              <!--span slot="value">antizapret</span>
+              <span slot="for">antizapret</span-->
+            </pac-record>
           </li>
           <li>
+            <pac-record>
+              <span slot="label">Антицензорити</span>
+              <span slot="id">anticensority</span>
+              <span slot="value">anticensority</span>
+              <span slot="for">anticensority</span>
+            </pac-record>
+          </li>
+          <!--li>
             <input type="radio" value="anticensority" name="pacScript" id="anticensorityRadio">
             <label for="anticensorityRadio">Антицензорити</label>
-            <a href title="обновить">[обновить]</a>
-            <a href title="приостановить">[⏸]</a>
-            <a href title="информация" style="float: right">[ℹ]</a>
-          </li>
+          </li-->
           <li>
             <input type="radio" value="own" name="pacScript" id="ownRadio" disabled>
             <label for="ownRadio">Свой:</label>
@@ -216,7 +241,7 @@
             <input type="radio" value="disabled" name="pacScript" id="disabledRadio" checked>
             <label for="disabledRadio">Отключить / Сброс</label>
           </li>
-        </ul>
+        </menu>
         <div id="boxes">
           <div>
             <input type="checkbox" name="resetBox" id="resetBox" checked>

@@ -1,5 +1,39 @@
 console.log('Options page is opening...');
 
+customElements.define('pac-record',
+  class extends HTMLElement {
+    constructor() {
+      super();
+      const shadow = this.attachShadow({ mode: 'open' });
+      const fragment = pacRecordTemplate.content.cloneNode(true);
+      shadow.appendChild(fragment);
+      const templateAttrs = shadow.querySelectorAll('#attributes > slot[name]');
+      const dataAttrs = shadow.querySelectorAll('*[data-attrs]');
+      dataAttrs.forEach(
+        (da) => {
+          da.dataset.attrs.split(' ').forEach(
+            (attr) => {
+                console.log(shadow.querySelector(`#attributes > slot[name=${attr}]`));
+                da.setAttribute(
+                  attr,
+                  shadow.querySelector(`#attributes > slot[name=${attr}]`).assignedNodes()[0].textContent,
+                );
+            },
+          );
+        }
+      );
+
+      const input = fragment.querySelector('div > input');
+      const label = fragment.querySelector('div > label');
+      /*const node = pacRecordTemplate.content.cloneNode(true);
+      const input = node.querySelector('div > input');
+      const label = node.querySelector('div > label');
+      input.id = input.value = label.htmlFor = this.dataset.id;*/
+
+    }
+  }
+);
+
 customPacUrl.addEventListener('change', function (event) {
   console.log('ON CHANGE:', event);
   pacChooserForm.reportValidity();
