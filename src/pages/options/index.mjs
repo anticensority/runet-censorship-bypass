@@ -2,12 +2,17 @@ console.log('Options page is opening...');
 
 customElements.define('pac-record',
   class extends HTMLElement {
+    static formAssociated = true;
+    // static observedAttributes = ['data-checked'];
     constructor() {
       super();
+      this.internals = this.attachInternals();
       const shadow = this.attachShadow({ mode: 'open' });
+      // const shadow = this.internals.shadowRoot;
+      console.log('Constructor');
       const fragment = pacRecordTemplate.content.cloneNode(true);
       shadow.appendChild(fragment);
-      const templateAttrs = shadow.querySelectorAll('#attributes > slot[name]');
+      //const templateAttrs = shadow.querySelectorAll('#attributes > slot[name]');
       const dataAttrs = shadow.querySelectorAll('*[data-attrs]');
       dataAttrs.forEach(
         (da) => {
@@ -16,13 +21,37 @@ customElements.define('pac-record',
                 console.log(shadow.querySelector(`#attributes > slot[name=${attr}]`));
                 da.setAttribute(
                   attr,
-                  shadow.querySelector(`#attributes > slot[name=${attr}]`).assignedNodes()[0].textContent,
+                  shadow.querySelector(`#attributes > slot[name=${attr}]`).assignedNodes()?.[0].textContent,
                 );
             },
           );
         }
       );
+      const namedInputs = shadow.querySelectorAll('input[name]');
+      namedInputs.forEach((ni) => {
+        //this.internals.setFormValue(ni.name);
+        ni.addEventListener('click',
+          (event) => {
+            const t = event.target;
+            const entries = new FormData();
+            //entries.set(ni.getAttribute('name'), ni.getAttribute('value'));
+            entries.set('pacScript', 'antizapret');
+            this.internals.setFormValue(t.checked ? t.value : null);
+            ni.toggleAttribute('checked');
+            //this.internals.setFormValue(ni.value);
+            //this.toggleAttribute('checked');
+            //this.toggleAttribute('data-checked');
+            //ni.toggleAttribute('checked');
+            console.log('EVENT TARGET:', event.target);
+            console.log('THIS', this);
+            console.log(this.internals);
+            console.log('EEEE', entries);
+            console.log(`FFFF:${ni.name}=${ni.value}`);
+            return true;
+          })
+      });
 
+      /*
       const input = fragment.querySelector('div > input');
       const label = fragment.querySelector('div > label');
       /*const node = pacRecordTemplate.content.cloneNode(true);
@@ -31,9 +60,16 @@ customElements.define('pac-record',
       input.id = input.value = label.htmlFor = this.dataset.id;*/
 
     }
+    /*
+    attributeChangedCallback(name, oldValue, newValue) {
+      console.log('attributeChangedCallback:', oldValue, '->', newValue);
+      const entries = new FormData();
+      entries.set('pacScript', 'antizapret');
+      this.internals.setFormValue(entries);
+    }*/
   }
 );
-
+/*
 customPacUrl.addEventListener('change', function (event) {
   console.log('ON CHANGE:', event);
   pacChooserForm.reportValidity();
@@ -44,7 +80,7 @@ pacChooserForm.addEventListener('formdata', (event) => {
   console.log('ON FORMDATA', event);
   return false; // Prevent default action.
 });
-*/
+*//*
 
 let LAST_LOCKED_URL = '';
 const lockUrl = () => {
@@ -55,7 +91,7 @@ const lockUrl = () => {
     ownRadio.disabled = false;
     // TODO: Save to storage.
   } else {
-    pacChooserForm.reportValidity();
+    //pacChooserForm.reportValidity();
     ownRadio.disabled = true; // `ownRadio.checked` doesn't matter here.
   }
 };
@@ -82,7 +118,7 @@ cancelPacUrlButton.onclick = suppressDefaultHandler(
 );
 
 editPacUrlButton.onclick = suppressDefaultHandler(unlockUrl);
-/*
+*//*
 import { storage } from '../../lib/common-apis.mjs';
 
 donate.href = await storage.getAsync('donateUrl');
@@ -102,6 +138,7 @@ options.forEach(([key, value], i) => {
   };
 });
 */
+/*
 await chrome.storage.local.get('options');
 
 const textElements = document.querySelectorAll('[data-localize]');
@@ -113,4 +150,4 @@ textElements.forEach((e) => {
       e.innerText = translated;
     }
   }
-});
+});*/

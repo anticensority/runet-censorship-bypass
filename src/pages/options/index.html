@@ -187,10 +187,10 @@
             <div>
               <span id="attributes" hidden>
                 <slot name="id">ID</slot>
-                <slot name="value"><span slot="id"></span></slot>
+                <slot name="value"></slot>
                 <slot name="for">FOR</slot>
               </span>
-              <input type="radio" name="pacScript" data-attrs="id value">
+              <input type="radio" name="pacScript" form="pacChooserForm" data-attrs="id value">
               <label data-attrs="for">
                 <slot name="label">LABEL</slot>
               </label>
@@ -203,8 +203,8 @@
             <pac-record>
               <span slot="label">Антизапрет</span>
               <span slot="id">antizapret</span>
-              <!--span slot="value">antizapret</span>
-              <span slot="for">antizapret</span-->
+              <span slot="value">antizapret</span>
+              <span slot="for">antizapret</span>
             </pac-record>
           </li>
           <li>
@@ -215,10 +215,6 @@
               <span slot="for">anticensority</span>
             </pac-record>
           </li>
-          <!--li>
-            <input type="radio" value="anticensority" name="pacScript" id="anticensorityRadio">
-            <label for="anticensorityRadio">Антицензорити</label>
-          </li-->
           <li>
             <input type="radio" value="own" name="pacScript" id="ownRadio" disabled>
             <label for="ownRadio">Свой:</label>
