@@ -6,13 +6,13 @@ customElements.define('pac-record',
     // static observedAttributes = ['data-checked'];
     constructor() {
       super();
-      this.internals = this.attachInternals();
       const shadow = this.attachShadow({ mode: 'open' });
       // const shadow = this.internals.shadowRoot;
       console.log('Constructor');
       const fragment = pacRecordTemplate.content.cloneNode(true);
       shadow.appendChild(fragment);
-      //const templateAttrs = shadow.querySelectorAll('#attributes > slot[name]');
+      this.internals = this.attachInternals();
+
       const dataAttrs = shadow.querySelectorAll('*[data-attrs]');
       dataAttrs.forEach(
         (da) => {
@@ -21,23 +21,29 @@ customElements.define('pac-record',
                 console.log(shadow.querySelector(`#attributes > slot[name=${attr}]`));
                 da.setAttribute(
                   attr,
-                  shadow.querySelector(`#attributes > slot[name=${attr}]`).assignedNodes()?.[0].textContent,
+                  shadow.querySelector(`#attributes > slot[name=${attr}]`).assignedNodes()?.[0]?.textContent,
                 );
             },
           );
         }
       );
+      //this.internals.setFormValue('');
+      //this.internals.setFormValue('pacScript');
+      //const templateAttrs = shadow.querySelectorAll('#attributes > slot[name]');
       const namedInputs = shadow.querySelectorAll('input[name]');
+      console.log('NAMED INPUTS:', namedInputs);
       namedInputs.forEach((ni) => {
         //this.internals.setFormValue(ni.name);
-        ni.addEventListener('click',
+        ni.addEventListener('input',
           (event) => {
             const t = event.target;
             const entries = new FormData();
             //entries.set(ni.getAttribute('name'), ni.getAttribute('value'));
-            entries.set('pacScript', 'antizapret');
-            this.internals.setFormValue(t.checked ? t.value : null);
-            ni.toggleAttribute('checked');
+            entries.append('pacScript', t.value);
+            this.internals.setFormValue(entries);
+            //this.value = t.value;
+            //this.internals.setFormValue(t.value);
+            //ni.toggleAttribute('checked');
             //this.internals.setFormValue(ni.value);
             //this.toggleAttribute('checked');
             //this.toggleAttribute('data-checked');
@@ -45,9 +51,9 @@ customElements.define('pac-record',
             console.log('EVENT TARGET:', event.target);
             console.log('THIS', this);
             console.log(this.internals);
-            console.log('EEEE', entries);
+            console.log('EEEE', Array.from(...entries));
             console.log(`FFFF:${ni.name}=${ni.value}`);
-            return true;
+            ni.click();
           })
       });
 
@@ -60,13 +66,12 @@ customElements.define('pac-record',
       input.id = input.value = label.htmlFor = this.dataset.id;*/
 
     }
-    /*
     attributeChangedCallback(name, oldValue, newValue) {
       console.log('attributeChangedCallback:', oldValue, '->', newValue);
       const entries = new FormData();
       entries.set('pacScript', 'antizapret');
       this.internals.setFormValue(entries);
-    }*/
+    }
   }
 );
 /*

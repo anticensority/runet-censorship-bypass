@@ -187,10 +187,10 @@
             <div>
               <span id="attributes" hidden>
                 <slot name="id">ID</slot>
-                <slot name="value"></slot>
+                <slot name="value">VALUE</slot>
                 <slot name="for">FOR</slot>
               </span>
-              <input type="radio" name="pacScript" form="pacChooserForm" data-attrs="id value">
+              <slot name="input">INPUT</slot>
               <label data-attrs="for">
                 <slot name="label">LABEL</slot>
               </label>
@@ -205,6 +205,7 @@
               <span slot="id">antizapret</span>
               <span slot="value">antizapret</span>
               <span slot="for">antizapret</span>
+              <input slot="input" attrs-line='type="radio" name="pacScript" form="pacChooserForm"' data-attrs="id value">
             </pac-record>
           </li>
           <li>
