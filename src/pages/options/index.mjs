@@ -1,5 +1,5 @@
 console.log('Options page is opening...');
-
+/*
 customElements.define('pac-record',
   class extends HTMLElement {
     static formAssociated = true;
@@ -18,10 +18,10 @@ customElements.define('pac-record',
         (da) => {
           da.dataset.attrs.split(' ').forEach(
             (attr) => {
-                console.log(shadow.querySelector(`#attributes > slot[name=${attr}]`));
+                console.log(shadow.querySelector(`#VARIABLES > slot[name=${attr}]`));
                 da.setAttribute(
                   attr,
-                  shadow.querySelector(`#attributes > slot[name=${attr}]`).assignedNodes()?.[0]?.textContent,
+                  shadow.querySelector(`#VARIABLES > slot[name=${attr}]`).assignedNodes()?.[0]?.textContent,
                 );
             },
           );
@@ -57,13 +57,14 @@ customElements.define('pac-record',
           })
       });
 
-      /*
+      /
       const input = fragment.querySelector('div > input');
       const label = fragment.querySelector('div > label');
       /*const node = pacRecordTemplate.content.cloneNode(true);
       const input = node.querySelector('div > input');
       const label = node.querySelector('div > label');
-      input.id = input.value = label.htmlFor = this.dataset.id;*/
+      input.id = input.value = label.htmlFor = this.dataset.id;
+      /
 
     }
     attributeChangedCallback(name, oldValue, newValue) {
