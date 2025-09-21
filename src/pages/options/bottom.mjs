@@ -1,0 +1,1 @@
+console.log('The BOTTOM script of the options page started.');

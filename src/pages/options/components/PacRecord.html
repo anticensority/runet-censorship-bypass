@@ -1,0 +1,35 @@
+<pac-record slot="pacRecords">
+  <!--T-BODY-->
+  <template shadowrootmode="open">
+    <input type="radio" name="pacScript" form="pacChooserForm" id="{{id}}" value="{{value}}" />
+    <label for="{{for}}">
+      <slot name="label">{{label}}</slot>
+    </label>
+    <a href title="Обновить">[обновить]</a>
+    <a href title="Приостановить">[⏸]</a>
+    <a href title="Информация о PAC-скрипте" style="float: right">[ℹ]</a>
+  </template>
+  <!--T-INPUTS-->
+  <slot name="id">ID</slot>
+  <slot name="value">VALUE</slot>
+  <slot name="for">FOR</slot>
+  <slot name="label">LABEL</slot>
+</pac-record>
+
+<!--
+
+    <my-input slot="inputElement">
+    <template shadowrootmode="open">
+    <span class="template-inputs" hidden>
+        <slot name="id">ID</slot>
+        <slot name="value">VALUE</slot>
+    </span>
+    <slot name="input"></slot>
+    </template>
+    <input slot="input" type="radio" name="pacScript" form="pacChooserForm" id="id1" value="value1" />
+    <span slot="id">antizapret</span>
+    <span slot="value">antizapret</span>
+</my-input>
+
+  </light-dom>
+</pac-record>
