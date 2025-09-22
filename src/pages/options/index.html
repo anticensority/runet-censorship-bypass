@@ -2,41 +2,73 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <script src="./top.mjs" type="module"></script>
+    <title>PAC-конфигуратор</title>
+    <link rel="icon" href="/icons/default-128.png" type="image/png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--script src="./top.mjs" type="module"></script-->
     <style>
       /*
         Josh's Custom CSS Reset
         https://www.joshwcomeau.com/css/custom-css-reset/
       */
+      /* 1. Use a more-intuitive box-sizing model */
       *, *::before, *::after {
         box-sizing: border-box;
       }
+
+      /* 2. Remove default margin */
       * {
         margin: 0;
       }
+
+      /* 3. Enable keyword animations */
+      @media (prefers-reduced-motion: no-preference) {
+        html {
+          interpolate-size: allow-keywords;
+        }
+      }
+
       body {
+        /* 4. Add accessible line-height */
         line-height: 1.5;
+        /* 5. Improve text rendering */
         -webkit-font-smoothing: antialiased;
       }
+
+      /* 6. Improve media defaults */
       img, picture, video, canvas, svg {
         display: block;
         max-width: 100%;
       }
+
+      /* 7. Inherit fonts for form controls */
       input, button, textarea, select {
         font: inherit;
       }
+
+      /* 8. Avoid text overflows */
       p, h1, h2, h3, h4, h5, h6 {
         overflow-wrap: break-word;
       }
+
+      /* 9. Improve line wrapping */
+      p {
+        text-wrap: pretty;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        text-wrap: balance;
+      }
+
+      /*
+        10. Create a root stacking context
+      */
       #root, #__next {
         isolation: isolate;
       }
       /* Reset ends */
 
+      /*
       :root {
-        border-color: black;
-        border-radius: 0;
-        /*
           The initial theme is light but it's quickly inverted to dark.
           Dark theme should be the first theme user sees by default.
           TODO: Ponder more. E.g. valid color (green) must remain the
@@ -50,185 +82,116 @@
         border: 0 none white;
         outline: 0 none white;*/
         /*color-scheme: light;
-        /* COLOR INVERTION */
-        filter: invert(0); /* TODO: temporary disabled. */
-      }
+        /* COLOR INVERTION *
+        filter: invert(0); TODO: temporary disabled.
+      }*/
       :root, html, body {
         /*background: url('./gsbg.png') no-repeat;*/
         padding: 0;
         margin: 0;
+        width: 100%;
+        height: 100%;
+        outline: none;
+        border: 0;
       }
       body {
         --ribbon-color: #0075ff; /* #4169e1;*/
         font-family: Ubuntu, Arial, sans-serif;
         font-size: 80%;
-        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      nav {
+        display: flex;
+        flex-direction: row;
+        padding: 0.2em;
+      }
+      button {
+        margin-left: 0.1em;
+        padding: 1px 6px 1px 6px;
+      }
+      output#status {
+        flex-grow: 1;
+        align-content: center;
+        text-align: left;
+        padding-left: 0.5em;
+      }
+      textarea#editor {
+        width: 100%;
+        height: 100%;
+        align-self: stretch;
+        resize: none;
+        border: 0;
+        outline: none;
       }
 
-      menu {
-        list-style: none;
-        padding: 0;
-      }
-      li {
-        margin-top: 0.2rem;
-      }
       a, a:visited {
+        /*color: #0000ee;*/
+        color: crimson;
         text-decoration: none;
-        color: var(--ribbon-color);
       }
-      label {
-        vertical-align: bottom;
-        /*padding: 3px;*/
+      #donate {
+        align-self: center;
+        align-content: center;
+        margin: 0 5px 0 5px;
       }
-      input {
-        vertical-align: text-bottom;
-      }
-      input[type="url"] {
-        border: 1px solid black;
-        /*border-width: 0 0 1px 0;
-        border-color: crimson;*/
-        flex-grow: 1;
-        /*padding: 0 3px 0 3px;*/
-        /*width: 100%;*/
-      }
-      input[type="radio"], label {
-        cursor: pointer;
-      }
-      #disabledRadio:checked + label {
-        color: red;
-      }
-      #ownInputs {
-        display: flex;
-      }
-      /*
-      input#ownRadio ~ div:has(> input#customPacUrl):after {
-        border: 5px solid lime;
-        background-color: navy;
-        content: "";
-      }
-      input#ownRadio ~ div:after:not(:empty) {
-        border: 5px solid pink;
-      }
-      */
 
       .use-preferred-color-scheme {
-        /*background-color: violet;
-        color: darkred;*/
-        /*color-scheme: light;*/
-      }/*
+        background-color: #9e9eff;/* pink;*/
+        color: purple;
+      }
       @media (prefers-color-scheme: dark) {
         .use-preferred-color-scheme {
           color-scheme: dark;
-          background-color: green;
-          color: #bfbfbf;
+        }
+        .use-preferred-color-scheme:has(#ifToggle:checked) {
+          color-scheme: light;
         }
       }
       @media (prefers-color-scheme: light) {
         .use-preferred-color-scheme {
-          color-scheme: dark;
-          background-color: pink;
-          color: purple;
-          border: 5px solid red;
+          color-scheme: light;
         }
-      }
-      /*
-      img.gsbg {
-        z-index: -1;
-        position: relative;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-      }
-      */
-      /*
-      input:invalid {
-        border: 5px solid red;
-      }*/
-      #customPacUrl:disabled {
-        /*background-color: grey;*/ 
-      }
-      #ownInputs button {
-        font-family: emoji, monospace;
-        width: 2em;
-        width: 2ch;
-        border-width: 1px 1px 1px 0px;
-      }
-      #ownInputs > input {
-        border-radius: 0;
-      }
-      #ownInputs > div {
-        display: flex;
-      }
-      #customPacUrl:disabled ~ .editPanel {
-        display: none;
-      }
-      #customPacUrl:not(:disabled) ~ .unlockPanel {
-        display: none;
-      }
-      #boxes {
-        padding: 1em 0;
-        padding: 1ch 0;
-      }
-      #boxes > div {
-        /* Don't break sentences on spaces. */
-        white-space: nowrap;
+        .use-preferred-color-scheme:has(#ifToggle:checked) {
+          color-scheme: dark;
+        }
       }
     </style>
   </head>
   <body class="use-preferred-color-scheme">
-    <!--img src="./gsbg.png" class="gsbg"-->
-    <header>
-      PAC-скрипт:
-    </header>
     <nav>
-      <form id="pacChooserForm">
-        <menu id="radios">
-          <li>
-            <pac-record label="Антизапрет" value="antizapret">
-              <pac-url>https://e.cen.rodeo:18443/proxy.pac</pac-url>
-              <pac-url>https://e.cen.rodeo:8443/proxy.pac</pac-url>
-              <pac-url>https://e.cen.rodeo/proxy.pac</pac-url>
-              <pac-url>https://antizapret.prostovpn.org:18443/proxy.pac</pac-url>
-              <pac-url>https://antizapret.prostovpn.org:8443/proxy.pac</pac-url>
-              <pac-url>https://antizapret.prostovpn.org/proxy.pac</pac-url>
-            </pac-record>
-          </li>
-          <li>
-            <pac-record label="Антицензорити" value="anticensority">
-              <pac-url>https://anticensority.github.io/generated-pac-scripts/anticensority.pac</pac-url>
-              <pac-url>https://raw.githubusercontent.com/anticensority/generated-pac-scripts/master/anticensority.pac</pac-url>
-            </pac-record>
-          </li>
-          <li>
-            <pac-record label="Свои скрипты" value="own">
-              <textarea>
-https://foo.bar:1221
-https://example.com:1223
-              </textarea>
-            </pac-record>
-          </li>
-          <li>
-            <pac-record label="Отключить / Сброс" value="disabled" />
-          </li>
-        </menu>
-        <div id="boxes">
-          <div>
-            <input type="checkbox" name="resetBox" id="resetBox" checked>
-            <label for="resetBox">Отключать прокси перед скачиванием</label>
-          </div>
-          <div>
-            <input type="checkbox" name="updateBox" id="updateBox" checked>
-            <label for="updateBox">Обновлять каждые 12ч</label>
-          </div>
-        </div>
-      </form>
+      <button id="readButton">READ</button>
+      <button id="saveButton">SAVE</button>
+      <button id="clearButton">CLEAR</button>
+      <output id="status">Press READ button to read PAC from settings</output>
+      <div>
+        <input type="checkbox" id="ifToggle" name="ifToggle" hidden/>
+        <button><label for="ifToggle">INVERT</label></button>
+      </div>
+      <div id="donate">
+        <a target="_blank" data-localize="__MSG_Donate__"
+          href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать"
+        >Donate ❤</a>
+      </div>
     </nav>
-    <footer style="text-align: center">
-      <a id="donate" target="_blank" data-localize="__MSG_Donate__"
-        href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать"
-      >Donate ❤</a>
-    </footer>
-    <script src="./bottom.mjs" type="module"></script>
+<textarea id="editor">
+# Комментарии начинаются с решётки и действуют до конца строки.
+# Для начала работы вам нужно добавить один или несколько
+# URL-ссылок на PAC-скрипты, как показано на примере ниже
+# (на example.com, только без решётки).
+#
+# Желательно не добавлять ссылки из различных
+# проектов, иначе при каких-либо сбоях вам будет сложно
+# определить причину и выявить ту команду поддержки, в которую
+# следует обратиться.
+#
+# Где брать ссылки на PAC-скрипты?
+# Из ваших доверенных источников.
+# Я их здесь не публикую, т.к. это может стать лишним
+# поводом для блокировки расширения в магазинах или
+# репозиториях.
+
+# https://example.com/foo/bar/proxy.pac
+</textarea>
   </body>
 </html>
