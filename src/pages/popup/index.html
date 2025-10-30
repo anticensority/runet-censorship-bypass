@@ -189,6 +189,11 @@
           </template>
           <pac-record slot="pacRecords">
             <template shadowrootmode="open">
+              <style>
+                a, a:visited {
+                  color: var(--ribbon-color);
+                }
+              </style>
               <span class="template-inputs" hidden>
                 <slot name="id">ID</slot>
                 <slot name="value">VALUE</slot>

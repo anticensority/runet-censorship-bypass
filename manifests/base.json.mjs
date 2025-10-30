@@ -28,10 +28,11 @@ export const render = ({ version, edition }) => {
       , "storage"
       , "clipboardWrite"
     ],
-      
+
     "action": {
       "default_title":
         `__MSG_PacUpdated__ | __MSG_Version__: ${version + localizedSuffix}`,
+     "default_popup": "/src/pages/popup/index.html"
     },
     "options_ui": {
       "open_in_tab": true,
