@@ -183,120 +183,17 @@
     <nav>
       <form id="pacChooserForm">
         <menu id="radios">
-          <my-li>
-          <template shadowrootmode="open">
-            <slot name="pacRecords">PAC_RECORDS</slot>
-          </template>
-          <pac-record slot="pacRecords">
-            <template shadowrootmode="open">
-              <style>
-                a, a:visited {
-                  color: var(--ribbon-color);
-                }
-              </style>
-              <span class="template-inputs" hidden>
-                <slot name="id">ID</slot>
-                <slot name="value">VALUE</slot>
-                <slot name="for">FOR</slot>
-              </span>
-              <div class="template-body">
-                <slot name="inputElement">INPUT_ELEMENT</slot>
-                <label for="for">
-                  <slot name="label">LABEL</slot>
-                </label>
-                <a href title="Обновить">[обновить]</a>
-                <a href title="Приостановить">[⏸]</a>
-                <a href title="Информация о PAC-скрипте" style="float: right">[ℹ]</a>
-              </div>
-            </template>
-            <my-input slot="inputElement">
-              <template shadowrootmode="open">
-                <span class="template-inputs" hidden>
-                  <slot name="id">ID</slot>
-                  <slot name="value">VALUE</slot>
-                </span>
-                <slot name="input"></slot>
-              </template>
-              <input slot="input" type="radio" name="pacScript" form="pacChooserForm" id="id1" value="value1" />
-              <span slot="id">antizapret</span>
-              <span slot="value">antizapret</span>
-            </my-input>
+        <li>
+          <pac-record>
+            ${prTmpl({ inputId: 'antizapret', inputValue: 'antizapret')}
             <span slot="label">Антизапрет</span>
           </pac-record>
-          <pac-record slot="pacRecords">
-            <template shadowrootmode="open">
-              <span class="template-inputs" hidden>
-                <slot name="id">ID</slot>
-                <slot name="value">VALUE</slot>
-                <slot name="for">FOR</slot>
-              </span>
-              <div class="template-body">
-                <slot name="inputElement">INPUT_ELEMENT</slot>
-                <label for="for">
-                  <slot name="label">LABEL</slot>
-                </label>
-                <a href title="Обновить">[обновить]</a>
-                <a href title="Приостановить">[⏸]</a>
-                <a href title="Информация о PAC-скрипте" style="float: right">[ℹ]</a>
-              </div>
-            </template>
-            <my-input slot="inputElement">
-              <template shadowrootmode="open">
-                <span id="templateInputs" hidden>
-                  <slot name="id">ID</slot>
-                  <slot name="value">VALUE</slot>
-                </span>
-                <slot name="input"></slot>
-              </template>
-              <input slot="input" type="radio" name="pacScript" form="pacChooserForm" id="id2" value="value2" />
-              <span slot="id">anticensority</span>
-              <span slot="value">anticensority</span>
-            </my-input>
+        </li><li>
+          <pac-record>
+            ${prTmpl({ inputId: 'anticensority', inputValue: 'anticensority')}
             <span slot="label">Антицензорити</span>
           </pac-record>
-            <!--script src="./repeat.mjs?times=2" type="module"></script-->
-            <!--Light DOM>
-            <div>
-              <span slot="label">Антизапрет</span>
-              <span slot="id">antizapret</span>
-              <span slot="value">antizapret</span>
-              <span slot="for">antizapret</span>
-              <input slot="input" type="radio" name="pacScript" form="pacChooserForm" data-attrs="id value" />
-            </div>
-            <div>
-              <span slot="label">Антицензорити</span>
-              <span slot="id">anticensority</span>
-              <span slot="value">anticensority</span>
-              <span slot="for">anticensority</span>
-              <input slot="input" type="radio" name="pacScript" form="pacChooserForm" data-attrs="id value" />
-            </div>
-            <!--
-            <div>
-              <my-input slot="input" name="first" />
-              <my-input slot="input" name="second" />
-            </div>
-            <!--/Light DOM>
-          </pac-record>
-          </template>
-          <!--li>
-            <pac-record>
-              <span slot="label">Антизапрет</span>
-              <span slot="id">antizapret</span>
-              <span slot="value">antizapret</span>
-              <span slot="for">antizapret</span>
-              <input slot="input" attrs-line='type="radio" name="pacScript" form="pacChooserForm"' data-attrs="id value">
-            </pac-record>
-          </li>
-          <li>
-            <pac-record>
-              <span slot="label">Антицензорити</span>
-              <span slot="id">anticensority</span>
-              <span slot="value">anticensority</span>
-              <span slot="for">anticensority</span>
-            </pac-record>
-          </li-->
-          </my-li>
-          <li>
+        </li><li>
             <input type="radio" value="own" name="pacScript" id="ownRadio" disabled>
             <label for="ownRadio">Свой:</label>
             <div id="ownInputs">
@@ -313,8 +210,7 @@
                 <button id="cancelPacUrlButton" title="Отмена">🗙</button>
               </div>
             </div>
-          </li>
-          <li>
+          </li><li>
             <input type="radio" value="disabled" name="pacScript" id="disabledRadio" checked>
             <label for="disabledRadio">Отключить / Сброс</label>
           </li>

@@ -1,0 +1,11 @@
+{
+  "name": "my-node-app",
+  "version": "0.0.1",
+  "type": "module",
+  "imports": {
+    "#components/*": "./src/components/*.mjs"
+  },
+  "scripts": {
+    "start": "node ./src/index.mjs"
+  }
+}

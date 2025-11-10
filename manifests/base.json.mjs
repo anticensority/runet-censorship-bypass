@@ -19,7 +19,7 @@ export const render = ({ version, edition }) => {
     "description": "__MSG_ExtensionDescription__",
     "homepage_url": "https://github.com/anticensority/runet-censorship-bypass",
     "icons": {
-      "128": "/icons/default-128.png"
+      "128": "./icons/default-128.png"
     },
     "author": "anticensority+owners@googlegroups.com",
     "permissions": [
@@ -32,7 +32,7 @@ export const render = ({ version, edition }) => {
     "action": {
       "default_title":
         `__MSG_PacUpdated__ | __MSG_Version__: ${version + localizedSuffix}`,
-     "default_popup": "/src/pages/popup/index.html"
+     "default_popup": "./src/pages/popup/_generated/index.html"
     },
     "options_ui": {
       "open_in_tab": true,

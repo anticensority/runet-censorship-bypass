@@ -1,7 +1,7 @@
 console.log('HELLO FROM REPEATER');
-console.log('IMPORT META URL:', import.meta.url);
-const times = new URL(import.meta.url).searchParams.get("times");
-console.log(`REPEAT ${times} TIMES`);
+//console.log('IMPORT META URL:', import.meta.url);
+//const times = new URL(import.meta.url).searchParams.get("times");
+//console.log(`REPEAT ${times} TIMES`);
 const htmlFile = window.location.pathname;
 console.log('HTML FILE IS:', htmlFile);
 console.log('DOCUMENT', document);
@@ -9,4 +9,4 @@ console.log('DOC CURRENT SCRIPT:', document.currentScript);
 console.log('DOC.SCRIPTS', document.scripts);
 const thisScript = document.scripts[0];
 const scriptHost = thisScript.parentElement;
-console.log('SCRIPT HOST', scriptHost);
+console.log('SCRIPT HOST', scriptHost.innerHTML);

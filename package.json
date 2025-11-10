@@ -5,8 +5,9 @@
   "homepage": "https://github.com/ilyaigpetrov/copy-unicode-urls#readme",
   "main": "index.js",
   "scripts": {
-    "start": "npm run clean; npm run build",
+    "start": "npm run clean; npm run build; npm run build-pages",
     "build": "./tasks/build.mjs",
+    "build-pages": "cd ./src/pages/popup/; ./build.sh; cd -",
     "clean": "rm -rf /_generated",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
