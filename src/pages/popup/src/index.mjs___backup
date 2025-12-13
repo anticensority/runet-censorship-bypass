@@ -1,2 +1,0 @@
-import pr from '#components/pac-record';
-console.log(pr('foo', 'bar'))

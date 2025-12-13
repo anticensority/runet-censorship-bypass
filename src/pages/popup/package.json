@@ -6,6 +6,7 @@
     "#components/*": "./src/components/*.mjs"
   },
   "scripts": {
-    "start": "node ./src/index.mjs"
+    "init": "rm -rf ./_generated; mkdir -p ./_generated;",
+    "start": "npm run init; node ./src/index.html.mjs > ./_generated/index.html; cp ./src/*.copy.mjs ./_generated/."
   }
 }

@@ -1,7 +1,12 @@
+#!/bin/node
+import pacRecord from '#components/pac-record.html';
+
+console.log(`
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
+    <script src="./fix-the-forms.copy.mjs" type="module"></script>
     <style>
       /*
         Josh's Custom CSS Reset
@@ -176,24 +181,25 @@
     </style>
   </head>
   <body class="use-preferred-color-scheme">
-    <!--img src="./gsbg.png" class="gsbg"-->
     <header>
       PAC-скрипт:
     </header>
     <nav>
       <form id="pacChooserForm">
         <menu id="radios">
-        <li>
-          <pac-record>
-            ${prTmpl({ inputId: 'antizapret', inputValue: 'antizapret')}
-            <span slot="label">Антизапрет</span>
-          </pac-record>
-        </li><li>
-          <pac-record>
-            ${prTmpl({ inputId: 'anticensority', inputValue: 'anticensority')}
-            <span slot="label">Антицензорити</span>
-          </pac-record>
-        </li><li>
+          <li>
+            ${pacRecord({
+              id: 'antizapret',
+              value: 'antizapret',
+              label: 'Антизапрет',
+            })}
+          </li><li>
+            ${pacRecord({
+              id: 'anticensority',
+              value: 'anticensority',
+              label: 'Антицензорити',
+            })}
+          </li><li>
             <input type="radio" value="own" name="pacScript" id="ownRadio" disabled>
             <label for="ownRadio">Свой:</label>
             <div id="ownInputs">
@@ -232,6 +238,6 @@
         href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать"
       >Donate ❤</a>
     </footer>
-    <script src="./index.mjs" type="module"></script>
   </body>
 </html>
+`.trim());
