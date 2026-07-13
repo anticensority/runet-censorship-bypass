@@ -1,5 +1,5 @@
 #!/bin/node
-import pacRecord from '#components/pac-record.html';
+import pacRadio from '#components/pac-radio.html';
 
 console.log(`
 <!DOCTYPE html>
@@ -98,7 +98,7 @@ console.log(`
       input[type="radio"], label {
         cursor: pointer;
       }
-      #disabledRadio:checked + label {
+      #disabledRadio:checked + span {
         color: red;
       }
       #ownInputs {
@@ -188,25 +188,30 @@ console.log(`
       <form id="pacChooserForm">
         <menu id="radios">
           <li>
-            ${pacRecord({
-              id: 'antizapret',
-              value: 'antizapret',
+            ${pacRadio({
+              id: 'antizapretRadio',
               label: 'Антизапрет',
+              value: 'antizapret',
+              name: 'pacScriptRadio', form: 'pacChooserForm',
             })}
           </li><li>
-            ${pacRecord({
-              id: 'anticensority',
-              value: 'anticensority',
+            ${pacRadio({
+              id: 'anticensorityRadio',
               label: 'Антицензорити',
+              value: 'anticensority',
+              name: 'pacScriptRadio', form: 'pacChooserForm',
             })}
           </li><li>
-            <input type="radio" value="own" name="pacScript" id="ownRadio" disabled>
-            <label for="ownRadio">Свой:</label>
+            <label>
+              <input type="radio" form="pacChooserForm" value="own" name="pacScriptRadio" id="ownRadio" disabled>
+              <span>Свой:</span>
+            </label>
             <div id="ownInputs">
               <input id="customPacUrl" type="url" placeholder="https://example.com/proxy.pac"
                 size="27"
                 spellcheck="false" autocorrect="off" autocapitalize="off"
                 required
+                disabled
               >
               <div class="unlockPanel">
                 <button id="editPacUrlButton" title="Редактировать">🖉</button>
@@ -217,18 +222,24 @@ console.log(`
               </div>
             </div>
           </li><li>
-            <input type="radio" value="disabled" name="pacScript" id="disabledRadio" checked>
-            <label for="disabledRadio">Отключить / Сброс</label>
+            <label>
+              <input type="radio" form="pacChooserForm" value="disabled" name="pacScriptRadio" id="disabledRadio" checked>
+              <span>Отключить / Сброс</span>
+            </label>
           </li>
         </menu>
         <div id="boxes">
           <div>
-            <input type="checkbox" name="resetBox" id="resetBox" checked>
-            <label for="resetBox">Отключать прокси перед скачиванием</label>
+            <label>
+              <input type="checkbox" name="ifToResetBox" id="ifToResetBox" checked>
+              <span>Отключать прокси перед скачиванием</span>
+            </label>
           </div>
           <div>
-            <input type="checkbox" name="updateBox" id="updateBox" checked>
-            <label for="updateBox">Обновлять каждые 12ч</label>
+            <label>
+              <input type="checkbox" name="ifToUpdateBox" id="ifToUpdateBox" checked>
+              <span>Обновлять каждые 12ч</span>
+            </label>
           </div>
         </div>
       </form>

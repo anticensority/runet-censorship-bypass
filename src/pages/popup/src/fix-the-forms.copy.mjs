@@ -1,52 +1,56 @@
 console.log('Fixing forms...');
-window.customElements.define('pac-record', class extends HTMLElement {
+window.customElements.define('pac-radio', class extends HTMLElement {
   static formAssociated = true;
 
   constructor() {
     super();
+    console.log('pac-radio\'s constructor.');
     this.internals_ = this.attachInternals();
-    // internal value for this control
-    this.value_ = this.getAttribute('value');
-    this.internals_.setFormValue(this.value_);
-    console.log(this.internals_);
-    this.shadowRoot.querySelectorAll('input[type="radio"]').forEach((shadowedRadio) => {
-      shadowedRadio.name = this.name;
-      shadowedRadio.value = this.value;
-      shadowedRadio.addEventListener('change', (event) => {
-        const t = event.target;
-        console.log(`SH! Radio button named "${t.name}" with value "${t.value}" is checked: ${t.checked}`);
-        //const radios = this.form.querySelectorAll(`input[name="${this.name}"]`);
-        //console.log('SH! Same name radios:', radios);
-        //radios.forEach((radio) => {
-        //  radio.checked = false;
-        //});
-        //t.checked = true;
-      });
-    });
   }
 
   connectedCallback() {
-    // Listen for the 'formdata' event on the parent form
-    this.form.addEventListener('formdata', this.handleFormData);
-  }
+    console.log('pac-radio connected.');
+    this.theInputEl = this.shadowRoot.getElementById(this.dataset.inputId);
+    console.log('this:', this);
+    console.log('theInputEl:', this.theInputEl);
+    this.setAttribute('name', this.name);
+    this.setAttribute('value', this.value);
+    this.theInputEl.addEventListener('change', (event) => {
+      console.log('TheInputEl change event handler...');
+      console.log('THISSS:', this);
+      //const input = event.target;
+      console.log('EV TARGET:', event.target);
+      //this.name = this.theInputEl.name;
+      console.log('SET FORM VALUE TO:', this.value);
+      //const formData = new FormData(this.form);
+      //const formData = new FormData();
+      //formData.delete(this.name);
+      //formData.set(this.name, this.value);
+      //console.log('FDATA2:', ...formData.entries());
+      this.internals_.setFormValue(null); // Doesn't work. Probably a bug.
+      this.internals_.setFormValue(this.value);
+      //console.log('FDATA3:', ...formData.entries());
 
-  handleFormData(event) {
-    const formData = event.formData;
-    console.log('FORM DATA EVENT:', formData);
-    //const myInput = this.shadowRoot.getElementById('myInput');
-    //formData.append(myInput.name, myInput.value);
+      const newChangeEvent = new event.constructor(event.type, event);
+      this.dispatchEvent(newChangeEvent);
+    });
   }
-
-  // Form controls usually expose a "value" property
-  get value() { return this.value_; }
-  set value(v) { this.value_ = v; }
 
   // The following properties and methods aren't strictly required,
   // but browser-level form controls provide them. Providing them helps
   // ensure consistency with browser-provided controls.
   get form() { return this.internals_.form; }
-  get name() { return this.getAttribute('name'); }
-  get type() { return 'radio'; }
+  get name() { return this.theInputEl.name; }
+  get type() { return this.localName; }
+  get value() { return this.theInputEl.value; }
+  set value(newValue) {
+    // TODO: explore what may happen if the value comes from an attacker.
+    this.theInputEl.value = newValue;
+    this.setAttribute('value', newValue);
+  }
+  get checked() { return this.theInputEl.checked; }
+  set checked(newValue) { this.theInputEl.checked = newValue; }
+
   get validity() { return this.internals_.validity; }
   get validationMessage() { return this.internals_.validationMessage; }
   get willValidate() { return this.internals_.willValidate; }
@@ -55,22 +59,44 @@ window.customElements.define('pac-record', class extends HTMLElement {
   reportValidity() { return this.internals_.reportValidity(); }
 });
 
-//console.log('ELEMENTS:', pacChooserForm.elements);
-const pacRadios = [...pacChooserForm.elements]
-  .filter((e) => e.type == 'radio' && e.name == 'pacScript');
-console.log('RADIOS:', pacRadios);
-pacRadios.forEach((pradio) => {
-  console.log('ADD EVENT LISTENER FOR:', pradio);
-  console.log('ITS SHADOW:', pradio.shadowRoot);
-  pradio.addEventListener('change', (event) => {
-    const t = event.target;
-    console.log('EVENT TARGET:', t);
-    console.log(`Radio button named "${t.name}" with value "${t.value}" is checked: ${t.checked}`);
-    console.log('Same name radios:', pacRadios);
-    pacRadios.forEach((radio) => {
-      radio.checked = false;
-    });
-    t.checked = true;
-  });
+const pacForm = pacChooserForm;
+pacForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const form = event.target;
+  console.log('Submit event target:', form);
+  const formData = new FormData(form);
+  const chosenPacRadio = [...form.elements['pacScriptRadio']].filter((pr) => pr.checked)[0];
+  console.log('CHOSEN:', chosenPacRadio);
+  /*
+  const entries = [...formData.entries()]
+    .filter(([name, value]) => form.elements[name]);
+  //formData.delete()
+  const data = Object.fromEntries(entries);
+  console.log('Submit event with data:', data);
+  */
 });
+
+pacForm.addEventListener(
+  'formdata',
+  (event) => {
+    console.log('Form data event:');
+    console.log(...event.formData.entries());
+  },
+);
+
+const pacRadios = [...pacForm.elements]
+  .filter((el) => el.name == 'pacScriptRadio');
+console.log('pacRadios:', pacRadios);
+pacRadios.forEach((self) =>
+  self.addEventListener(
+    'change',
+    (event) => {
+      console.log('REQUESTING SUBMIT... Event target checked:', event.target.checked);
+      pacRadios.forEach((pr) => { pr.checked = false; });
+      self.checked = true;
+      pacForm.requestSubmit();
+    },
+  ),
+);
+
 console.log('All forms fixed.');

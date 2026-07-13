@@ -21,7 +21,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "punycode": "^2.3.1"
   },
   "devDependencies": {
     "merge": "^2.1.1",

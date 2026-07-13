@@ -20,9 +20,11 @@ browsers.forEach((browser) => {
       async (file) =>
         await exec(`cp -r ./${file} ${outDir}/.`),
     );
+    /*
     await exec(`
       mkdir -p ${outDir}/node_modules
       cp -r ./node_modules/punycode ${outDir}/node_modules/.`
     );
+    */
   });
 });
