@@ -1,5 +1,15 @@
 #!/bin/node
-import pacRadio from '#components/pac-radio.html';
+import customRadio from '#components/custom-radio.html';
+
+const pacControls =  `
+  <span slot="after-label">
+    <span class="show-if-checked" hidden>
+    <a href title="Обновить">[обновить]</a>
+    <a href title="Приостановить">[⏸ ]</a>
+    </span>
+    <a href title="Информация о PAC-скрипте" style="float: right; vertical-align: top">[ℹ]</a>
+  </span>
+`;
 
 console.log(`
 <!DOCTYPE html>
@@ -82,10 +92,10 @@ console.log(`
       }
       label {
         vertical-align: bottom;
-        /*padding: 3px;*/
       }
       input {
         vertical-align: text-bottom;
+        margin-right: 3px;
       }
       input[type="url"] {
         border: 1px solid black;
@@ -97,9 +107,6 @@ console.log(`
       }
       input[type="radio"], label {
         cursor: pointer;
-      }
-      #disabledRadio:checked + span {
-        color: red;
       }
       #ownInputs {
         display: flex;
@@ -136,16 +143,6 @@ console.log(`
         }
       }
       /*
-      img.gsbg {
-        z-index: -1;
-        position: relative;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-      }
-      */
-      /*
       input:invalid {
         border: 5px solid red;
       }*/
@@ -178,6 +175,9 @@ console.log(`
         /* Don't break sentences on spaces. */
         white-space: nowrap;
       }
+      #boxes label {
+        display: flex;
+      }
     </style>
   </head>
   <body class="use-preferred-color-scheme">
@@ -188,18 +188,20 @@ console.log(`
       <form id="pacChooserForm">
         <menu id="radios">
           <li>
-            ${pacRadio({
+            ${customRadio({
               id: 'antizapretRadio',
               label: 'Антизапрет',
               value: 'antizapret',
-              name: 'pacScriptRadio', form: 'pacChooserForm',
+              slots: pacControls,
+              attrs: { name: 'pacScriptRadio', form: 'pacChooserForm' },
             })}
           </li><li>
-            ${pacRadio({
+            ${customRadio({
               id: 'anticensorityRadio',
               label: 'Антицензорити',
               value: 'anticensority',
-              name: 'pacScriptRadio', form: 'pacChooserForm',
+              slots: pacControls,
+              attrs: { name: 'pacScriptRadio', form: 'pacChooserForm' },
             })}
           </li><!--li>
             <label>
@@ -222,12 +224,20 @@ console.log(`
               </div>
             </div>
           </li--><li>
-            <div>
-              <label>
-                <input type="radio" form="pacChooserForm" value="disabled" name="pacScriptRadio" id="disabledRadio" checked>
-                <span>Отключить / Сброс</span>
-              </label>
-            </div>
+            ${customRadio({
+              id: 'disabledRadio',
+              label: 'Отключить / Сброс',
+              value: 'disabled',
+              customStyles: `
+                #disabledRadio:checked + span {
+                  color: red;
+                }
+              `,
+              attrs: {
+                checked: '',
+                name: 'pacScriptRadio', form: 'pacChooserForm',
+              },
+            })}
           </li>
         </menu>
         <div id="boxes">
@@ -246,10 +256,15 @@ console.log(`
         </div>
       </form>
     </nav>
-    <footer style="text-align: center">
+    <hr/>
+    <footer style="display: flex; justify-content: space-between; padding: 1rem 0.5rem 0.5rem; align-items: center;">
+      <button>Закрыть</button>
       <a id="donate" target="_blank" data-localize="__MSG_Donate__"
         href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать"
-      >Donate ❤</a>
+      >Поддержать ❤</a>
+      <a id="news" target="_blank" data-localize="__MSG_News__"
+        href="https://github.com/anticensority/runet-censorship-bypass/issues/10"
+      >Новости</a>
     </footer>
   </body>
 </html>
