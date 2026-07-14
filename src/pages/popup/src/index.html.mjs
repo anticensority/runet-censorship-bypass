@@ -150,7 +150,7 @@ console.log(`
         border: 5px solid red;
       }*/
       #customPacUrl:disabled {
-        /*background-color: grey;*/ 
+        /*background-color: grey;*/
       }
       #ownInputs button {
         font-family: emoji, monospace;
@@ -201,7 +201,7 @@ console.log(`
               value: 'anticensority',
               name: 'pacScriptRadio', form: 'pacChooserForm',
             })}
-          </li><li>
+          </li><!--li>
             <label>
               <input type="radio" form="pacChooserForm" value="own" name="pacScriptRadio" id="ownRadio" disabled>
               <span>Свой:</span>
@@ -221,11 +221,13 @@ console.log(`
                 <button id="cancelPacUrlButton" title="Отмена">🗙</button>
               </div>
             </div>
-          </li><li>
-            <label>
-              <input type="radio" form="pacChooserForm" value="disabled" name="pacScriptRadio" id="disabledRadio" checked>
-              <span>Отключить / Сброс</span>
-            </label>
+          </li--><li>
+            <div>
+              <label>
+                <input type="radio" form="pacChooserForm" value="disabled" name="pacScriptRadio" id="disabledRadio" checked>
+                <span>Отключить / Сброс</span>
+              </label>
+            </div>
           </li>
         </menu>
         <div id="boxes">

@@ -41,7 +41,7 @@ window.customElements.define('pac-radio', class extends HTMLElement {
   // ensure consistency with browser-provided controls.
   get form() { return this.internals_.form; }
   get name() { return this.theInputEl.name; }
-  get type() { return this.localName; }
+  get type() { return this.theInputEl.type; }
   get value() { return this.theInputEl.value; }
   set value(newValue) {
     // TODO: explore what may happen if the value comes from an attacker.
@@ -63,24 +63,21 @@ const pacForm = pacChooserForm;
 pacForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const form = event.target;
-  console.log('Submit event target:', form);
+  console.log('Submit event with target:', form);
   const formData = new FormData(form);
-  const chosenPacRadio = [...form.elements['pacScriptRadio']].filter((pr) => pr.checked)[0];
-  console.log('CHOSEN:', chosenPacRadio);
-  /*
-  const entries = [...formData.entries()]
-    .filter(([name, value]) => form.elements[name]);
-  //formData.delete()
-  const data = Object.fromEntries(entries);
+  const data = Object.fromEntries(formData.entries());
   console.log('Submit event with data:', data);
-  */
 });
 
+// Circumvent the bug with `setFormValue(null)`.
 pacForm.addEventListener(
   'formdata',
   (event) => {
-    console.log('Form data event:');
-    console.log(...event.formData.entries());
+    console.log('Form data event:', event);
+    const formData = event.formData;
+    const form = event.target;
+    const radios = [...form.elements].filter((fel) => fel.type === 'radio' && fel.checked)
+      .forEach((checkedRadio) => formData.set(checkedRadio.name, checkedRadio.value));
   },
 );
 
