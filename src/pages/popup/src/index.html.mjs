@@ -2,10 +2,10 @@
 import customRadio from '#components/custom-radio.html';
 
 const pacControls =  `
-  <span slot="after-label">
+  <span class="after-label">
     <span class="show-if-checked" hidden>
-    <a href title="Обновить">[обновить]</a>
-    <a href title="Приостановить">[⏸ ]</a>
+      <a href title="Обновить">[обновить]</a>
+      <a href title="Приостановить">[⏸]</a>
     </span>
     <a href title="Информация о PAC-скрипте" style="float: right; vertical-align: top">[ℹ]</a>
   </span>
@@ -192,7 +192,7 @@ console.log(`
               id: 'antizapretRadio',
               label: 'Антизапрет',
               value: 'antizapret',
-              slots: pacControls,
+              afterLabel: pacControls,
               attrs: { name: 'pacScriptRadio', form: 'pacChooserForm' },
             })}
           </li><li>
@@ -200,7 +200,7 @@ console.log(`
               id: 'anticensorityRadio',
               label: 'Антицензорити',
               value: 'anticensority',
-              slots: pacControls,
+              afterLabel: pacControls,
               attrs: { name: 'pacScriptRadio', form: 'pacChooserForm' },
             })}
           </li><!--li>
@@ -258,13 +258,16 @@ console.log(`
     </nav>
     <hr/>
     <footer style="display: flex; justify-content: space-between; padding: 1rem 0.5rem 0.5rem; align-items: center;">
-      <button>Закрыть</button>
-      <a id="donate" target="_blank" data-localize="__MSG_Donate__"
-        href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать"
-      >Поддержать ❤</a>
+      <!--button>OK</button-->
       <a id="news" target="_blank" data-localize="__MSG_News__"
         href="https://github.com/anticensority/runet-censorship-bypass/issues/10"
       >Новости</a>
+      <a id="donate" target="_blank" data-localize="__MSG_Donate__"
+        href="https://github.com/anticensority/runet-censorship-bypass/wiki/Поддержать"
+      >Поддержать ❤</a>
+      <a id="problems" target="_blank" data-localize="__MSG_News__"
+        href="https://github.com/anticensority/runet-censorship-bypass/wiki"
+      >Проблемы?</a>
     </footer>
   </body>
 </html>

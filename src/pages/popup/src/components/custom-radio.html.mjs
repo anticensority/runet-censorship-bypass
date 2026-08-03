@@ -3,15 +3,20 @@ const objToAttrs = (obj) =>
     ([k, v]) => v === '' ? k : `${k}="${v}"`,
   ).join(' ');
 
-export default ({ id, label, value, customStyles='', slots='', attrs={} }) => `
+export default ({ id, label, value, customStyles='', afterLabel='', attrs={} }) => `
 <custom-radio data-input-id="${id}">
   <template shadowrootmode="open">
     <style>
       input {
         vertical-align: top;
       }
-      label:has(input:checked) ~ .show-if-checked {
+      :host([checked]) .show-if-checked {
         display: unset;
+      }
+      .after-label a,
+      .after-label a:visited {
+        --ribbon-color: #0075ff;
+        color: var(--ribbon-color);
       }
       ${customStyles}
     </style>
@@ -19,8 +24,7 @@ export default ({ id, label, value, customStyles='', slots='', attrs={} }) => `
       <input type="radio" id="${id}" value="${value}" ${objToAttrs(attrs)}/>
       <span>${label}</span>
     </label>
-    <slot name="after-label"></slot>
+    ${afterLabel}
   </template>
-  ${slots}
 </custom-radio>
 `.trim();

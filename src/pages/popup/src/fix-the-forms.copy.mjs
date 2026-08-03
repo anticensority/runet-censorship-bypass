@@ -32,7 +32,13 @@ window.customElements.define('custom-radio', class extends HTMLElement {
   get checked() { return this.theInputEl.checked; }
   set checked(newValue) {
     this.theInputEl.checked = newValue;
-    this.setAttribute('checked', newValue);
+    if (newValue) {
+      this.theInputEl.setAttribute('checked', '');
+      this.setAttribute('checked', '');
+    } else {
+      this.theInputEl.removeAttribute('checked');
+      this.removeAttribute('checked');
+    }
   }
 
   get validity() { return this.internals_.validity; }
