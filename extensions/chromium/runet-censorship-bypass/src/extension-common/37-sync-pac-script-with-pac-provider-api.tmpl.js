@@ -117,7 +117,16 @@
           reject(clearErr);
           return;
         }
-        createPromise().then((actionResult) => setProxyAsync().then(() => resolve(actionResult)), reject);
+        const restoreProxyThen = (settle, result) => setProxyAsync().then(
+          () => settle(result),
+          reject,
+        );
+        Promise.resolve()
+          .then(createPromise)
+          .then(
+            (actionResult) => restoreProxyThen(resolve, actionResult),
+            (actionError) => restoreProxyThen(reject, actionError),
+          );
       }));
     }));
   });

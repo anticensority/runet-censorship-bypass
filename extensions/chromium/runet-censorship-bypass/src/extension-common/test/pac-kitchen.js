@@ -11,6 +11,12 @@ Mocha.describe('window.apis.pacKitchen', function () {
   Mocha.beforeEach(function() {
 
     global.chrome = CachelessRequire('sinon-chrome/extensions');
+    global.chrome.runtime.getManifest.returns({version: '0.0.1.66'});
+    Object.defineProperty(global.chrome.proxy, 'settings', {
+      value: global.chrome.proxy.settings,
+      configurable: true,
+      writable: true,
+    });
     global.window = {
       chrome: global.chrome,
       localStorage: new Storage(),
@@ -76,6 +82,7 @@ Mocha.describe('window.apis.pacKitchen', function () {
   Mocha.afterEach(function() {
 
     delete global.window;
+    delete global.chrome;
 
   });
 

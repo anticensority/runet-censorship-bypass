@@ -11,6 +11,8 @@ Mocha.describe('window.utils', function () {
 
   Mocha.beforeEach(function() {
 
+    global.chrome = CachelessRequire('sinon-chrome/extensions');
+    global.chrome.runtime.getManifest.returns({version: '0.0.1.66'});
     global.window = {};
 
   });
@@ -26,6 +28,7 @@ Mocha.describe('window.utils', function () {
   Mocha.afterEach(function() {
 
     delete global.window;
+    delete global.chrome;
 
   });
 
